@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { Subject, takeUntil } from 'rxjs';
@@ -17,12 +17,11 @@ import { SavingsSummary } from '../../core/models/saving.model';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private savingService = inject(SavingService);
   
   totalSavings = 0;
   savingsSummary: SavingsSummary | null = null;
   loading = true;
-  
-  constructor(private savingService: SavingService) {}
   
   ngOnInit(): void {
     this.loadSavingsSummary();
