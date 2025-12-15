@@ -67,6 +67,7 @@ public interface SavingRepository extends JpaRepository<Saving, Long> {
      */
     void deleteByUuidAndUserId(UUID uuid, String userId);
 
+    
     /**
      * Check if a saving exists for a user
      */
