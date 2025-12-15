@@ -1,0 +1,12 @@
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading-container">
+  <div class="loading-content">
+    <i class="pi pi-spin pi-spinner text-4xl text-primary mb-3"></i>
+    <p class="text-lg">Loading...</p>
+  </div>
+</div>
+
+<!-- Main Application -->
+<div *ngIf="!isLoading">
+  <router-outlet />
+</div>

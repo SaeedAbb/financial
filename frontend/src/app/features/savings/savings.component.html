@@ -1,0 +1,315 @@
+<div class="savings-container">
+  <!-- Toast for notifications -->
+  <p-toast></p-toast>
+
+  <!-- Confirmation dialog -->
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Page Header -->
+  <div class="page-header mb-4">
+    <div class="flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <h2 class="text-3xl font-bold text-900 m-0 flex align-items-center">
+          <i class="pi pi-wallet mr-3 text-primary"></i>
+          {{ title }}
+        </h2>
+        <p class="text-600 mt-2">Track and manage your savings by type</p>
+      </div>
+      <p-button
+        label="Add Saving"
+        icon="pi pi-plus"
+        (onClick)="showAddDialog()"
+        [disabled]="loading">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid mb-4">
+    <div class="col-12 lg:col-3 md:col-6">
+      <p-card styleClass="summary-card total-card">
+        <div class="flex justify-content-between align-items-start">
+          <div>
+            <div class="text-500 font-medium mb-2">Total Savings</div>
+            <div class="text-3xl font-bold text-900">{{ formatCurrency(summary.totalAmount) }}</div>
+            <div class="text-500 text-sm mt-2">{{ summary.totalCount }} entries</div>
+          </div>
+          <div class="flex align-items-center justify-content-center bg-blue-100 border-round"
+               style="width: 3rem; height: 3rem;">
+            <i class="pi pi-chart-line text-blue-500 text-2xl"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-3 md:col-6">
+      <p-card styleClass="summary-card cash-card">
+        <div class="flex justify-content-between align-items-start">
+          <div>
+            <div class="text-500 font-medium mb-2">Cash</div>
+            <div class="text-3xl font-bold text-900">{{ formatCurrency(summary.cashAmount) }}</div>
+            <div class="text-500 text-sm mt-2">Liquid savings</div>
+          </div>
+          <div class="flex align-items-center justify-content-center bg-green-100 border-round"
+               style="width: 3rem; height: 3rem;">
+            <i class="pi pi-money-bill text-green-500 text-2xl"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-3 md:col-6">
+      <p-card styleClass="summary-card gold-card">
+        <div class="flex justify-content-between align-items-start">
+          <div>
+            <div class="text-500 font-medium mb-2">Gold</div>
+            <div class="text-3xl font-bold text-900">{{ formatCurrency(summary.goldAmount) }}</div>
+            <div class="text-500 text-sm mt-2">Precious metals</div>
+          </div>
+          <div class="flex align-items-center justify-content-center bg-yellow-100 border-round"
+               style="width: 3rem; height: 3rem;">
+            <i class="pi pi-star-fill text-yellow-500 text-2xl"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-3 md:col-6">
+      <p-card styleClass="summary-card other-card">
+        <div class="flex justify-content-between align-items-start">
+          <div>
+            <div class="text-500 font-medium mb-2">Other</div>
+            <div class="text-3xl font-bold text-900">{{ formatCurrency(summary.otherAmount) }}</div>
+            <div class="text-500 text-sm mt-2">Other savings</div>
+          </div>
+          <div class="flex align-items-center justify-content-center bg-cyan-100 border-round"
+               style="width: 3rem; height: 3rem;">
+            <i class="pi pi-briefcase text-cyan-500 text-2xl"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Savings Table -->
+  <div class="grid">
+    <div class="col-12">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="flex justify-content-between align-items-center px-4 py-3">
+            <h3 class="text-xl font-semibold m-0">Savings History</h3>
+          </div>
+        </ng-template>
+
+        <div *ngIf="loading" class="flex justify-content-center align-items-center py-6">
+          <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4"></p-progressSpinner>
+        </div>
+
+        <p-table
+          *ngIf="!loading"
+          [value]="savings"
+          [paginator]="true"
+          [rows]="10"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+          [rowsPerPageOptions]="[10, 25, 50]"
+          [globalFilterFields]="['savingType', 'comments']"
+          styleClass="p-datatable-sm p-datatable-striped"
+          responsiveLayout="scroll"
+          [tableStyle]="{ 'min-width': '50rem' }">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="savingDate" style="width: 15%">
+                Date <p-sortIcon field="savingDate"></p-sortIcon>
+              </th>
+              <th pSortableColumn="amount" style="width: 15%">
+                Amount <p-sortIcon field="amount"></p-sortIcon>
+              </th>
+              <th pSortableColumn="savingType" style="width: 15%">
+                Type <p-sortIcon field="savingType"></p-sortIcon>
+              </th>
+              <th style="width: 40%">Comments</th>
+              <th style="width: 15%">Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-saving>
+            <tr>
+              <td>
+                <span class="font-medium">{{ formatDate(saving.savingDate) }}</span>
+              </td>
+              <td>
+                <span class="font-bold text-primary">{{ formatCurrency(saving.amount) }}</span>
+              </td>
+              <td>
+                <p-tag
+                  [value]="getSavingTypeLabel(saving.savingType)"
+                  [severity]="getSeverityForType(saving.savingType)"
+                  [icon]="getSavingTypeIcon(saving.savingType)">
+                </p-tag>
+              </td>
+              <td>
+                <span class="text-600">{{ saving.comments || '-' }}</span>
+              </td>
+              <td>
+                <div class="flex gap-2">
+                  <p-button
+                    icon="pi pi-pencil"
+                    styleClass="p-button-rounded p-button-text p-button-info"
+                    (onClick)="showEditDialog(saving)"
+                    pTooltip="Edit"
+                    tooltipPosition="top">
+                  </p-button>
+                  <p-button
+                    icon="pi pi-trash"
+                    styleClass="p-button-rounded p-button-text p-button-danger"
+                    (onClick)="confirmDelete(saving)"
+                    pTooltip="Delete"
+                    tooltipPosition="top">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center py-6">
+                <div class="flex flex-column align-items-center gap-3">
+                  <i class="pi pi-inbox text-4xl text-400"></i>
+                  <p class="text-600 text-lg">No savings recorded yet</p>
+                  <p-button
+                    label="Add Your First Saving"
+                    icon="pi pi-plus"
+                    (onClick)="showAddDialog()">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Add/Edit Dialog -->
+  <p-dialog
+    [(visible)]="displayDialog"
+    [header]="isEditMode ? 'Edit Saving' : 'Add New Saving'"
+    [modal]="true"
+    [style]="{ width: '500px' }"
+    [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
+    (onHide)="onDialogHide()">
+
+    <form [formGroup]="savingForm" (ngSubmit)="saveSaving()">
+      <div class="grid">
+        <div class="col-12">
+          <label for="amount" class="block text-900 font-medium mb-2">
+            Amount <span class="text-red-500">*</span>
+          </label>
+          <p-inputNumber
+            id="amount"
+            formControlName="amount"
+            mode="currency"
+            currency="EUR"
+            locale="de-DE"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
+            placeholder="Enter amount"
+            styleClass="w-full"
+            [class.ng-invalid]="savingForm.get('amount')?.invalid && savingForm.get('amount')?.touched">
+          </p-inputNumber>
+          <small class="text-red-500"
+                 *ngIf="savingForm.get('amount')?.invalid && savingForm.get('amount')?.touched">
+            <span *ngIf="savingForm.get('amount')?.hasError('required')">Amount is required</span>
+            <span *ngIf="savingForm.get('amount')?.hasError('min')">Amount must be greater than 0</span>
+          </small>
+        </div>
+
+        <div class="col-12">
+          <label for="savingType" class="block text-900 font-medium mb-2">
+            Saving Type <span class="text-red-500">*</span>
+          </label>
+          <p-select
+            id="savingType"
+            formControlName="savingType"
+            [options]="savingTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select type"
+            styleClass="w-full"
+            [class.ng-invalid]="savingForm.get('savingType')?.invalid && savingForm.get('savingType')?.touched">
+            <ng-template let-option pTemplate="item">
+              <div class="flex align-items-center gap-2">
+                <i [class]="option.icon"></i>
+                <span>{{ option.label }}</span>
+              </div>
+            </ng-template>
+          </p-select>
+          <small class="text-red-500"
+                 *ngIf="savingForm.get('savingType')?.invalid && savingForm.get('savingType')?.touched">
+            Saving type is required
+          </small>
+        </div>
+
+        <div class="col-12">
+          <label for="savingDate" class="block text-900 font-medium mb-2">
+            Date <span class="text-red-500">*</span>
+          </label>
+          <p-datepicker
+            id="savingDate"
+            formControlName="savingDate"
+            [maxDate]="maxDate"
+            dateFormat="yy-mm-dd"
+            [showIcon]="true"
+            placeholder="Select date"
+            styleClass="w-full"
+            appendTo="body"
+            [class.ng-invalid]="savingForm.get('savingDate')?.invalid && savingForm.get('savingDate')?.touched">
+          </p-datepicker>
+          <small class="text-red-500"
+                 *ngIf="savingForm.get('savingDate')?.invalid && savingForm.get('savingDate')?.touched">
+            Date is required
+          </small>
+        </div>
+
+        <div class="col-12">
+          <label for="comments" class="block text-900 font-medium mb-2">
+            Comments
+          </label>
+          <p-textarea
+            id="comments"
+            formControlName="comments"
+            rows="3"
+            placeholder="Add any notes or comments (optional)"
+            styleClass="w-full"
+            [ngClass]="{'ng-invalid': savingForm.get('comments')?.invalid && savingForm.get('comments')?.touched}">
+          </p-textarea>
+          <small class="text-600">{{ savingForm.get('comments')?.value?.length || 0 }}/1000 characters</small>
+          <small class="text-red-500 block"
+                 *ngIf="savingForm.get('comments')?.hasError('maxlength')">
+            Comments cannot exceed 1000 characters
+          </small>
+        </div>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Cancel"
+        icon="pi pi-times"
+        (onClick)="onDialogHide()"
+        styleClass="p-button-text"
+        [disabled]="saving">
+      </p-button>
+      <p-button
+        [label]="isEditMode ? 'Update' : 'Save'"
+        icon="pi pi-check"
+        (onClick)="saveSaving()"
+        [disabled]="savingForm.invalid || saving"
+        [loading]="saving">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+</div>

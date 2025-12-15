@@ -1,0 +1,140 @@
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+}
+
+.auth-content {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.brand-section {
+  color: white;
+  margin-bottom: 3rem;
+
+  h1 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  p {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.auth-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 3rem;
+
+  ::ng-deep .p-card-body {
+    padding: 0;
+  }
+
+  ::ng-deep .p-card-content {
+    padding: 2rem;
+  }
+}
+
+.card-header {
+  padding: 2rem 2rem 0;
+  text-align: center;
+}
+
+.auth-buttons {
+  margin: 1.5rem 0;
+
+  ::ng-deep .p-button {
+    justify-content: center;
+    transition: all 0.3s ease;
+
+    &:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+.card-footer {
+  padding: 0 2rem 2rem;
+  border-top: 1px solid var(--surface-border);
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.features-section {
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.feature-item {
+  text-align: center;
+
+  h3, p {
+    color: white;
+  }
+
+  i {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  h3 {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  p {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.auth-footer {
+  color: rgba(255, 255, 255, 0.8);
+
+  a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+
+    &:hover {
+      color: white;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 1rem;
+  }
+
+  .brand-section {
+    margin-bottom: 2rem;
+
+    h1 {
+      font-size: 3rem;
+    }
+
+    p {
+      font-size: 1rem;
+    }
+  }
+
+  .auth-card {
+    margin-bottom: 2rem;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}

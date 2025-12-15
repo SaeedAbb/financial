@@ -1,0 +1,76 @@
+<div class="auth-container">
+  <div class="auth-content">
+    <div class="brand-section">
+      <h1 class="text-6xl font-bold text-primary mb-2">Financial Management</h1>
+      <p-tag value="v1.0.0" severity="info" class="mb-4"></p-tag>
+      <p class="text-xl text-600 mb-6">
+        Manage your finances with our comprehensive financial tracking system
+      </p>
+    </div>
+
+    <p-card class="auth-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <h2 class="text-2xl font-semibold m-0">Get Started</h2>
+          <p class="text-600 m-0">Sign in to access your dashboard</p>
+        </div>
+      </ng-template>
+      
+      <div class="auth-buttons">
+        <p-button 
+          label="Sign In" 
+          icon="pi pi-sign-in" 
+          styleClass="w-full mb-3"
+          size="large"
+          (click)="navigateToLogin()">
+        </p-button>
+        
+        <p-button 
+          label="Create Account" 
+          icon="pi pi-user-plus" 
+          styleClass="w-full"
+          size="large"
+          severity="secondary"
+          (click)="navigateToRegister()">
+        </p-button>
+      </div>
+
+      <ng-template pTemplate="footer">
+        <div class="card-footer">
+          <p class="text-sm text-500 text-center m-0">
+            Secure authentication powered by Keycloak
+          </p>
+        </div>
+      </ng-template>
+    </p-card>
+
+    <div class="features-section">
+      <div class="feature-grid">
+        <div class="feature-item">
+          <i class="pi pi-shield text-primary text-2xl mb-2"></i>
+          <h3 class="text-lg font-semibold mb-1">Secure</h3>
+          <p class="text-sm text-600">Your financial data is protected</p>
+        </div>
+        <div class="feature-item">
+          <i class="pi pi-mobile text-primary text-2xl mb-2"></i>
+          <h3 class="text-lg font-semibold mb-1">Responsive</h3>
+          <p class="text-sm text-600">Track finances on any device</p>
+        </div>
+        <div class="feature-item">
+          <i class="pi pi-bolt text-primary text-2xl mb-2"></i>
+          <h3 class="text-lg font-semibold mb-1">Fast</h3>
+          <p class="text-sm text-600">Real-time financial insights</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="auth-footer">
+      <p class="text-sm text-500 text-center">
+        Built with Spring Boot, Angular & PrimeNG | 
+        <a href="https://github.com" target="_blank" class="text-primary no-underline">
+          <i class="pi pi-github"></i> View on GitHub
+        </a>
+      </p>
+    </footer>
+  </div>
+</div>

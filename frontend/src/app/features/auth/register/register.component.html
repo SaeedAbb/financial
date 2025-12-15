@@ -1,0 +1,75 @@
+<div class="auth-container">
+  <div class="auth-content">
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="brand-section">
+        <h1 class="text-4xl font-bold text-white mb-2">Create Account</h1>
+        <p class="text-lg text-white opacity-90">Join Basis Project and get started</p>
+      </div>
+      
+      <div class="navigation-links">
+        <a routerLink="/auth/login" class="back-link">
+          <i class="pi pi-arrow-left mr-2"></i>
+          Back to Sign In
+        </a>
+      </div>
+    </div>
+
+    <!-- Registration Card -->
+    <p-card class="auth-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <h2 class="text-2xl font-semibold mb-1">Sign Up</h2>
+          <p class="text-600">Choose your registration method</p>
+        </div>
+      </ng-template>
+
+      <div class="auth-form">
+        <!-- Keycloak Registration Button -->
+        <p-button 
+          type="button"
+          (click)="redirectToKeycloakRegistration()"
+          label="Create Account with Email" 
+          icon="pi pi-user-plus"
+          class="w-full mb-3"
+          size="large">
+        </p-button>
+
+        <!-- Divider -->
+        <p-divider align="center" type="solid" class="my-4">
+          <b class="text-500">or</b>
+        </p-divider>
+
+        <!-- Social Registration -->
+        <p-button 
+          type="button"
+          label="Sign up with Google" 
+          icon="pi pi-google"
+          class="w-full"
+          size="large"
+          severity="secondary"
+          (click)="registerWithGoogle()">
+        </p-button>
+      </div>
+
+      <ng-template pTemplate="footer">
+        <div class="card-footer">
+          <p class="text-center text-600 m-0">
+            Already have an account? 
+            <a routerLink="/auth/login" class="text-primary no-underline font-medium">Sign in here</a>
+          </p>
+        </div>
+      </ng-template>
+    </p-card>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <p class="text-sm text-white opacity-75 text-center">
+        Built with Spring Boot, Angular & PrimeNG | 
+        <a href="https://github.com" target="_blank" class="text-white no-underline">
+          <i class="pi pi-github"></i> View on GitHub
+        </a>
+      </p>
+    </div>
+  </div>
+</div>

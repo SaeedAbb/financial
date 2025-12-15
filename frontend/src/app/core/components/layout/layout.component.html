@@ -1,0 +1,102 @@
+<!-- Layout Container -->
+<div class="layout-container">
+  <!-- Header -->
+  <header class="layout-header">
+    <div class="header-content">
+      <!-- Mobile Menu Button -->
+      <p-button
+        icon="pi pi-bars"
+        styleClass="p-button-text p-button-sm mobile-menu-btn"
+        (click)="toggleSidebar()"
+        aria-label="Toggle Menu">
+      </p-button>
+      
+      <!-- Title -->
+      <div class="header-title">
+        <h1 class="text-2xl font-bold text-primary m-0">{{ title }}</h1>
+        <p-tag value="v1.0.0" severity="info" class="ml-3"></p-tag>
+      </div>
+      
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <span *ngIf="username" class="username-display">
+          Welcome, {{ username }}
+        </span>
+        <p-button 
+          label="API Docs" 
+          icon="pi pi-book" 
+          styleClass="p-button-outlined p-button-sm"
+          (click)="openApiDocs()">
+        </p-button>
+        <p-button 
+          label="Logout" 
+          icon="pi pi-sign-out" 
+          styleClass="p-button-danger p-button-sm"
+          (click)="logout()">
+        </p-button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="layout-content">
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar-desktop">
+      <nav class="sidebar-nav">
+        <ul class="nav-menu">
+          <li *ngFor="let item of menuItems" class="nav-item">
+            <a 
+              [routerLink]="item.routerLink" 
+              routerLinkActive="active"
+              class="nav-link">
+              <i [class]="item.icon + ' nav-icon'"></i>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <p-drawer 
+      [(visible)]="sidebarVisible" 
+      position="left"
+      styleClass="mobile-sidebar"
+      [dismissible]="true">
+      <h3>Navigation</h3>
+      <nav class="mobile-nav">
+        <ul class="nav-menu">
+          <li *ngFor="let item of menuItems" class="nav-item">
+            <a 
+              [routerLink]="item.routerLink" 
+              routerLinkActive="active"
+              class="nav-link"
+              (click)="onMenuItemClick()">
+              <i [class]="item.icon + ' nav-icon'"></i>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </p-drawer>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="layout-footer">
+    <div class="footer-content">
+      <p class="text-sm text-600 m-0">
+        Built with Spring Boot, Angular & PrimeNG | 
+        <a href="https://github.com" target="_blank" class="text-primary no-underline">
+          <i class="pi pi-github"></i> View on GitHub
+        </a>
+      </p>
+    </div>
+  </footer>
+</div>

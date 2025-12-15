@@ -1,0 +1,43 @@
+# Build stage
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
+COPY . .
+
+# Build the Angular app for production
+RUN npm run build:prod
+
+# Production stage - using nginx
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy the built app from build stage
+COPY --from=build /app/dist/financial-frontend .
+
+# Copy environment configuration template
+COPY src/environments/environment-config.template.js /usr/share/nginx/html/assets/env.template.js
+
+# Install envsubst for runtime environment variable substitution
+RUN apk add --no-cache gettext
+
+# Create startup script
+RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
+    echo 'envsubst < /usr/share/nginx/html/assets/env.template.js > /usr/share/nginx/html/assets/env.js' >> /docker-entrypoint.sh && \
+    echo 'nginx -g "daemon off;"' >> /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
+
+# Expose port
+EXPOSE 80
+
+# Start nginx with environment variable substitution
+ENTRYPOINT ["/docker-entrypoint.sh"]

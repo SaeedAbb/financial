@@ -1,0 +1,142 @@
+<div class="dashboard-container">
+  <div class="page-header mb-4">
+    <h2 class="text-3xl font-bold text-900 m-0 flex align-items-center">
+      <i class="pi pi-home mr-3 text-primary"></i>
+      Dashboard Overview
+    </h2>
+    <p class="text-600 mt-2">Welcome to your financial management dashboard</p>
+  </div>
+
+  <div class="grid">
+    <!-- Quick Stats Cards -->
+    <div class="col-12 lg:col-6 xl:col-3">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-shrink-0">
+            <i class="pi pi-wallet text-4xl text-blue-500"></i>
+          </div>
+          <div class="ml-3 flex-1">
+            <p class="text-600 text-sm mb-1">Total Savings</p>
+            <h3 class="text-xl font-semibold text-900 m-0" *ngIf="!loading">{{ formatCurrency(totalSavings) }}</h3>
+            <h3 class="text-xl font-semibold text-900 m-0" *ngIf="loading">
+              <i class="pi pi-spin pi-spinner text-primary"></i>
+            </h3>
+            <p class="text-600 text-sm mt-1" *ngIf="savingsSummary">
+              {{ savingsSummary.totalCount }} entries
+            </p>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-6 xl:col-3">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-shrink-0">
+            <i class="pi pi-chart-line text-4xl text-green-500"></i>
+          </div>
+          <div class="ml-3 flex-1">
+            <p class="text-600 text-sm mb-1">Investments</p>
+            <h3 class="text-xl font-semibold text-900 m-0">€25,780</h3>
+            <p class="text-green-500 text-sm mt-1">+12.8% from last month</p>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-6 xl:col-3">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-shrink-0">
+            <i class="pi pi-dollar text-4xl text-orange-500"></i>
+          </div>
+          <div class="ml-3 flex-1">
+            <p class="text-600 text-sm mb-1">Monthly Income</p>
+            <h3 class="text-xl font-semibold text-900 m-0">€4,250</h3>
+            <p class="text-blue-500 text-sm mt-1">This month</p>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-6 xl:col-3">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-shrink-0">
+            <i class="pi pi-chart-pie text-4xl text-purple-500"></i>
+          </div>
+          <div class="ml-3 flex-1">
+            <p class="text-600 text-sm mb-1">Total Net Worth</p>
+            <h3 class="text-xl font-semibold text-900 m-0">€42,480</h3>
+            <p class="text-green-500 text-sm mt-1">+8.5% from last month</p>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Financial Overview Section -->
+    <div class="col-12">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="card-header-title">
+            <h3 class="text-xl font-semibold text-900 m-0 flex align-items-center">
+              <i class="pi pi-chart-bar mr-2"></i>
+              Financial Overview
+            </h3>
+          </div>
+        </ng-template>
+        <div class="p-4">
+          <div class="grid">
+            <div class="col-12 md:col-6">
+              <h4 class="text-lg font-semibold mb-3">Recent Activity</h4>
+              <div class="flex flex-column gap-3">
+                <div class="flex align-items-center justify-content-between p-3 border-round surface-border border-1">
+                  <div class="flex align-items-center">
+                    <i class="pi pi-plus-circle text-green-500 mr-2"></i>
+                    <span>Salary Deposit</span>
+                  </div>
+                  <span class="font-semibold text-green-500">+$3,250.00</span>
+                </div>
+                <div class="flex align-items-center justify-content-between p-3 border-round surface-border border-1">
+                  <div class="flex align-items-center">
+                    <i class="pi pi-arrow-up text-blue-500 mr-2"></i>
+                    <span>Investment Gain</span>
+                  </div>
+                  <span class="font-semibold text-blue-500">+$185.50</span>
+                </div>
+                <div class="flex align-items-center justify-content-between p-3 border-round surface-border border-1">
+                  <div class="flex align-items-center">
+                    <i class="pi pi-wallet text-orange-500 mr-2"></i>
+                    <span>Savings Transfer</span>
+                  </div>
+                  <span class="font-semibold text-orange-500">+$500.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 md:col-6">
+              <h4 class="text-lg font-semibold mb-3">Quick Actions</h4>
+              <div class="flex flex-column gap-2">
+                <button class="p-button p-component w-full justify-content-start">
+                  <i class="pi pi-plus mr-2"></i>
+                  Add New Transaction
+                </button>
+                <button class="p-button p-component p-button-outlined w-full justify-content-start">
+                  <i class="pi pi-calculator mr-2"></i>
+                  Set Savings Goal
+                </button>
+                <button class="p-button p-component p-button-outlined w-full justify-content-start">
+                  <i class="pi pi-chart-line mr-2"></i>
+                  View Investment Portfolio
+                </button>
+                <button class="p-button p-component p-button-outlined w-full justify-content-start">
+                  <i class="pi pi-file-export mr-2"></i>
+                  Export Financial Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>

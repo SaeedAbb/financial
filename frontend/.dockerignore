@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.angular
+dist
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+.nyc_output
+coverage
+.vscode
+.idea
+*.log

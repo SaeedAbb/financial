@@ -1,0 +1,39 @@
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--text-color);
+}
+
+.page-header {
+  border-bottom: 1px solid var(--surface-border);
+  padding-bottom: 1rem;
+}
+
+.card-header-title {
+  padding: 1.5rem 1.5rem 0;
+}
+
+/* Stats Cards Styling */
+::ng-deep .p-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  .p-card-content {
+    padding: 1.5rem;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .page-header h2 {
+    font-size: 1.75rem;
+  }
+  
+  .page-header .pi {
+    margin-right: 0.5rem;
+  }
+  
+  .card-header-title {
+    padding: 1rem 1rem 0;
+  }
+}

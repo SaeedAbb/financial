@@ -1,0 +1,172 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* CSS Variables for Dark Theme */
+:root {
+  --primary-color: #667eea;
+  --primary-color-rgb: 102, 126, 234;
+  --primary-color-text: #ffffff;
+  --surface-card: #1a1a1a;
+  --surface-border: #333333;
+  --surface-ground: #000000;
+  --surface-hover: #2a2a2a;
+  --surface-section: #1a1a1a;
+  --surface-overlay: #1a1a1a;
+  --surface-0: #000000;
+  --surface-50: #1a1a1a;
+  --surface-100: #2a2a2a;
+  --surface-200: #3a3a3a;
+  --surface-300: #4a4a4a;
+  --surface-400: #5a5a5a;
+  --surface-500: #6a6a6a;
+  --surface-600: #7a7a7a;
+  --surface-700: #8a8a8a;
+  --surface-800: #9a9a9a;
+  --surface-900: #ffffff;
+  --text-color: #ffffff;
+  --text-color-secondary: #cccccc;
+  --green-500: #10b981;
+  --red-500: #ef4444;
+  --blue-500: #3b82f6;
+  --orange-500: #f59e0b;
+  --purple-500: #8b5cf6;
+}
+
+/* Global styles for dark theme */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background-color: var(--surface-ground);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Dark theme overrides for PrimeNG components */
+::ng-deep .p-component {
+  color: var(--text-color);
+}
+
+::ng-deep .p-card {
+  background: var(--surface-card) !important;
+  border: 1px solid var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+::ng-deep .p-card .p-card-header {
+  background: var(--surface-card) !important;
+  border-bottom: 1px solid var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+::ng-deep .p-card .p-card-content {
+  color: var(--text-color) !important;
+}
+
+::ng-deep .p-button {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color-text) !important;
+}
+
+::ng-deep .p-button:hover {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  opacity: 0.9;
+}
+
+::ng-deep .p-button.p-button-outlined {
+  background: transparent !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+::ng-deep .p-button.p-button-outlined:hover {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color-text) !important;
+}
+
+::ng-deep .p-button.p-button-text {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--text-color) !important;
+}
+
+::ng-deep .p-button.p-button-text:hover {
+  background: var(--surface-hover) !important;
+}
+
+::ng-deep .p-tag {
+  background: var(--primary-color) !important;
+  color: var(--primary-color-text) !important;
+}
+
+::ng-deep .p-message {
+  background: var(--surface-card) !important;
+  border: 1px solid var(--surface-border) !important;
+  color: var(--text-color) !important;
+}
+
+::ng-deep .p-message.p-message-info {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: var(--blue-500) !important;
+  color: var(--blue-500) !important;
+}
+
+::ng-deep .p-message.p-message-success {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: var(--green-500) !important;
+  color: var(--green-500) !important;
+}
+
+::ng-deep .p-drawer {
+  background: var(--surface-card) !important;
+  border-right: 1px solid var(--surface-border) !important;
+}
+
+::ng-deep .p-drawer .p-drawer-content {
+  background: var(--surface-card) !important;
+  color: var(--text-color) !important;
+}
+
+::ng-deep .p-datatable {
+  background: var(--surface-card) !important;
+  color: var(--text-color) !important;
+}
+
+::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background: var(--surface-hover) !important;
+  color: var(--text-color) !important;
+  border-color: var(--surface-border) !important;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  background: var(--surface-card) !important;
+  color: var(--text-color) !important;
+  border-color: var(--surface-border) !important;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  background: var(--surface-hover) !important;
+}
+
+::ng-deep .p-inputtext {
+  background: var(--surface-card) !important;
+  color: var(--text-color) !important;
+  border-color: var(--surface-border) !important;
+}
+
+::ng-deep .p-dropdown {
+  background: var(--surface-card) !important;
+  color: var(--text-color) !important;
+  border-color: var(--surface-border) !important;
+}
+
+::ng-deep .p-multiselect {
+  background: var(--surface-card) !important;
+  color: var(--text-color) !important;
+  border-color: var(--surface-border) !important;
+}
