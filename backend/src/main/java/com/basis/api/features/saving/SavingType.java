@@ -1,4 +1,4 @@
-package com.basis.api.entity;
+package com.basis.api.features.saving;
 
 public enum SavingType {
     CASH("Cash"),

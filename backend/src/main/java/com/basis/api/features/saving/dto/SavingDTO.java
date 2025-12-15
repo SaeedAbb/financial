@@ -1,6 +1,6 @@
-package com.basis.api.dto;
+package com.basis.api.features.saving.dto;
 
-import com.basis.api.entity.SavingType;
+import com.basis.api.features.saving.SavingType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.math.BigDecimal;

@@ -1,11 +1,8 @@
-package com.basis.api.service;
+package com.basis.api.features.saving;
 
-import com.basis.api.dto.CreateSavingRequest;
-import com.basis.api.dto.SavingDTO;
-import com.basis.api.entity.Saving;
-import com.basis.api.entity.SavingType;
-import com.basis.api.exception.ResourceNotFoundException;
-import com.basis.api.repository.SavingRepository;
+import com.basis.api.features.saving.dto.CreateSavingRequest;
+import com.basis.api.features.saving.dto.SavingDTO;
+import com.basis.api.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;

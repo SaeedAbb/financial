@@ -1,4 +1,4 @@
-package com.basis.api.exception;
+package com.basis.api.shared.exception;
 
 public class ValidationException extends RuntimeException {
     

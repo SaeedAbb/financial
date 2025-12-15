@@ -34,16 +34,36 @@ This is a comprehensive financial management application built with Spring Boot 
 ## Project Structure
 
 ```
-basis-project/
-├── backend/                    # Spring Boot application
+financial-project/
+├── backend/                    # Spring Boot application (DDD Architecture)
 │   ├── src/main/java/com/basis/api/
-│   │   ├── config/            # Configuration classes
-│   │   ├── controller/        # REST controllers
-│   │   ├── dto/              # Data transfer objects
-│   │   ├── entity/           # JPA entities
-│   │   ├── exception/        # Exception handling
-│   │   ├── repository/       # Data repositories
-│   │   └── service/          # Business logic
+│   │   ├── FinancialApplication.java
+│   │   ├── config/            # Cross-cutting configurations
+│   │   │   ├── SecurityConfig.java
+│   │   │   ├── JpaConfig.java
+│   │   │   ├── OpenApiConfig.java
+│   │   │   └── CorsConfig.java
+│   │   ├── shared/            # Shared utilities (Supporting Subdomain)
+│   │   │   ├── exception/     # Global exception handling
+│   │   │   │   ├── GlobalExceptionHandler.java
+│   │   │   │   ├── ResourceNotFoundException.java
+│   │   │   │   └── ValidationException.java
+│   │   │   └── entity/        # Base entities
+│   │   │       └── BaseEntity.java
+│   │   └── features/          # Domain-based features (Bounded Contexts)
+│   │       ├── saving/        # Saving Domain (Core Domain)
+│   │       │   ├── SavingController.java    # Application Layer
+│   │       │   ├── SavingService.java       # Domain Service
+│   │       │   ├── SavingRepository.java    # Infrastructure Layer
+│   │       │   ├── Saving.java              # Domain Entity (Aggregate Root)
+│   │       │   ├── SavingType.java          # Value Object/Enum
+│   │       │   └── dto/                     # Application DTOs
+│   │       │       ├── SavingDTO.java
+│   │       │       └── CreateSavingRequest.java
+│   │       ├── auth/          # Auth Domain (Supporting Domain)
+│   │       │   ├── AuthController.java
+│   │       │   └── dto/
+│   │       └── [future domains: budget/, investment/, etc.]
 │   ├── src/main/resources/
 │   │   ├── db/migration/     # Flyway migrations
 │   │   └── application*.yml  # Configuration files
@@ -112,14 +132,25 @@ cd backend && ./mvnw verify
 
 ## Architecture Notes
 
-### Backend Architecture
+### Backend Architecture (Domain-Driven Design)
+- **Feature-based packages**: Organized by business capability, not technical layer
+- **Bounded contexts**: Each domain feature is self-contained (saving, auth, etc.)
+- **Domain entities**: Aggregate roots containing business logic (e.g., Saving)
+- **Repository pattern**: Data access abstraction per domain aggregate
+- **Domain services**: Business logic that doesn't belong to entities
+- **Shared kernel**: Common utilities in shared/ package
 - **RESTful API** with proper HTTP status codes
-- **Layered architecture**: Controller → Service → Repository
-- **JPA entities** with auditing (created/updated timestamps)
-- **DTO pattern** for API contracts
-- **Global exception handling** with proper error responses
+- **DTO pattern** for API contracts across domain boundaries
+- **Global exception handling** in shared infrastructure
 - **Database migrations** with Flyway versioning
 - **Comprehensive testing** with unit and integration tests
+
+### Domain-Driven Design Principles
+- **Ubiquitous language**: Use business terms in code (saving, budget, investment)
+- **Aggregate boundaries**: Clear separation between domain concepts
+- **Minimal coupling**: Domains communicate via well-defined interfaces
+- **Domain focus**: Business logic lives in domain entities and services
+- **Infrastructure separation**: Technical concerns isolated from business logic
 
 ### Frontend Architecture
 - **Feature-based** module organization
@@ -180,12 +211,41 @@ The REST API is documented with OpenAPI 3.0:
 
 ## Common Tasks
 
-### Adding a New Entity
-1. Create JPA entity in `backend/src/main/java/com/basis/api/entity/`
-2. Create Flyway migration in `backend/src/main/resources/db/migration/`
-3. Create repository, service, controller, and DTO
-4. Add comprehensive tests
-5. Update API documentation
+### Adding a New Domain Feature (DDD Pattern)
+When adding new functionality (e.g., budgets, investments), follow this pattern:
+
+1. **Create domain package structure**:
+   ```
+   features/budget/
+   ├── BudgetController.java       # Application Layer (REST endpoints)
+   ├── BudgetService.java         # Domain Service (business logic)
+   ├── BudgetRepository.java      # Infrastructure Layer (data access)
+   ├── Budget.java                # Domain Entity (aggregate root)
+   ├── BudgetStatus.java          # Value Objects/Enums
+   ├── dto/                       # Data Transfer Objects
+   │   ├── BudgetDTO.java
+   │   └── CreateBudgetRequest.java
+   └── exception/                 # Domain-specific exceptions
+       └── BudgetNotFoundException.java
+   ```
+
+2. **Follow DDD principles**:
+   - Use business terminology in all naming (Budget, not BudgetEntity)
+   - Put business logic in domain entities and services
+   - Keep domains loosely coupled
+   - Use shared/ package for cross-cutting concerns only
+
+3. **Create Flyway migration** in `backend/src/main/resources/db/migration/`
+4. **Add comprehensive tests** for all layers
+5. **Update API documentation** with OpenAPI annotations
+
+### Adding a Simple Entity to Existing Domain
+1. Add entity to appropriate domain package (e.g., `features/saving/`)
+2. Create Flyway migration
+3. Update repository with new queries if needed
+4. Add DTOs and update service methods
+5. Update controller endpoints
+6. Add comprehensive tests
 
 ### Adding a New Frontend Feature
 1. Generate component: `ng generate component features/feature-name`

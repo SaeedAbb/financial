@@ -1,8 +1,7 @@
-package com.basis.api.controller;
+package com.basis.api.features.saving;
 
-import com.basis.api.dto.CreateSavingRequest;
-import com.basis.api.dto.SavingDTO;
-import com.basis.api.service.SavingService;
+import com.basis.api.features.saving.dto.CreateSavingRequest;
+import com.basis.api.features.saving.dto.SavingDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -165,9 +164,9 @@ public class SavingController {
         Map<String, Object> summary = new HashMap<>();
         summary.put("totalAmount", savingService.getTotalSavingsAmount(userId));
         summary.put("totalCount", savingService.getSavingsCount(userId));
-        summary.put("cashAmount", savingService.getTotalSavingsAmountByType(userId, com.basis.api.entity.SavingType.CASH));
-        summary.put("goldAmount", savingService.getTotalSavingsAmountByType(userId, com.basis.api.entity.SavingType.GOLD));
-        summary.put("otherAmount", savingService.getTotalSavingsAmountByType(userId, com.basis.api.entity.SavingType.OTHER));
+        summary.put("cashAmount", savingService.getTotalSavingsAmountByType(userId, SavingType.CASH));
+        summary.put("goldAmount", savingService.getTotalSavingsAmountByType(userId, SavingType.GOLD));
+        summary.put("otherAmount", savingService.getTotalSavingsAmountByType(userId, SavingType.OTHER));
         
         return ResponseEntity.ok(summary);
     }

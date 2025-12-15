@@ -1,4 +1,4 @@
-package com.basis.api.exception;
+package com.basis.api.shared.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

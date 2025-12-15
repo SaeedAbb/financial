@@ -1,4 +1,4 @@
-package com.basis.api.entity;
+package com.basis.api.shared.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

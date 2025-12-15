@@ -1,4 +1,4 @@
-package com.basis.api.controller;
+package com.basis.api.features.auth;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

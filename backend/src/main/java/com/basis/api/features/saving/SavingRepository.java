@@ -1,7 +1,5 @@
-package com.basis.api.repository;
+package com.basis.api.features.saving;
 
-import com.basis.api.entity.Saving;
-import com.basis.api.entity.SavingType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

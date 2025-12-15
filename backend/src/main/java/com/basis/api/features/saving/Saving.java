@@ -1,4 +1,4 @@
-package com.basis.api.entity;
+package com.basis.api.features.saving;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
