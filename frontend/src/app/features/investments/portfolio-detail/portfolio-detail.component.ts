@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
@@ -18,8 +18,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
 import { AccordionModule } from 'primeng/accordion';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { Subject, takeUntil, forkJoin, of, concat, EMPTY } from 'rxjs';
-import { switchMap, map, catchError, finalize } from 'rxjs/operators';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { Portfolio } from '../../../core/models/portfolio.model';
 import { Stock, BuyStockRequest, SellStockRequest, StockStatus, StockGroup, getStockStatusLabel, getStockStatusSeverity } from '../../../core/models/stock.model';
 import { PortfolioService } from '../../../core/services/portfolio.service';
@@ -31,6 +31,7 @@ import { StockService } from '../../../core/services/stock.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     CardModule,
     ButtonModule,
     MessageModule,
@@ -78,43 +79,97 @@ import { StockService } from '../../../core/services/stock.service';
       </div>
 
       <!-- Portfolio Overview -->
-      <div class="portfolio-overview grid" *ngIf="portfolio">
-        <div class="col-12 md:col-3">
-          <p-card>
-            <div class="stats-card">
-              <div class="stats-value investment">{{ formatAmount(portfolio.totalInvestment) }}</div>
-              <div class="stats-label">Total Investment</div>
-            </div>
-          </p-card>
-        </div>
-        <div class="col-12 md:col-3">
-          <p-card>
-            <div class="stats-card">
-              <div class="stats-value" [ngClass]="getGainLossColorClass(portfolio.totalGainLoss)">
-                {{ formatAmount(portfolio.totalGainLoss) }}
+      <div class="portfolio-overview" *ngIf="portfolio">
+        <!-- Main Performance Card -->
+        <div class="main-performance-card">
+          <p-card styleClass="performance-highlight-card">
+            <div class="main-performance-content">
+              <div class="performance-header">
+                <div class="current-value-section">
+                  <div class="current-value">{{ formatAmount(portfolio.totalCurrentValue || portfolio.totalInvestment) }}</div>
+                  <div class="value-label">Portfolio Value</div>
+                </div>
+                <div class="investment-section">
+                  <div class="investment-value">{{ formatAmount(portfolio.totalInvestment) }}</div>
+                  <div class="investment-label">Total Invested</div>
+                </div>
               </div>
-              <div class="stats-label">Total Gain/Loss</div>
-              <div class="stats-percentage" [ngClass]="getGainLossColorClass(portfolio.totalGainLoss)">
-                {{ formatPercentage(portfolio.gainLossPercentage) }}
+              <div class="performance-metrics">
+                <div class="gain-loss-section">
+                  <div class="gain-loss-main">
+                    <div class="gain-loss-icon" [ngClass]="getPerformanceIcon(portfolio.totalGainLoss)">
+                      <i class="pi" [ngClass]="getPerformanceIcon(portfolio.totalGainLoss)"></i>
+                    </div>
+                    <div class="gain-loss-values">
+                      <div class="gain-loss-amount" [ngClass]="getGainLossColorClass(portfolio.totalGainLoss)">
+                        {{ formatAmount(portfolio.totalGainLoss) }}
+                      </div>
+                      <div class="gain-loss-percentage" [ngClass]="getGainLossColorClass(portfolio.totalGainLoss)">
+                        {{ formatPercentage(portfolio.gainLossPercentage) }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="performance-status">
+                    <div class="status-badge" [ngClass]="getPerformanceStatusClass(portfolio.totalGainLoss)">
+                      {{ getPerformanceStatusLabel(portfolio.totalGainLoss) }}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </p-card>
         </div>
-        <div class="col-12 md:col-3">
-          <p-card>
-            <div class="stats-card">
-              <div class="stats-value count">{{ portfolio.activeStocksCount }}</div>
-              <div class="stats-label">Active Stocks</div>
-            </div>
-          </p-card>
-        </div>
-        <div class="col-12 md:col-3">
-          <p-card>
-            <div class="stats-card">
-              <div class="stats-value sold-count">{{ portfolio.soldStocksCount }}</div>
-              <div class="stats-label">Sold Stocks</div>
-            </div>
-          </p-card>
+
+        <!-- Quick Stats Grid -->
+        <div class="quick-stats-grid grid">
+          <div class="col-12 md:col-4">
+            <p-card styleClass="quick-stat-card">
+              <div class="quick-stat">
+                <div class="stat-icon positions-icon">
+                  <i class="pi pi-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ portfolio.activeStocksCount }}</div>
+                  <div class="stat-label">Active Positions</div>
+                  <div class="stat-detail" *ngIf="stockGroups.length > 0">
+                    {{ stockGroups.length }} different stocks
+                  </div>
+                </div>
+              </div>
+            </p-card>
+          </div>
+          <div class="col-12 md:col-4">
+            <p-card styleClass="quick-stat-card">
+              <div class="quick-stat">
+                <div class="stat-icon transactions-icon">
+                  <i class="pi pi-history"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ portfolio.soldStocksCount }}</div>
+                  <div class="stat-label">Completed Sales</div>
+                  <div class="stat-detail" *ngIf="portfolio.soldStocksCount > 0">
+                    Realized transactions
+                  </div>
+                </div>
+              </div>
+            </p-card>
+          </div>
+          <div class="col-12 md:col-4">
+            <p-card styleClass="quick-stat-card">
+              <div class="quick-stat">
+                <div class="stat-icon diversity-icon">
+                  <i class="pi pi-th-large"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ getDiversificationScore() }}</div>
+                  <div class="stat-label">Diversification</div>
+                  <div class="stat-detail">
+                    {{ getDiversificationLevel() }}
+                  </div>
+                </div>
+              </div>
+            </p-card>
+          </div>
         </div>
       </div>
 
@@ -126,21 +181,83 @@ import { StockService } from '../../../core/services/stock.service';
 
       <!-- Stocks List -->
       <div *ngIf="!loading && portfolio" class="stock-groups-container">
-        <!-- Search Bar -->
+        <!-- Enhanced Search and Filter Section -->
         <div class="section-header">
-          <h3>Portfolio Holdings</h3>
-          <div class="search-container">
-            <i class="pi pi-search search-icon"></i>
-            <input 
-              type="text" 
-              pInputText 
-              placeholder="Search stocks..."
-              class="search-input">
+          <div class="header-title-section">
+            <h3>Portfolio Holdings</h3>
+            <div class="holdings-summary">
+              {{ stockGroups.length }} stocks • {{ portfolio.activeStocksCount }} positions
+            </div>
+          </div>
+          
+          <!-- Mobile-friendly search and filters -->
+          <div class="search-and-filters">
+            <!-- Search Input -->
+            <div class="search-container">
+              <i class="pi pi-search search-icon"></i>
+              <input 
+                type="text" 
+                pInputText 
+                placeholder="Search stocks..."
+                class="search-input"
+                [(ngModel)]="searchTerm"
+                (input)="onSearchChange($event)">
+              <button 
+                *ngIf="searchTerm" 
+                class="clear-search-btn"
+                (click)="clearSearch()"
+                type="button">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+
+            <!-- Quick Filter Chips -->
+            <div class="filter-chips">
+              <button 
+                class="filter-chip" 
+                [class.active]="activeFilter === 'all'"
+                (click)="setFilter('all')">
+                All
+              </button>
+              <button 
+                class="filter-chip gain-chip" 
+                [class.active]="activeFilter === 'gainers'"
+                (click)="setFilter('gainers')">
+                <i class="pi pi-arrow-up"></i>
+                Winners
+              </button>
+              <button 
+                class="filter-chip loss-chip" 
+                [class.active]="activeFilter === 'losers'"
+                (click)="setFilter('losers')">
+                <i class="pi pi-arrow-down"></i>
+                Losers
+              </button>
+              <button 
+                class="filter-chip recent-chip" 
+                [class.active]="activeFilter === 'recent'"
+                (click)="setFilter('recent')">
+                <i class="pi pi-clock"></i>
+                Recent
+              </button>
+            </div>
+
+            <!-- Sort Options -->
+            <div class="sort-container">
+              <p-button 
+                icon="pi pi-sort-alt"
+                severity="secondary"
+                size="small"
+                class="sort-button"
+                [pTooltip]="'Sort by: ' + getSortLabel(currentSort)"
+                (click)="toggleSort()">
+              </p-button>
+            </div>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="stockGroups.length === 0" class="empty-state">
+        <div *ngIf="filteredStockGroups.length === 0 && stockGroups.length === 0" class="empty-state">
           <i class="pi pi-chart-line empty-icon"></i>
           <h3>No Stocks Yet</h3>
           <p>Start building your portfolio by purchasing your first stock</p>
@@ -152,75 +269,135 @@ import { StockService } from '../../../core/services/stock.service';
           </p-button>
         </div>
 
+        <!-- No Results State -->
+        <div *ngIf="filteredStockGroups.length === 0 && stockGroups.length > 0" class="no-results-state">
+          <i class="pi pi-filter empty-icon"></i>
+          <h3>No Results Found</h3>
+          <p>Try adjusting your search or filter criteria</p>
+          <p-button 
+            label="Clear Filters" 
+            severity="secondary"
+            (click)="clearFilters()">
+          </p-button>
+        </div>
+
         <!-- Stock Groups List -->
-        <div *ngIf="stockGroups.length > 0" class="stock-groups">
-          <div *ngFor="let group of stockGroups; trackBy: trackBySymbol" class="stock-group">
+        <div *ngIf="filteredStockGroups.length > 0" class="stock-groups">
+          <div *ngFor="let group of filteredStockGroups; trackBy: trackBySymbol" class="stock-group">
             <div class="stock-group-card">
               <!-- Stock Group Header -->
               <div class="stock-group-header cursor-pointer" 
+                   tabindex="0"
+                   role="button"
+                   [attr.aria-expanded]="isGroupExpanded(group)"
+                   [attr.aria-label]="'Toggle ' + group.symbol + ' details'"
                    (click)="toggleGroup(group)"
+                   (keydown.enter)="toggleGroup(group)"
+                   (keydown.space)="toggleGroup(group); $event.preventDefault()"
                    [class.expanded]="isGroupExpanded(group)">
                 <div class="header-content">
-                  <!-- Status Indicator -->
-                  <div class="status-indicator"></div>
-                  
-                  <!-- Company Icon -->
-                  <div class="company-icon">
-                    <i class="pi pi-building"></i>
+                  <!-- Performance Indicator Bar -->
+                  <div class="performance-indicator-bar" 
+                       [ngClass]="getPerformanceColorClass(group.totalGainLoss)">
                   </div>
                   
-                  <!-- Stock Info -->
-                  <div class="stock-info">
-                    <div class="stock-header-row">
-                      <span class="stock-symbol">{{ group.symbol }}</span>
-                      <span class="long-tag">LONG</span>
-                      <span class="stock-quantity">
-                        {{ group.totalAvailableQuantity }}
-                        <small *ngIf="group.totalSoldQuantity > 0" class="sold-info">
-                          ({{ group.totalSoldQuantity }} sold)
-                        </small>
-                      </span>
+                  <!-- Main Content Row -->
+                  <div class="main-content-row">
+                    <!-- Left Section: Company Info -->
+                    <div class="company-section">
+                      <div class="company-icon" [ngClass]="getPerformanceColorClass(group.totalGainLoss)">
+                        <i class="pi pi-building"></i>
+                      </div>
+                      <div class="company-details">
+                        <div class="symbol-row">
+                          <span class="stock-symbol">{{ group.symbol }}</span>
+                          <div class="position-badge">
+                            <i class="pi pi-arrow-up position-icon"></i>
+                            <span class="position-text">LONG</span>
+                          </div>
+                        </div>
+                        <div class="company-name">{{ group.companyName }}</div>
+                        <div class="holdings-info">
+                          <span class="holdings-duration">{{ getHoldingDuration(group.weightedAveragePurchaseDate) }}</span>
+                          <span class="separator">•</span>
+                          <span class="positions-count">{{ group.positions.length }} position{{ group.positions.length !== 1 ? 's' : '' }}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div class="company-name">{{ group.companyName }}</div>
-                    <div class="holdings-date">
-                      <small>Held since {{ formatDate(group.weightedAveragePurchaseDate) }}</small>
+
+                    <!-- Center Section: Holdings Info -->
+                    <div class="holdings-section">
+                      <div class="quantity-info">
+                        <div class="total-shares">
+                          <span class="shares-number">{{ group.totalAvailableQuantity }}</span>
+                          <span class="shares-label">shares</span>
+                        </div>
+                        <div class="quantity-breakdown" *ngIf="group.totalSoldQuantity > 0">
+                          <small class="sold-shares">{{ group.totalSoldQuantity }} sold</small>
+                        </div>
+                      </div>
+                      <div class="value-info">
+                        <div class="market-value">{{ formatAmount(group.totalAvailableQuantity * 26.08) }}</div>
+                        <div class="avg-price">@ {{ formatAmount(group.averagePurchasePrice) }} avg</div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <!-- Current Price -->
-                  <div class="price-info">
-                    <div class="current-price">{{ formatAmount(26.08) }}</div>
-                    <div class="price-label">Current</div>
-                  </div>
-                  
-                  <!-- Performance -->
-                  <div class="performance-info">
-                    <div class="performance" 
-                         [ngClass]="{
-                           'gain': group.totalGainLoss > 0,
-                           'loss': group.totalGainLoss < 0,
-                           'neutral': group.totalGainLoss === 0
-                         }">
-                      {{ formatPercentage(group.totalGainLossPercentage) }}
+
+                    <!-- Right Section: Performance -->
+                    <div class="performance-section">
+                      <div class="performance-main">
+                        <div class="performance-amount" 
+                             [ngClass]="getGainLossColorClass(group.totalGainLoss)">
+                          <i class="pi performance-icon" 
+                             [ngClass]="getPerformanceIcon(group.totalGainLoss)"></i>
+                          {{ formatAmount(group.totalGainLoss) }}
+                        </div>
+                        <div class="performance-percentage" 
+                             [ngClass]="getGainLossColorClass(group.totalGainLoss)">
+                          {{ formatPercentage(group.totalGainLossPercentage) }}
+                        </div>
+                      </div>
+                      <div class="current-price-info">
+                        <div class="current-price">{{ formatAmount(26.08) }}</div>
+                        <div class="price-label">current</div>
+                      </div>
                     </div>
-                    <div class="performance-label">Performance</div>
                   </div>
 
-                  <!-- Sell Button -->
-                  <div class="header-actions" *ngIf="group.canSell">
-                    <p-button 
-                      icon="pi pi-dollar" 
-                      size="small" 
-                      class="sell-button header-sell-button"
-                      [pTooltip]="'Sell ' + group.symbol + ' (' + group.totalAvailableQuantity + ' available)'"
-                      (click)="showSellStockGroupDialog(group, $event)"
-                      [disabled]="!group.canSell">
-                    </p-button>
-                  </div>
-                  
-                  <!-- Expand Icon -->
-                  <div class="expand-icon" [class.expanded]="isGroupExpanded(group)">
-                    <i class="pi pi-chevron-down"></i>
+                  <!-- Action Row -->
+                  <div class="action-row">
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                      <p-button 
+                        icon="pi pi-plus" 
+                        size="small" 
+                        severity="secondary"
+                        class="action-btn buy-more-btn"
+                        [pTooltip]="'Buy more ' + group.symbol"
+                        (click)="showBuyStockDialog(); $event.stopPropagation()"
+                        (keydown.enter)="showBuyStockDialog(); $event.stopPropagation()"
+                        (keydown.space)="showBuyStockDialog(); $event.stopPropagation(); $event.preventDefault()"
+                        [disabled]="false">
+                      </p-button>
+                      <p-button 
+                        icon="pi pi-minus" 
+                        size="small" 
+                        severity="success"
+                        class="action-btn sell-btn"
+                        [pTooltip]="'Sell ' + group.symbol + ' (' + group.totalAvailableQuantity + ' available)'"
+                        (click)="showSellStockGroupDialog(group, $event)"
+                        [disabled]="!group.canSell">
+                      </p-button>
+                    </div>
+                    
+                    <!-- Expand Controls -->
+                    <div class="expand-controls">
+                      <span class="expand-label">
+                        {{ isGroupExpanded(group) ? 'Show less' : 'View positions' }}
+                      </span>
+                      <div class="expand-icon" [class.expanded]="isGroupExpanded(group)">
+                        <i class="pi pi-chevron-down"></i>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -558,6 +735,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   activeStocks: Stock[] = [];
   soldStocks: Stock[] = [];
   stockGroups: StockGroup[] = [];
+  filteredStockGroups: StockGroup[] = [];
   selectedStock: Stock | null = null;
   selectedStockGroup: StockGroup | null = null;
   expandedGroups: Set<string> = new Set();
@@ -567,6 +745,11 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   submittingSell = false;
   showBuyDialog = false;
   showSellDialog = false;
+  
+  // Search and Filter properties
+  searchTerm = '';
+  activeFilter: 'all' | 'gainers' | 'losers' | 'recent' = 'all';
+  currentSort: 'performance' | 'value' | 'alphabetical' = 'performance';
   
   today = new Date();
 
@@ -637,6 +820,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
           this.activeStocks = stocks.filter(s => s.status === StockStatus.ACTIVE);
           this.soldStocks = stocks.filter(s => s.status === StockStatus.SOLD);
           this.stockGroups = this.groupStocksBySymbol(stocks);
+          this.applyFiltersAndSort();
         },
         error: (error) => {
           console.error('Error loading stocks:', error);
@@ -743,7 +927,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  sellIndividualStock(formValue: any): void {
+  sellIndividualStock(formValue: {quantity: number; salePrice: number; saleDate: Date}): void {
     const request: SellStockRequest = {
       stockUuid: this.selectedStock!.uuid,
       quantity: formValue.quantity,
@@ -776,7 +960,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  sellStockGroup(formValue: any): void {
+  sellStockGroup(formValue: {quantity: number; salePrice: number; saleDate: Date}): void {
     const group = this.selectedStockGroup!;
     const quantityToSell = formValue.quantity;
     const salePrice = formValue.salePrice;
@@ -804,8 +988,8 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
     this.executeSales(sellInstructions, salePrice, saleDate, quantityToSell);
   }
 
-  calculateSellInstructions(positions: Stock[], quantityToSell: number): Array<{stock: Stock, quantity: number}> {
-    const instructions: Array<{stock: Stock, quantity: number}> = [];
+  calculateSellInstructions(positions: Stock[], quantityToSell: number): {stock: Stock, quantity: number}[] {
+    const instructions: {stock: Stock, quantity: number}[] = [];
     let remainingToSell = quantityToSell;
 
     for (const position of positions) {
@@ -825,7 +1009,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
     return instructions;
   }
 
-  executeSales(instructions: Array<{stock: Stock, quantity: number}>, salePrice: number, saleDate: string, totalQuantity: number): void {
+  executeSales(instructions: {stock: Stock, quantity: number}[], salePrice: number, saleDate: string, totalQuantity: number): void {
     const saleObservables = instructions.map(instruction => {
       const request: SellStockRequest = {
         stockUuid: instruction.stock.uuid,
@@ -863,9 +1047,9 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  viewStockDetails(stock: Stock): void {
+  viewStockDetails(_stock: Stock): void {
     // Could navigate to a detailed stock view or show a detailed dialog
-    console.log('View stock details:', stock);
+    // console.log('View stock details:', stock);
   }
 
   goBack(): void {
@@ -958,8 +1142,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
     return Array.from(groupMap.values()).sort((a, b) => a.symbol.localeCompare(b.symbol));
   }
 
-  applyGlobalFilter(event: any, target: string): void {
-    const value = (event.target as HTMLInputElement).value;
+  applyGlobalFilter(_event: Event, _target: string): void {
     // This would typically be handled by the PrimeNG table component's global filter
     // but since we're using a basic implementation, we'll leave this for now
   }
@@ -1051,5 +1234,160 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
     
     // Format as YYYY-MM-DD
     return averageDate.toISOString().split('T')[0];
+  }
+
+  // Enhanced UI helper methods for the new portfolio overview design
+
+  getPerformanceIcon(gainLoss: number): string {
+    if (gainLoss > 0) return 'pi-trending-up';
+    if (gainLoss < 0) return 'pi-trending-down';
+    return 'pi-minus';
+  }
+
+  getPerformanceStatusClass(gainLoss: number): string {
+    if (gainLoss > 0) return 'status-gain';
+    if (gainLoss < 0) return 'status-loss';
+    return 'status-neutral';
+  }
+
+  getPerformanceStatusLabel(gainLoss: number): string {
+    if (gainLoss > 0) return 'Profitable';
+    if (gainLoss < 0) return 'Loss';
+    return 'Break Even';
+  }
+
+  getDiversificationScore(): string {
+    const uniqueStocks = this.stockGroups.length;
+    if (uniqueStocks <= 2) return 'Low';
+    if (uniqueStocks <= 5) return 'Medium';
+    if (uniqueStocks <= 10) return 'Good';
+    return 'High';
+  }
+
+  getDiversificationLevel(): string {
+    const uniqueStocks = this.stockGroups.length;
+    if (uniqueStocks === 0) return 'No positions';
+    if (uniqueStocks === 1) return 'Single stock';
+    if (uniqueStocks <= 2) return 'Concentrated';
+    if (uniqueStocks <= 5) return 'Moderately diversified';
+    if (uniqueStocks <= 10) return 'Well diversified';
+    return 'Highly diversified';
+  }
+
+  getPerformanceColorClass(gainLoss: number): string {
+    if (gainLoss > 0) return 'performance-gain';
+    if (gainLoss < 0) return 'performance-loss';
+    return 'performance-neutral';
+  }
+
+  getHoldingDuration(dateString: string): string {
+    const purchaseDate = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - purchaseDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 30) {
+      return `${diffDays}d`;
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months}m`;
+    } else {
+      const years = Math.floor(diffDays / 365);
+      const remainingMonths = Math.floor((diffDays % 365) / 30);
+      return remainingMonths > 0 ? `${years}y ${remainingMonths}m` : `${years}y`;
+    }
+  }
+
+  // Search and Filter Methods
+
+  onSearchChange(event: Event): void {
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFiltersAndSort();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.applyFiltersAndSort();
+  }
+
+  setFilter(filter: 'all' | 'gainers' | 'losers' | 'recent'): void {
+    this.activeFilter = filter;
+    this.applyFiltersAndSort();
+  }
+
+  toggleSort(): void {
+    const sortOptions = ['performance', 'value', 'alphabetical'] as const;
+    const currentIndex = sortOptions.indexOf(this.currentSort);
+    this.currentSort = sortOptions[(currentIndex + 1) % sortOptions.length];
+    this.applyFiltersAndSort();
+  }
+
+  getSortLabel(sort: 'performance' | 'value' | 'alphabetical'): string {
+    switch (sort) {
+      case 'performance': return 'Performance';
+      case 'value': return 'Market Value';
+      case 'alphabetical': return 'A-Z';
+      default: return 'Performance';
+    }
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.activeFilter = 'all';
+    this.currentSort = 'performance';
+    this.applyFiltersAndSort();
+  }
+
+  private applyFiltersAndSort(): void {
+    let filtered = [...this.stockGroups];
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(group => 
+        group.symbol.toLowerCase().includes(searchLower) ||
+        group.companyName.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply category filter
+    switch (this.activeFilter) {
+      case 'gainers': {
+        filtered = filtered.filter(group => group.totalGainLoss > 0);
+        break;
+      }
+      case 'losers': {
+        filtered = filtered.filter(group => group.totalGainLoss < 0);
+        break;
+      }
+      case 'recent': {
+        // Show positions purchased in last 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        filtered = filtered.filter(group => 
+          new Date(group.weightedAveragePurchaseDate) >= thirtyDaysAgo
+        );
+        break;
+      }
+      default: {
+        // 'all' - no additional filtering
+        break;
+      }
+    }
+
+    // Apply sorting
+    switch (this.currentSort) {
+      case 'performance':
+        filtered.sort((a, b) => b.totalGainLossPercentage - a.totalGainLossPercentage);
+        break;
+      case 'value':
+        filtered.sort((a, b) => (b.totalAvailableQuantity * 26.08) - (a.totalAvailableQuantity * 26.08));
+        break;
+      case 'alphabetical':
+        filtered.sort((a, b) => a.symbol.localeCompare(b.symbol));
+        break;
+    }
+
+    this.filteredStockGroups = filtered;
   }
 }
