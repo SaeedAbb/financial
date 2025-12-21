@@ -633,7 +633,7 @@
 }
 
 // ============================
-// STOCK GROUP CARDS
+// SIMPLIFIED STOCK GROUP CARDS
 // ============================
 
 .stock-groups {
@@ -643,502 +643,696 @@
     .stock-group-card {
       background: var(--surface-card);
       border: 1px solid var(--surface-border);
-      border-radius: 16px;
+      border-radius: 20px;
       overflow: hidden;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
       &:hover {
         border-color: var(--surface-300);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        transform: translateY(-2px);
+        box-shadow: 0 8px 36px rgba(0, 0, 0, 0.12);
+        transform: translateY(-3px);
       }
 
       // ============================
-      // STOCK GROUP HEADER
+      // SIMPLIFIED CARD LAYOUT
       // ============================
 
-      .stock-group-header {
-        padding: 1.5rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
+      .simplified-stock-card {
         position: relative;
 
-        &:hover {
-          background: var(--surface-hover);
-        }
+        .performance-indicator-stripe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 5px;
+          border-radius: 20px 20px 0 0;
 
-        &.expanded {
-          background: var(--surface-hover);
-          border-bottom: 1px solid var(--surface-border);
-        }
-
-        .header-content {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-
-          .performance-indicator-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            border-radius: 16px 16px 0 0;
-            transition: all 0.3s ease;
-
-            &.performance-gain {
-              background: linear-gradient(90deg, rgba(16, 185, 129, 0.3), var(--green-500), rgba(16, 185, 129, 0.3));
-              box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
-            }
-
-            &.performance-loss {
-              background: linear-gradient(90deg, rgba(239, 68, 68, 0.3), var(--red-500), rgba(239, 68, 68, 0.3));
-              box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
-            }
-
-            &.performance-neutral {
-              background: linear-gradient(90deg, rgba(148, 163, 184, 0.3), var(--text-color-secondary), rgba(148, 163, 184, 0.3));
-            }
+          &.performance-gain {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.3), var(--green-500), rgba(16, 185, 129, 0.3));
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
           }
 
-          .main-content-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1.5rem;
-            margin-top: 0.5rem;
+          &.performance-loss {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.3), var(--red-500), rgba(239, 68, 68, 0.3));
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+          }
 
-            .company-section {
+          &.performance-neutral {
+            background: linear-gradient(90deg, rgba(148, 163, 184, 0.3), var(--text-color-secondary), rgba(148, 163, 184, 0.3));
+          }
+        }
+
+        .card-content {
+          padding: 2rem;
+          padding-top: 2.5rem;
+
+          // ============================
+          // HEADER SECTION
+          // ============================
+
+          .stock-header {
+            margin-bottom: 1.5rem;
+
+            .company-info {
               display: flex;
-              align-items: center;
-              gap: 1rem;
-              flex: 1;
+              align-items: flex-start;
+              justify-content: space-between;
 
-              .company-icon {
-                width: 56px;
-                height: 56px;
-                border-radius: 14px;
+              .symbol-and-icon {
                 display: flex;
                 align-items: center;
-                justify-content: center;
-                transition: all 0.3s ease;
-                border: 2px solid transparent;
+                gap: 1rem;
 
-                &.performance-gain {
-                  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
-                  color: var(--green-500);
-                  border-color: rgba(16, 185, 129, 0.3);
+                .company-icon {
+                  width: 60px;
+                  height: 60px;
+                  border-radius: 16px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  transition: all 0.3s ease;
+                  border: 2px solid transparent;
+
+                  &.performance-gain {
+                    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+                    color: var(--green-500);
+                    border-color: rgba(16, 185, 129, 0.3);
+                    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+                  }
+
+                  &.performance-loss {
+                    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+                    color: var(--red-500);
+                    border-color: rgba(239, 68, 68, 0.3);
+                    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+                  }
+
+                  &.performance-neutral {
+                    background: linear-gradient(135deg, var(--surface-200), var(--surface-300));
+                    color: var(--text-color-secondary);
+                    border-color: var(--surface-border);
+                  }
+
+                  .pi {
+                    font-size: 1.75rem;
+                  }
                 }
 
-                &.performance-loss {
-                  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
-                  color: var(--red-500);
-                  border-color: rgba(239, 68, 68, 0.3);
-                }
+                .symbol-info {
+                  .stock-symbol {
+                    font-size: 1.75rem;
+                    font-weight: 800;
+                    color: var(--text-color);
+                    margin: 0 0 0.25rem 0;
+                    letter-spacing: -0.02em;
+                    line-height: 1.2;
+                  }
 
-                &.performance-neutral {
-                  background: linear-gradient(135deg, var(--surface-200), var(--surface-300));
-                  color: var(--text-color-secondary);
-                  border-color: var(--surface-border);
-                }
-
-                .pi {
-                  font-size: 1.5rem;
+                  .company-name {
+                    font-size: 1rem;
+                    color: var(--text-color-secondary);
+                    margin: 0;
+                    font-weight: 500;
+                    line-height: 1.3;
+                  }
                 }
               }
 
-              .company-details {
-                flex: 1;
+              .shares-owned {
+                text-align: right;
+                
+                .shares-count {
+                  display: block;
+                  font-size: 1.5rem;
+                  font-weight: 700;
+                  color: var(--text-color);
+                  font-family: 'Segoe UI', monospace;
+                  line-height: 1.2;
+                }
 
-                .symbol-row {
+                .shares-label {
+                  display: block;
+                  font-size: 0.875rem;
+                  color: var(--text-color-secondary);
+                  font-weight: 500;
+                  text-transform: lowercase;
+                  margin-top: 0.25rem;
+                }
+              }
+            }
+          }
+
+          // ============================
+          // VALUE & PERFORMANCE ROW
+          // ============================
+
+          .value-performance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: var(--surface-hover);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+
+            .current-value-section {
+              .current-value {
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--text-color);
+                font-family: 'Segoe UI', monospace;
+                line-height: 1.2;
+                margin-bottom: 0.25rem;
+              }
+
+              .value-label {
+                font-size: 0.875rem;
+                color: var(--text-color-secondary);
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+              }
+            }
+
+            .performance-section {
+              text-align: right;
+
+              .performance-amount {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 0.5rem;
+                font-size: 1.5rem;
+                font-weight: 700;
+                font-family: 'Segoe UI', monospace;
+                margin-bottom: 0.25rem;
+                line-height: 1.2;
+
+                .performance-icon {
+                  font-size: 1.25rem;
+                }
+
+                &.gain {
+                  color: var(--green-500);
+                  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+                }
+
+                &.loss {
+                  color: var(--red-500);
+                  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+                }
+
+                &.neutral {
+                  color: var(--text-color-secondary);
+                }
+              }
+
+              .performance-percentage {
+                font-size: 1rem;
+                font-weight: 600;
+                font-family: 'Segoe UI', monospace;
+
+                &.gain {
+                  color: var(--green-500);
+                }
+
+                &.loss {
+                  color: var(--red-500);
+                }
+
+                &.neutral {
+                  color: var(--text-color-secondary);
+                }
+              }
+            }
+          }
+
+          // ============================
+          // PRICE INFORMATION ROW
+          // ============================
+
+          .price-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--surface-border);
+
+            .current-price-info, .avg-cost-info {
+              display: flex;
+              align-items: baseline;
+              gap: 0.5rem;
+
+              .current-price, .avg-cost {
+                font-size: 1.125rem;
+                font-weight: 600;
+                color: var(--text-color);
+                font-family: 'Segoe UI', monospace;
+              }
+
+              .price-label, .cost-label {
+                font-size: 0.875rem;
+                color: var(--text-color-secondary);
+                font-weight: 500;
+              }
+            }
+          }
+
+          // ============================
+          // ACTION BUTTONS
+          // ============================
+
+          .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+
+            .buy-button, .sell-button {
+              flex: 1;
+              border-radius: 12px !important;
+              padding: 1rem 1.5rem !important;
+              font-size: 1rem !important;
+              font-weight: 600 !important;
+              transition: all 0.3s ease;
+              min-height: 56px;
+
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+              }
+
+              .p-button-icon {
+                font-size: 1rem !important;
+                margin-right: 0.5rem !important;
+              }
+
+              .p-button-label {
+                font-weight: 600 !important;
+              }
+            }
+
+            .buy-button {
+              background: var(--primary-color) !important;
+              border-color: var(--primary-color) !important;
+              color: white !important;
+
+              &:hover {
+                background: var(--blue-600) !important;
+                border-color: var(--blue-600) !important;
+                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+              }
+            }
+
+            .sell-button {
+              background: var(--green-500) !important;
+              border-color: var(--green-500) !important;
+              color: white !important;
+
+              &:hover {
+                background: var(--green-600) !important;
+                border-color: var(--green-600) !important;
+                box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+              }
+
+              &:disabled {
+                opacity: 0.5 !important;
+                transform: none !important;
+                cursor: not-allowed !important;
+              }
+            }
+          }
+
+          // ============================
+          // TRANSACTION HISTORY TOGGLE
+          // ============================
+
+          .history-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+
+            &:hover {
+              background: var(--surface-hover);
+              padding-left: 1rem;
+              padding-right: 1rem;
+            }
+
+            &:focus {
+              outline: 2px solid var(--primary-color);
+              outline-offset: 2px;
+            }
+
+            .history-info {
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+
+              .pi-history {
+                font-size: 1rem;
+                color: var(--text-color-secondary);
+              }
+
+              .history-text {
+                font-size: 0.95rem;
+                color: var(--text-color-secondary);
+                font-weight: 500;
+              }
+            }
+
+            .toggle-icon {
+              color: var(--text-color-secondary);
+              transition: all 0.3s ease;
+
+              &.expanded {
+                transform: rotate(180deg);
+                color: var(--primary-color);
+              }
+
+              .pi {
+                font-size: 1rem;
+              }
+            }
+          }
+        }
+      }
+
+      // ============================
+      // MOBILE RESPONSIVE STYLES
+      // ============================
+
+      // ============================
+      // TRANSACTION TIMELINE
+      // ============================
+
+      .transaction-timeline {
+        background: var(--surface-card);
+        border-top: 1px solid var(--surface-border);
+
+        .timeline-header {
+          background: var(--surface-hover);
+          padding: 1.5rem;
+          border-bottom: 1px solid var(--surface-border);
+
+          .timeline-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-color);
+
+            .pi-history {
+              font-size: 1rem;
+              color: var(--primary-color);
+            }
+          }
+
+          .timeline-summary {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-color-secondary);
+
+            .total-transactions {
+              font-weight: 600;
+            }
+
+            .separator {
+              opacity: 0.5;
+            }
+
+            .holding-period {
+              font-weight: 500;
+            }
+          }
+        }
+
+        .timeline-content {
+          padding: 2rem;
+
+          .timeline-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            position: relative;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            &.current-position {
+              .timeline-details {
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(102, 126, 234, 0.02));
+                border: 1px solid rgba(102, 126, 234, 0.2);
+                border-radius: 12px;
+                padding: 1.5rem;
+              }
+            }
+
+            .timeline-marker {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              position: relative;
+
+              .timeline-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 3px solid transparent;
+                background: var(--surface-card);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                z-index: 2;
+
+                &.buy {
+                  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+                  border-color: var(--green-500);
+                  color: var(--green-500);
+                }
+
+                &.sell {
+                  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+                  border-color: var(--red-500);
+                  color: var(--red-500);
+                }
+
+                &.current {
+                  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(102, 126, 234, 0.2));
+                  border-color: var(--primary-color);
+                  color: var(--primary-color);
+                }
+
+                .pi {
+                  font-size: 1rem;
+                  font-weight: 600;
+                }
+              }
+
+              .timeline-line {
+                position: absolute;
+                top: 40px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 2px;
+                height: 60px;
+                background: linear-gradient(180deg, var(--surface-border), transparent);
+                z-index: 1;
+              }
+            }
+
+            .timeline-details {
+              flex: 1;
+              min-width: 0;
+
+              .transaction-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 0.75rem;
+
+                .transaction-type-label {
                   display: flex;
                   align-items: center;
                   gap: 0.75rem;
-                  margin-bottom: 0.5rem;
 
-                  .stock-symbol {
-                    font-size: 1.5rem;
-                    font-weight: 800;
-                    color: var(--text-color);
-                    letter-spacing: -0.02em;
-                  }
-
-                  .position-badge {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.25rem;
-                    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
-                    color: var(--green-600);
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 8px;
-                    font-size: 0.7rem;
+                  .type-text {
+                    font-size: 0.875rem;
                     font-weight: 700;
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 6px;
                     text-transform: uppercase;
                     letter-spacing: 0.05em;
-                    border: 1px solid rgba(16, 185, 129, 0.3);
 
-                    .position-icon {
-                      font-size: 0.6rem;
+                    &.buy {
+                      background: rgba(16, 185, 129, 0.1);
+                      color: var(--green-600);
+                      border: 1px solid rgba(16, 185, 129, 0.3);
                     }
+
+                    &.sell {
+                      background: rgba(239, 68, 68, 0.1);
+                      color: var(--red-600);
+                      border: 1px solid rgba(239, 68, 68, 0.3);
+                    }
+                  }
+
+                  .transaction-date {
+                    font-size: 0.875rem;
+                    color: var(--text-color-secondary);
+                    font-weight: 500;
                   }
                 }
 
-                .company-name {
-                  font-size: 1rem;
-                  color: var(--text-color-secondary);
-                  font-weight: 500;
-                  margin-bottom: 0.25rem;
-                  line-height: 1.3;
-                }
+                .transaction-amount {
+                  font-size: 1.125rem;
+                  font-weight: 700;
+                  font-family: 'Segoe UI', monospace;
 
-                .holdings-info {
+                  &.buy {
+                    color: var(--green-500);
+                  }
+
+                  &.sell {
+                    color: var(--red-500);
+                  }
+                }
+              }
+
+              .transaction-info {
+                .quantity-price {
                   display: flex;
                   align-items: center;
                   gap: 0.5rem;
-                  font-size: 0.8rem;
-                  color: var(--text-color-secondary);
+                  margin-bottom: 0.75rem;
 
-                  .holdings-duration {
+                  .quantity {
                     font-weight: 600;
                     color: var(--text-color);
                   }
 
                   .separator {
-                    opacity: 0.5;
+                    color: var(--text-color-secondary);
+                    opacity: 0.7;
                   }
 
-                  .positions-count {
-                    font-weight: 500;
+                  .price {
+                    font-family: 'Segoe UI', monospace;
+                    font-weight: 600;
+                    color: var(--text-color);
                   }
                 }
-              }
-            }
 
-            .holdings-section {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              gap: 0.5rem;
-              text-align: center;
-
-              .quantity-info {
-                .total-shares {
+                .transaction-details-extra {
                   display: flex;
-                  align-items: baseline;
-                  gap: 0.25rem;
+                  flex-direction: column;
+                  gap: 0.5rem;
 
-                  .shares-number {
-                    font-size: 1.25rem;
-                    font-weight: 700;
-                    color: var(--text-color);
+                  .profit-loss {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.9rem;
+                    font-weight: 600;
                     font-family: 'Segoe UI', monospace;
+
+                    &.profit {
+                      color: var(--green-500);
+                    }
+
+                    &.loss {
+                      color: var(--red-500);
+                    }
+
+                    &.neutral {
+                      color: var(--text-color-secondary);
+                    }
+
+                    .pi {
+                      font-size: 0.8rem;
+                    }
                   }
 
-                  .shares-label {
+                  .holding-period {
                     font-size: 0.8rem;
                     color: var(--text-color-secondary);
                     font-weight: 500;
                   }
                 }
-
-                .quantity-breakdown {
-                  .sold-shares {
-                    color: var(--red-400);
-                    font-size: 0.75rem;
-                    font-style: italic;
-                  }
-                }
               }
 
-              .value-info {
-                .market-value {
-                  font-size: 1rem;
-                  font-weight: 600;
-                  color: var(--text-color);
-                  font-family: 'Segoe UI', monospace;
-                  margin-bottom: 0.125rem;
-                }
+              .remaining-position {
+                margin-top: 0.75rem;
+                padding: 0.75rem;
+                background: rgba(59, 130, 246, 0.05);
+                border-left: 3px solid var(--blue-500);
+                border-radius: 6px;
 
-                .avg-price {
-                  font-size: 0.75rem;
-                  color: var(--text-color-secondary);
-                  font-family: 'Segoe UI', monospace;
-                }
-              }
-            }
-
-            .performance-section {
-              display: flex;
-              flex-direction: column;
-              align-items: flex-end;
-              gap: 0.5rem;
-              text-align: right;
-
-              .performance-main {
-                .performance-amount {
+                .remaining-info {
                   display: flex;
                   align-items: center;
                   gap: 0.5rem;
-                  font-size: 1.25rem;
-                  font-weight: 700;
-                  font-family: 'Segoe UI', monospace;
-                  margin-bottom: 0.25rem;
-
-                  .performance-icon {
-                    font-size: 1rem;
-                  }
-
-                  &.gain {
-                    color: var(--green-500);
-                  }
-
-                  &.loss {
-                    color: var(--red-500);
-                  }
-
-                  &.neutral {
-                    color: var(--text-color-secondary);
-                  }
-                }
-
-                .performance-percentage {
-                  font-size: 0.9rem;
-                  font-weight: 600;
-                  font-family: 'Segoe UI', monospace;
-
-                  &.gain {
-                    color: var(--green-500);
-                  }
-
-                  &.loss {
-                    color: var(--red-500);
-                  }
-
-                  &.neutral {
-                    color: var(--text-color-secondary);
-                  }
-                }
-              }
-
-              .current-price-info {
-                .current-price {
-                  font-size: 1rem;
-                  font-weight: 600;
-                  color: var(--text-color);
-                  font-family: 'Segoe UI', monospace;
-                  margin-bottom: 0.125rem;
-                }
-
-                .price-label {
-                  font-size: 0.7rem;
-                  color: var(--text-color-secondary);
-                  text-transform: uppercase;
-                  letter-spacing: 0.05em;
+                  color: var(--blue-600);
+                  font-size: 0.8rem;
                   font-weight: 500;
-                }
-              }
-            }
-          }
 
-          .action-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-top: 1rem;
-            border-top: 1px solid var(--surface-border);
-
-            .quick-actions {
-              display: flex;
-              gap: 0.5rem;
-
-              .action-btn {
-                border-radius: 8px !important;
-                padding: 0.5rem !important;
-                transition: all 0.3s ease;
-
-                &.buy-more-btn {
-                  background: var(--surface-hover) !important;
-                  border-color: var(--surface-border) !important;
-                  color: var(--text-color) !important;
-
-                  &:hover {
-                    background: var(--primary-color) !important;
-                    border-color: var(--primary-color) !important;
-                    color: white !important;
-                    transform: scale(1.05);
+                  .pi {
+                    font-size: 0.75rem;
                   }
                 }
-
-                &.sell-btn {
-                  background: var(--green-500) !important;
-                  border-color: var(--green-500) !important;
-                  color: white !important;
-
-                  &:hover {
-                    background: var(--green-600) !important;
-                    border-color: var(--green-600) !important;
-                    transform: scale(1.05);
-                  }
-
-                  &:disabled {
-                    opacity: 0.5 !important;
-                    transform: none !important;
-                  }
-                }
-
-                .p-button-icon {
-                  font-size: 0.875rem;
-                }
-              }
-            }
-
-            .expand-controls {
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              color: var(--text-color-secondary);
-              transition: all 0.3s ease;
-
-              &:hover {
-                color: var(--text-color);
               }
 
-              .expand-label {
-                font-size: 0.8rem;
-                font-weight: 500;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-              }
-
-              .expand-icon {
-                transition: all 0.3s ease;
-
-                &.expanded {
-                  transform: rotate(180deg);
-                }
-
-                .pi {
-                  font-size: 0.875rem;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // ============================
-      // STOCK GROUP CONTENT
-      // ============================
-
-      .stock-group-content {
-        background: var(--surface-card);
-        border-top: 1px solid var(--surface-border);
-        overflow: hidden;
-
-        .positions-section {
-          .section-header {
-            background: var(--surface-hover);
-            padding: 0.75rem 1.5rem;
-            border-bottom: 1px solid var(--surface-border);
-            margin-bottom: 0;
-
-            span {
-              font-size: 0.875rem;
-              font-weight: 600;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-
-              &.active-positions {
-                color: var(--green-500);
-              }
-
-              &.sold-positions {
-                color: var(--blue-500);
-              }
-            }
-          }
-
-          .position-row {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--surface-border);
-            transition: all 0.2s ease;
-
-            &:hover {
-              background: var(--surface-hover);
-            }
-
-            &:last-child {
-              border-bottom: none;
-            }
-
-            &.sold-position {
-              background: rgba(59, 130, 246, 0.05);
-              border-left: 3px solid var(--blue-500);
-            }
-
-            .position-content {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-
-              .position-info {
-                flex: 1;
-
-                .position-details {
+              .current-position-summary {
+                .current-header {
                   display: flex;
                   align-items: center;
-                  margin-bottom: 0.5rem;
+                  justify-content: space-between;
+                  margin-bottom: 0.75rem;
 
-                  .position-amount {
-                    font-size: 0.975rem;
+                  .current-label {
+                    font-size: 1rem;
                     font-weight: 600;
                     color: var(--text-color);
-                    margin-right: 1rem;
-                    padding: 0.25rem 0.5rem;
-                    background: var(--surface-100);
-                    border-radius: 4px;
-                    border: 1px solid var(--surface-border);
                   }
 
-                  .position-price {
-                    font-size: 0.875rem;
-                    color: var(--text-color-secondary);
+                  .current-value {
+                    font-size: 1.25rem;
+                    font-weight: 700;
                     font-family: 'Segoe UI', monospace;
-                    margin-right: 1rem;
-                  }
-
-                  .position-date {
-                    font-size: 0.8125rem;
-                    color: var(--text-color-secondary);
-                    opacity: 0.8;
+                    color: var(--primary-color);
                   }
                 }
 
-                .position-investment {
-                  font-size: 0.875rem;
-                  color: var(--text-color-secondary);
-                  font-weight: 500;
+                .current-info {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
 
-                  strong {
+                  .current-shares {
+                    font-weight: 600;
                     color: var(--text-color);
                   }
-                }
-              }
 
-              .position-actions {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
+                  .separator {
+                    color: var(--text-color-secondary);
+                    opacity: 0.7;
+                  }
 
-                .position-performance {
-                  text-align: right;
-
-                  .performance-value {
-                    font-size: 0.975rem;
-                    font-weight: 600;
+                  .unrealized-pnl {
                     font-family: 'Segoe UI', monospace;
-                    margin-bottom: 0.25rem;
+                    font-weight: 600;
+                    font-size: 0.9rem;
 
                     &.gain {
                       color: var(--green-500);
@@ -1151,33 +1345,6 @@
                     &.neutral {
                       color: var(--text-color-secondary);
                     }
-                  }
-
-                  .performance-percentage {
-                    font-size: 0.8125rem;
-                    color: var(--text-color-secondary);
-                    font-family: 'Segoe UI', monospace;
-                  }
-                }
-
-                .sell-button {
-                  background: var(--green-500) !important;
-                  border-color: var(--green-500) !important;
-                  color: white !important;
-                  padding: 0.5rem !important;
-                  border-radius: 8px;
-                  transition: all 0.3s ease;
-                  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-
-                  &:hover {
-                    background: #0d9488 !important;
-                    border-color: #0d9488 !important;
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-                  }
-
-                  .p-button-icon {
-                    font-size: 0.875rem;
                   }
                 }
               }
@@ -1568,81 +1735,115 @@
   }
 
   .stock-group-card {
-    .stock-group-header {
-      padding: 1rem !important;
+    .simplified-stock-card {
+      .card-content {
+        padding: 1.5rem !important;
+        padding-top: 2rem !important;
 
-      .header-content {
-        .main-content-row {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 1rem;
+        .stock-header {
+          margin-bottom: 1.25rem;
 
-          .company-section {
-            .company-icon {
-              width: 48px;
-              height: 48px;
-            }
+          .company-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
 
-            .company-details {
-              .symbol-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
+            .symbol-and-icon {
+              width: 100%;
+              justify-content: space-between;
+
+              .company-icon {
+                width: 52px;
+                height: 52px;
+
+                .pi {
+                  font-size: 1.5rem;
+                }
+              }
+
+              .symbol-info {
+                flex: 1;
+                margin-left: 1rem;
 
                 .stock-symbol {
-                  font-size: 1.25rem;
+                  font-size: 1.5rem;
+                }
+
+                .company-name {
+                  font-size: 0.9rem;
                 }
               }
             }
-          }
 
-          .holdings-section {
-            align-items: flex-start;
-            text-align: left;
-            flex-direction: row;
-            justify-content: space-between;
-            border: 1px solid var(--surface-border);
-            padding: 0.75rem;
-            border-radius: 8px;
-            background: var(--surface-hover);
-          }
+            .shares-owned {
+              align-self: flex-end;
+              text-align: right;
 
-          .performance-section {
-            align-items: flex-start;
-            text-align: left;
-            flex-direction: row;
-            justify-content: space-between;
-            border: 1px solid var(--surface-border);
-            padding: 0.75rem;
-            border-radius: 8px;
-            background: var(--surface-hover);
-
-            .performance-main {
-              .performance-amount {
-                font-size: 1.125rem;
+              .shares-count {
+                font-size: 1.25rem;
               }
             }
           }
         }
 
-        .action-row {
+        .value-performance-row {
           flex-direction: column;
-          gap: 0.75rem;
+          align-items: stretch;
+          gap: 1rem;
+          padding: 1.25rem;
 
-          .quick-actions {
-            order: 2;
-            width: 100%;
-            justify-content: center;
-
-            .action-btn {
-              flex: 1;
-              justify-content: center !important;
+          .current-value-section {
+            .current-value {
+              font-size: 1.75rem;
             }
           }
 
-          .expand-controls {
-            order: 1;
-            justify-content: center;
+          .performance-section {
+            text-align: left;
+
+            .performance-amount {
+              justify-content: flex-start;
+              font-size: 1.25rem;
+            }
+          }
+        }
+
+        .price-info-row {
+          flex-direction: column;
+          gap: 0.75rem;
+          padding: 0.75rem 0;
+
+          .current-price-info, .avg-cost-info {
+            justify-content: space-between;
+            width: 100%;
+
+            .current-price, .avg-cost {
+              font-size: 1rem;
+            }
+          }
+        }
+
+        .action-buttons {
+          flex-direction: column;
+          gap: 0.75rem;
+
+          .buy-button, .sell-button {
+            width: 100%;
+            justify-content: center !important;
+            padding: 1rem !important;
+            font-size: 1rem !important;
+          }
+        }
+
+        .history-toggle {
+          padding: 1rem 0.75rem;
+          justify-content: center;
+          text-align: center;
+
+          .history-info {
+            .history-text {
+              font-size: 0.9rem;
+            }
           }
         }
       }

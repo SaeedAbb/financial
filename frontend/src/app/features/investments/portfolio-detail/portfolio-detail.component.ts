@@ -285,207 +285,193 @@ import { StockService } from '../../../core/services/stock.service';
         <div *ngIf="filteredStockGroups.length > 0" class="stock-groups">
           <div *ngFor="let group of filteredStockGroups; trackBy: trackBySymbol" class="stock-group">
             <div class="stock-group-card">
-              <!-- Stock Group Header -->
-              <div class="stock-group-header cursor-pointer" 
-                   tabindex="0"
-                   role="button"
-                   [attr.aria-expanded]="isGroupExpanded(group)"
-                   [attr.aria-label]="'Toggle ' + group.symbol + ' details'"
-                   (click)="toggleGroup(group)"
-                   (keydown.enter)="toggleGroup(group)"
-                   (keydown.space)="toggleGroup(group); $event.preventDefault()"
-                   [class.expanded]="isGroupExpanded(group)">
-                <div class="header-content">
-                  <!-- Performance Indicator Bar -->
-                  <div class="performance-indicator-bar" 
-                       [ngClass]="getPerformanceColorClass(group.totalGainLoss)">
-                  </div>
-                  
-                  <!-- Main Content Row -->
-                  <div class="main-content-row">
-                    <!-- Left Section: Company Info -->
-                    <div class="company-section">
-                      <div class="company-icon" [ngClass]="getPerformanceColorClass(group.totalGainLoss)">
-                        <i class="pi pi-building"></i>
-                      </div>
-                      <div class="company-details">
-                        <div class="symbol-row">
-                          <span class="stock-symbol">{{ group.symbol }}</span>
-                          <div class="position-badge">
-                            <i class="pi pi-arrow-up position-icon"></i>
-                            <span class="position-text">LONG</span>
-                          </div>
-                        </div>
-                        <div class="company-name">{{ group.companyName }}</div>
-                        <div class="holdings-info">
-                          <span class="holdings-duration">{{ getHoldingDuration(group.weightedAveragePurchaseDate) }}</span>
-                          <span class="separator">•</span>
-                          <span class="positions-count">{{ group.positions.length }} position{{ group.positions.length !== 1 ? 's' : '' }}</span>
-                        </div>
-                      </div>
-                    </div>
+              <!-- Simplified Stock Card -->
+              <div class="simplified-stock-card">
+                <!-- Performance Indicator -->
+                <div class="performance-indicator-stripe" 
+                     [ngClass]="getPerformanceColorClass(group.totalGainLoss)">
+                </div>
 
-                    <!-- Center Section: Holdings Info -->
-                    <div class="holdings-section">
-                      <div class="quantity-info">
-                        <div class="total-shares">
-                          <span class="shares-number">{{ group.totalAvailableQuantity }}</span>
-                          <span class="shares-label">shares</span>
+                <!-- Main Card Content -->
+                <div class="card-content">
+                  <!-- Header Section -->
+                  <div class="stock-header">
+                    <div class="company-info">
+                      <div class="symbol-and-icon">
+                        <div class="company-icon" [ngClass]="getPerformanceColorClass(group.totalGainLoss)">
+                          <i class="pi pi-building"></i>
                         </div>
-                        <div class="quantity-breakdown" *ngIf="group.totalSoldQuantity > 0">
-                          <small class="sold-shares">{{ group.totalSoldQuantity }} sold</small>
-                        </div>
-                      </div>
-                      <div class="value-info">
-                        <div class="market-value">{{ formatAmount(group.totalAvailableQuantity * 26.08) }}</div>
-                        <div class="avg-price">@ {{ formatAmount(group.averagePurchasePrice) }} avg</div>
-                      </div>
-                    </div>
-
-                    <!-- Right Section: Performance -->
-                    <div class="performance-section">
-                      <div class="performance-main">
-                        <div class="performance-amount" 
-                             [ngClass]="getGainLossColorClass(group.totalGainLoss)">
-                          <i class="pi performance-icon" 
-                             [ngClass]="getPerformanceIcon(group.totalGainLoss)"></i>
-                          {{ formatAmount(group.totalGainLoss) }}
-                        </div>
-                        <div class="performance-percentage" 
-                             [ngClass]="getGainLossColorClass(group.totalGainLoss)">
-                          {{ formatPercentage(group.totalGainLossPercentage) }}
+                        <div class="symbol-info">
+                          <h3 class="stock-symbol">{{ group.symbol }}</h3>
+                          <p class="company-name">{{ group.companyName }}</p>
                         </div>
                       </div>
-                      <div class="current-price-info">
-                        <div class="current-price">{{ formatAmount(26.08) }}</div>
-                        <div class="price-label">current</div>
+                      <div class="shares-owned">
+                        <span class="shares-count">{{ group.totalAvailableQuantity }}</span>
+                        <span class="shares-label">shares owned</span>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Action Row -->
-                  <div class="action-row">
-                    <!-- Quick Actions -->
-                    <div class="quick-actions">
-                      <p-button 
-                        icon="pi pi-plus" 
-                        size="small" 
-                        severity="secondary"
-                        class="action-btn buy-more-btn"
-                        [pTooltip]="'Buy more ' + group.symbol"
-                        (click)="showBuyStockDialog(); $event.stopPropagation()"
-                        (keydown.enter)="showBuyStockDialog(); $event.stopPropagation()"
-                        (keydown.space)="showBuyStockDialog(); $event.stopPropagation(); $event.preventDefault()"
-                        [disabled]="false">
-                      </p-button>
-                      <p-button 
-                        icon="pi pi-minus" 
-                        size="small" 
-                        severity="success"
-                        class="action-btn sell-btn"
-                        [pTooltip]="'Sell ' + group.symbol + ' (' + group.totalAvailableQuantity + ' available)'"
-                        (click)="showSellStockGroupDialog(group, $event)"
-                        [disabled]="!group.canSell">
-                      </p-button>
+                  <!-- Value and Performance Row -->
+                  <div class="value-performance-row">
+                    <div class="current-value-section">
+                      <div class="current-value">{{ formatAmount(group.totalAvailableQuantity * 26.08) }}</div>
+                      <div class="value-label">current value</div>
                     </div>
                     
-                    <!-- Expand Controls -->
-                    <div class="expand-controls">
-                      <span class="expand-label">
-                        {{ isGroupExpanded(group) ? 'Show less' : 'View positions' }}
-                      </span>
-                      <div class="expand-icon" [class.expanded]="isGroupExpanded(group)">
-                        <i class="pi pi-chevron-down"></i>
+                    <div class="performance-section">
+                      <div class="performance-amount" [ngClass]="getGainLossColorClass(group.totalGainLoss)">
+                        <i class="pi performance-icon" [ngClass]="getPerformanceIcon(group.totalGainLoss)"></i>
+                        {{ formatAmount(group.totalGainLoss) }}
                       </div>
+                      <div class="performance-percentage" [ngClass]="getGainLossColorClass(group.totalGainLoss)">
+                        {{ formatPercentage(group.totalGainLossPercentage) }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Price Information Row -->
+                  <div class="price-info-row">
+                    <div class="current-price-info">
+                      <span class="current-price">{{ formatAmount(26.08) }}</span>
+                      <span class="price-label">per share</span>
+                    </div>
+                    <div class="avg-cost-info">
+                      <span class="avg-cost">{{ formatAmount(group.averagePurchasePrice) }}</span>
+                      <span class="cost-label">avg cost</span>
+                    </div>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="action-buttons">
+                    <p-button 
+                      label="Buy More" 
+                      icon="pi pi-plus" 
+                      severity="secondary"
+                      class="buy-button"
+                      (click)="showBuyStockDialog(); $event.stopPropagation()">
+                    </p-button>
+                    <p-button 
+                      label="Sell Position" 
+                      icon="pi pi-minus" 
+                      severity="success"
+                      class="sell-button"
+                      (click)="showSellStockGroupDialog(group, $event)"
+                      [disabled]="!group.canSell">
+                    </p-button>
+                  </div>
+
+                  <!-- Transaction History Toggle -->
+                  <div class="history-toggle"
+                       tabindex="0"
+                       role="button"
+                       [attr.aria-expanded]="isGroupExpanded(group)"
+                       [attr.aria-label]="'Toggle ' + group.symbol + ' transaction history'"
+                       (click)="toggleGroup(group)"
+                       (keydown.enter)="toggleGroup(group)"
+                       (keydown.space)="toggleGroup(group); $event.preventDefault()">
+                    <div class="history-info">
+                      <i class="pi pi-history"></i>
+                      <span class="history-text">Transaction History ({{ group.positions.length }} trades)</span>
+                    </div>
+                    <div class="toggle-icon" [class.expanded]="isGroupExpanded(group)">
+                      <i class="pi pi-chevron-down"></i>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <!-- Stock Group Positions (Expanded Content) -->
-              <div class="stock-group-content" *ngIf="isGroupExpanded(group)">
-                <!-- Active Positions -->
-                <div *ngIf="group.activePositions.length > 0" class="positions-section">
-                  <div class="section-header">
-                    <span class="active-positions">Active Positions ({{ group.activePositionsCount }})</span>
+              <!-- Transaction History Timeline (Expanded Content) -->
+              <div class="transaction-timeline" *ngIf="isGroupExpanded(group)">
+                <div class="timeline-header">
+                  <h4 class="timeline-title">
+                    <i class="pi pi-history"></i>
+                    Transaction Timeline
+                  </h4>
+                  <div class="timeline-summary">
+                    <span class="total-transactions">{{ getTransactionHistory(group).length }} transactions</span>
+                    <span class="separator">•</span>
+                    <span class="holding-period">held for {{ getHoldingDuration(group.earliestPurchaseDate) }}</span>
                   </div>
-                  <div *ngFor="let position of group.activePositions" class="position-row">
-                    <div class="position-content">
-                      <div class="position-info">
-                        <div class="position-details">
-                          <div class="position-quantity-info">
-                            <span class="position-amount">{{ position.availableQuantity }}</span>
-                            <span *ngIf="position.soldQuantity > 0" class="sold-portion">
-                              ({{ position.soldQuantity }} sold)
-                            </span>
-                            <span class="position-total">of {{ position.quantity }} total</span>
-                          </div>
-                          <span class="position-price">@ {{ formatAmount(position.purchasePrice) }}</span>
-                          <span class="position-date">{{ formatDate(position.purchaseDate) }}</span>
+                </div>
+
+                <div class="timeline-content">
+                  <div *ngFor="let transaction of getTransactionHistory(group); trackBy: trackByTransactionId; let last = last" 
+                       class="timeline-item"
+                       [ngClass]="transaction.type">
+                    
+                    <!-- Transaction Icon and Line -->
+                    <div class="timeline-marker">
+                      <div class="timeline-icon" [ngClass]="transaction.type">
+                        <i class="pi" [ngClass]="getTransactionIcon(transaction.type)"></i>
+                      </div>
+                      <div class="timeline-line" *ngIf="!last"></div>
+                    </div>
+
+                    <!-- Transaction Details -->
+                    <div class="timeline-details">
+                      <div class="transaction-header">
+                        <div class="transaction-type-label">
+                          <span class="type-text" [ngClass]="transaction.type">
+                            {{ transaction.type === 'buy' ? 'BUY' : 'SELL' }}
+                          </span>
+                          <span class="transaction-date">{{ formatDate(transaction.date) }}</span>
                         </div>
-                        <div class="position-investment">
-                          <div class="investment-row">
-                            <strong>Original Investment:</strong> {{ formatAmount(position.investmentValue) }}
+                        <div class="transaction-amount" [ngClass]="transaction.type">
+                          {{ formatAmount(transaction.totalValue) }}
+                        </div>
+                      </div>
+
+                      <div class="transaction-info">
+                        <div class="quantity-price">
+                          <span class="quantity">{{ transaction.quantity }} shares</span>
+                          <span class="separator">@</span>
+                          <span class="price">{{ formatAmount(transaction.price) }}</span>
+                        </div>
+                        
+                        <div class="transaction-details-extra" *ngIf="transaction.type === 'sell'">
+                          <div class="profit-loss" [ngClass]="getProfitLossClass(transaction.profitLoss!)">
+                            <i class="pi" [ngClass]="getProfitLossIcon(transaction.profitLoss!)"></i>
+                            {{ formatAmount(transaction.profitLoss!) }}
+                            ({{ formatPercentage(transaction.profitLossPercentage!) }})
                           </div>
-                          <div *ngIf="position.soldQuantity > 0" class="remaining-investment">
-                            <strong>Remaining Value:</strong> {{ formatAmount(position.availableQuantity * position.purchasePrice) }}
+                          <div class="holding-period">
+                            held {{ getDaysBetween(transaction.originalPurchaseDate!, transaction.date) }} days
                           </div>
                         </div>
                       </div>
-                      <div class="position-actions">
-                        <div class="position-performance">
-                          <div class="performance-value" 
-                               [ngClass]="{
-                                 'gain': position.gainLoss > 0,
-                                 'loss': position.gainLoss < 0,
-                                 'neutral': position.gainLoss === 0
-                               }">
-                            {{ formatAmount(position.gainLoss) }}
-                          </div>
-                          <div class="performance-percentage" *ngIf="position.gainLossPercentage !== 0">
-                            {{ formatPercentage(position.gainLossPercentage) }}
-                          </div>
-                        </div>
+
+                      <!-- Remaining Position Info for Partial Sales -->
+                      <div *ngIf="transaction.type === 'sell' && transaction.remainingShares! > 0" 
+                           class="remaining-position">
+                        <small class="remaining-info">
+                          <i class="pi pi-info-circle"></i>
+                          {{ transaction.remainingShares }} shares remaining from original position
+                        </small>
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                <!-- Sold Positions -->
-                <div *ngIf="group.soldPositions.length > 0" class="positions-section">
-                  <div class="section-header">
-                    <span class="sold-positions">Sold Positions ({{ group.soldPositionsCount }})</span>
-                  </div>
-                  <div *ngFor="let position of group.soldPositions" class="position-row sold-position">
-                    <div class="position-content">
-                      <div class="position-info">
-                        <div class="position-details">
-                          <div class="position-quantity-info">
-                            <span class="position-amount sold-amount">{{ position.soldQuantity }}</span>
-                            <span *ngIf="position.availableQuantity > 0" class="remaining-portion">
-                              ({{ position.availableQuantity }} remaining)
-                            </span>
-                            <span class="position-total">of {{ position.quantity }} total</span>
-                          </div>
-                          <span class="position-price">{{ formatAmount(position.purchasePrice) }} → {{ formatAmount(position.salePrice!) }}</span>
-                        </div>
-                        <div class="position-date">
-                          {{ formatDate(position.purchaseDate) }} → {{ formatDate(position.saleDate!) }}
-                        </div>
+
+                  <!-- Current Position Summary -->
+                  <div class="timeline-item current-position">
+                    <div class="timeline-marker">
+                      <div class="timeline-icon current">
+                        <i class="pi pi-circle-fill"></i>
                       </div>
-                      <div class="position-actions">
-                        <div class="position-performance">
-                          <div class="performance-value" 
-                               [ngClass]="{
-                                 'gain': position.gainLoss > 0,
-                                 'loss': position.gainLoss < 0,
-                                 'neutral': position.gainLoss === 0
-                               }">
-                            {{ formatAmount(position.gainLoss) }}
-                          </div>
-                          <div class="performance-percentage">
-                            {{ formatPercentage(position.gainLossPercentage) }}
-                          </div>
+                    </div>
+                    <div class="timeline-details">
+                      <div class="current-position-summary">
+                        <div class="current-header">
+                          <span class="current-label">Current Position</span>
+                          <span class="current-value">{{ formatAmount(group.totalAvailableQuantity * 26.08) }}</span>
+                        </div>
+                        <div class="current-info">
+                          <span class="current-shares">{{ group.totalAvailableQuantity }} shares</span>
+                          <span class="separator">•</span>
+                          <span class="unrealized-pnl" [ngClass]="getGainLossColorClass(group.totalGainLoss)">
+                            {{ formatAmount(group.totalGainLoss) }} unrealized
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1390,4 +1376,85 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
 
     this.filteredStockGroups = filtered;
   }
+
+  // Transaction Timeline Helper Methods
+
+  getTransactionHistory(group: StockGroup): TransactionHistoryItem[] {
+    const transactions: TransactionHistoryItem[] = [];
+
+    // Add all purchase transactions
+    group.positions.forEach(stock => {
+      transactions.push({
+        id: `${stock.id}-buy`,
+        type: 'buy',
+        date: stock.purchaseDate,
+        quantity: stock.quantity,
+        price: stock.purchasePrice,
+        totalValue: stock.investmentValue,
+        stockId: stock.id
+      });
+
+      // Add sale transaction if stock was sold (partially or completely)
+      if (stock.soldQuantity > 0 && stock.saleDate && stock.salePrice) {
+        transactions.push({
+          id: `${stock.id}-sell`,
+          type: 'sell',
+          date: stock.saleDate,
+          quantity: stock.soldQuantity,
+          price: stock.salePrice,
+          totalValue: stock.soldQuantity * stock.salePrice,
+          profitLoss: stock.gainLoss,
+          profitLossPercentage: stock.gainLossPercentage,
+          originalPurchaseDate: stock.purchaseDate,
+          remainingShares: stock.availableQuantity,
+          stockId: stock.id
+        });
+      }
+    });
+
+    // Sort by date (newest first)
+    return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  getTransactionIcon(type: 'buy' | 'sell'): string {
+    return type === 'buy' ? 'pi-plus-circle' : 'pi-minus-circle';
+  }
+
+  getProfitLossClass(profitLoss: number): string {
+    if (profitLoss > 0) return 'profit';
+    if (profitLoss < 0) return 'loss';
+    return 'neutral';
+  }
+
+  getProfitLossIcon(profitLoss: number): string {
+    if (profitLoss > 0) return 'pi-trending-up';
+    if (profitLoss < 0) return 'pi-trending-down';
+    return 'pi-minus';
+  }
+
+  getDaysBetween(startDate: string, endDate: string): number {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  trackByTransactionId(_index: number, transaction: TransactionHistoryItem): string {
+    return transaction.id;
+  }
+}
+
+// Interface for transaction history timeline
+interface TransactionHistoryItem {
+  id: string;
+  type: 'buy' | 'sell';
+  date: string;
+  quantity: number;
+  price: number;
+  totalValue: number;
+  profitLoss?: number;
+  profitLossPercentage?: number;
+  originalPurchaseDate?: string;
+  remainingShares?: number;
+  stockId: number;
 }
