@@ -38,8 +38,8 @@ export const routes: Routes = [
         loadComponent: () => import('./features/savings/savings.component').then(m => m.SavingsComponent)
       },
       {
-        path: 'investment',
-        loadComponent: () => import('./features/investment/investment.component').then(m => m.InvestmentComponent)
+        path: 'investments',
+        loadChildren: () => import('./features/investments/investments.routes').then(r => r.investmentRoutes)
       },
       {
         path: 'income',

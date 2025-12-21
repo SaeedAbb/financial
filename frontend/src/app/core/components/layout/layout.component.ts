@@ -49,9 +49,9 @@ export class LayoutComponent implements OnInit {
       command: () => this.onMenuItemClick()
     },
     {
-      label: 'Investment',
+      label: 'Investments',
       icon: 'pi pi-chart-line',
-      routerLink: '/investment',
+      routerLink: '/investments',
       command: () => this.onMenuItemClick()
     },
     {
