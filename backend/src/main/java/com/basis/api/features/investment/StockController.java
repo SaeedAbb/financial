@@ -62,10 +62,11 @@ public class StockController {
     }
 
     @PostMapping("/sell")
-    @Operation(summary = "Sell a stock", description = "Sells a stock from the user's portfolio")
+    @Operation(summary = "Sell a stock (partial or full)", 
+               description = "Sells a specified quantity of stock from the user's portfolio. If quantity is null or exceeds available quantity, all available shares are sold.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Stock sold successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data or stock already sold"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data, insufficient quantity, or stock already fully sold"),
             @ApiResponse(responseCode = "404", description = "Stock not found"),
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })

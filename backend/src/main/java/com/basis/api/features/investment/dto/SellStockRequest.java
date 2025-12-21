@@ -12,6 +12,10 @@ public class SellStockRequest {
     @NotNull(message = "Stock UUID is required")
     private UUID stockUuid;
 
+    @DecimalMin(value = "0.000001", message = "Quantity must be greater than 0")
+    @Digits(integer = 9, fraction = 6, message = "Quantity must have at most 9 digits and 6 decimal places")
+    private BigDecimal quantity;
+
     @NotNull(message = "Sale price is required")
     @DecimalMin(value = "0.01", message = "Sale price must be greater than 0")
     @Digits(integer = 13, fraction = 2, message = "Sale price must have at most 13 digits and 2 decimal places")
@@ -26,8 +30,17 @@ public class SellStockRequest {
     public SellStockRequest() {}
 
     // Constructor
+    public SellStockRequest(UUID stockUuid, BigDecimal quantity, BigDecimal salePrice, LocalDate saleDate) {
+        this.stockUuid = stockUuid;
+        this.quantity = quantity;
+        this.salePrice = salePrice;
+        this.saleDate = saleDate;
+    }
+
+    // Constructor without quantity (for backward compatibility - sell all)
     public SellStockRequest(UUID stockUuid, BigDecimal salePrice, LocalDate saleDate) {
         this.stockUuid = stockUuid;
+        this.quantity = null; // null means sell all available quantity
         this.salePrice = salePrice;
         this.saleDate = saleDate;
     }
@@ -39,6 +52,14 @@ public class SellStockRequest {
 
     public void setStockUuid(UUID stockUuid) {
         this.stockUuid = stockUuid;
+    }
+
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(BigDecimal quantity) {
+        this.quantity = quantity;
     }
 
     public BigDecimal getSalePrice() {
@@ -61,6 +82,7 @@ public class SellStockRequest {
     public String toString() {
         return "SellStockRequest{" +
                 "stockUuid=" + stockUuid +
+                ", quantity=" + quantity +
                 ", salePrice=" + salePrice +
                 ", saleDate=" + saleDate +
                 '}';

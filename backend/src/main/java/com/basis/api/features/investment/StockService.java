@@ -59,10 +59,11 @@ public class StockService {
     }
 
     /**
-     * Sell a stock
+     * Sell a stock (partial or full)
      */
     public StockDTO sellStock(String userId, SellStockRequest request) {
-        logger.info("Selling stock with UUID: {} for user: {}", request.getStockUuid(), userId);
+        logger.info("Selling stock with UUID: {} (quantity: {}) for user: {}", 
+                   request.getStockUuid(), request.getQuantity(), userId);
         
         // Find the stock and verify ownership through portfolio
         Stock stock = stockRepository.findByUuid(request.getStockUuid())
@@ -73,11 +74,19 @@ public class StockService {
             throw new ResourceNotFoundException("Stock not found with UUID: " + request.getStockUuid());
         }
         
-        // Sell the stock
-        stock.sellStock(request.getSalePrice(), request.getSaleDate());
+        // Sell the stock (partial or full)
+        if (request.getQuantity() == null || request.getQuantity().compareTo(stock.getAvailableQuantity()) >= 0) {
+            // Sell all available quantity
+            stock.sellStock(request.getSalePrice(), request.getSaleDate());
+        } else {
+            // Sell partial quantity
+            stock.sellPartialStock(request.getQuantity(), request.getSalePrice(), request.getSaleDate());
+        }
         
         stock = stockRepository.save(stock);
-        logger.info("Sold stock {} with UUID: {} for user: {}", stock.getSymbol(), stock.getUuid(), userId);
+        logger.info("Sold {} shares of stock {} with UUID: {} for user: {}", 
+                   request.getQuantity() != null ? request.getQuantity() : stock.getSoldQuantity(), 
+                   stock.getSymbol(), stock.getUuid(), userId);
         
         return convertToDTO(stock);
     }
@@ -268,6 +277,8 @@ public class StockService {
                 stock.getSymbol(),
                 stock.getCompanyName(),
                 stock.getQuantity(),
+                stock.getAvailableQuantity(),
+                stock.getSoldQuantity(),
                 stock.getPurchasePrice(),
                 stock.getPurchaseDate(),
                 stock.getStatus(),
@@ -280,9 +291,10 @@ public class StockService {
         // Calculate derived values
         dto.setInvestmentValue(stock.calculateInvestmentValue());
         
-        if (stock.getStatus() == StockStatus.SOLD) {
-            dto.setGainLoss(stock.calculateGainLoss());
-            dto.setGainLossPercentage(stock.calculateGainLossPercentage());
+        // Calculate gain/loss from all sales (partial and full)
+        if (stock.getSoldQuantity().compareTo(BigDecimal.ZERO) > 0) {
+            dto.setGainLoss(stock.calculateTotalGainLoss());
+            dto.setGainLossPercentage(stock.calculateTotalGainLossPercentage());
         } else {
             dto.setGainLoss(BigDecimal.ZERO);
             dto.setGainLossPercentage(BigDecimal.ZERO);

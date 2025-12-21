@@ -133,10 +133,9 @@ public class PortfolioController {
     }
 
     @DeleteMapping("/{uuid}")
-    @Operation(summary = "Delete portfolio", description = "Deletes a portfolio (only if it contains no stocks)")
+    @Operation(summary = "Delete portfolio", description = "Deletes a portfolio and all associated stocks and transactions")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Portfolio deleted successfully"),
-            @ApiResponse(responseCode = "400", description = "Portfolio contains stocks and cannot be deleted"),
             @ApiResponse(responseCode = "404", description = "Portfolio not found"),
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })
@@ -197,6 +196,7 @@ public class PortfolioController {
         
         return ResponseEntity.ok(summary);
     }
+
 
     /**
      * Extract user ID from JWT token

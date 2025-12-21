@@ -120,21 +120,22 @@ public class PortfolioService {
     }
 
     /**
-     * Delete a portfolio
+     * Delete a portfolio and all associated stocks and transactions
+     * Note: Database CASCADE constraints handle the deletion of stocks and stock_transactions automatically
      */
     public void deletePortfolio(String userId, UUID uuid) {
         logger.info("Deleting portfolio with UUID: {} for user: {}", uuid, userId);
         
+        // Find and verify ownership
         Portfolio portfolio = portfolioRepository.findByUuidAndUserId(uuid, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with UUID: " + uuid));
         
-        // Check if portfolio has any stocks
-        if (!portfolio.getStocks().isEmpty()) {
-            throw new IllegalStateException("Cannot delete portfolio that contains stocks. Please sell or transfer all stocks first.");
-        }
+        logger.info("Found portfolio '{}' with {} stocks for deletion", portfolio.getName(), portfolio.getStocks().size());
         
+        // Delete the portfolio (CASCADE constraints will handle stocks and transactions)
         portfolioRepository.deleteByUuidAndUserId(uuid, userId);
-        logger.info("Deleted portfolio with UUID: {} for user: {}", uuid, userId);
+        
+        logger.info("Successfully deleted portfolio '{}' and all associated data for user: {}", portfolio.getName(), userId);
     }
 
     /**

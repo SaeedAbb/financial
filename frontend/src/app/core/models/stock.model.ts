@@ -6,6 +6,8 @@ export interface Stock {
   symbol: string;
   companyName: string;
   quantity: number;
+  availableQuantity: number;
+  soldQuantity: number;
   purchasePrice: number;
   purchaseDate: string; // ISO date string (yyyy-MM-dd)
   status: StockStatus;
@@ -30,8 +32,18 @@ export interface BuyStockRequest {
 
 export interface SellStockRequest {
   stockUuid: string;
+  quantity?: number; // Optional - if not provided, sell all available quantity
   salePrice: number;
   saleDate: string; // ISO date string (yyyy-MM-dd)
+}
+
+export interface SellStockGroupRequest {
+  symbol: string;
+  portfolioUuid: string;
+  quantity: number; // Quantity to sell from the group
+  salePrice: number;
+  saleDate: string; // ISO date string (yyyy-MM-dd)
+  sellStrategy?: 'FIFO' | 'LIFO' | 'AVERAGE'; // Default: FIFO
 }
 
 export interface StockSummary {
@@ -103,4 +115,26 @@ export function getStockStatusIcon(status: StockStatus): string {
 export function getStockStatusSeverity(status: StockStatus): 'success' | 'info' | 'warn' | 'danger' {
   const option = STOCK_STATUS_OPTIONS.find(opt => opt.value === status);
   return option?.severity || 'info';
+}
+
+export interface StockGroup {
+  symbol: string;
+  companyName: string;
+  positions: Stock[];
+  totalQuantity: number;
+  totalAvailableQuantity: number;
+  totalSoldQuantity: number;
+  totalInvestment: number;
+  totalCurrentValue: number;
+  totalGainLoss: number;
+  totalGainLossPercentage: number;
+  activePositions: Stock[];
+  soldPositions: Stock[];
+  activePositionsCount: number;
+  soldPositionsCount: number;
+  earliestPurchaseDate: string; // ISO date string (yyyy-MM-dd)
+  latestPurchaseDate: string; // ISO date string (yyyy-MM-dd)
+  weightedAveragePurchaseDate: string; // ISO date string (yyyy-MM-dd)
+  averagePurchasePrice: number;
+  canSell: boolean;
 }

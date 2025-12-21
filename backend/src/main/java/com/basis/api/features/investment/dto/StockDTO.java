@@ -17,6 +17,8 @@ public class StockDTO {
     private String symbol;
     private String companyName;
     private BigDecimal quantity;
+    private BigDecimal availableQuantity;
+    private BigDecimal soldQuantity;
     private BigDecimal purchasePrice;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -43,6 +45,30 @@ public class StockDTO {
     public StockDTO() {}
 
     // Constructor for basic stock info
+    public StockDTO(Long id, UUID uuid, Long portfolioId, String portfolioName, String symbol, 
+                   String companyName, BigDecimal quantity, BigDecimal availableQuantity, 
+                   BigDecimal soldQuantity, BigDecimal purchasePrice, LocalDate purchaseDate, 
+                   StockStatus status, BigDecimal salePrice, LocalDate saleDate, 
+                   ZonedDateTime createdAt, ZonedDateTime updatedAt) {
+        this.id = id;
+        this.uuid = uuid;
+        this.portfolioId = portfolioId;
+        this.portfolioName = portfolioName;
+        this.symbol = symbol;
+        this.companyName = companyName;
+        this.quantity = quantity;
+        this.availableQuantity = availableQuantity;
+        this.soldQuantity = soldQuantity;
+        this.purchasePrice = purchasePrice;
+        this.purchaseDate = purchaseDate;
+        this.status = status;
+        this.salePrice = salePrice;
+        this.saleDate = saleDate;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    // Backward compatibility constructor
     public StockDTO(Long id, UUID uuid, Long portfolioId, String portfolioName, String symbol, 
                    String companyName, BigDecimal quantity, BigDecimal purchasePrice, 
                    LocalDate purchaseDate, StockStatus status, BigDecimal salePrice, 
@@ -118,6 +144,22 @@ public class StockDTO {
 
     public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
+    }
+
+    public BigDecimal getAvailableQuantity() {
+        return availableQuantity;
+    }
+
+    public void setAvailableQuantity(BigDecimal availableQuantity) {
+        this.availableQuantity = availableQuantity;
+    }
+
+    public BigDecimal getSoldQuantity() {
+        return soldQuantity;
+    }
+
+    public void setSoldQuantity(BigDecimal soldQuantity) {
+        this.soldQuantity = soldQuantity;
     }
 
     public BigDecimal getPurchasePrice() {

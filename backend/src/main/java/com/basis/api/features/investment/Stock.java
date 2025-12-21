@@ -8,6 +8,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -75,6 +77,15 @@ public class Stock {
     @Version
     private Long version;
 
+    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<StockTransaction> transactions = new ArrayList<>();
+
+    @Column(name = "available_quantity", precision = 15, scale = 6)
+    private BigDecimal availableQuantity;
+
+    @Column(name = "sold_quantity", precision = 15, scale = 6, nullable = false)
+    private BigDecimal soldQuantity = BigDecimal.ZERO;
+
     // Default constructor
     public Stock() {}
 
@@ -88,6 +99,12 @@ public class Stock {
         this.purchasePrice = purchasePrice;
         this.purchaseDate = purchaseDate;
         this.status = StockStatus.ACTIVE;
+        this.availableQuantity = quantity;
+        this.soldQuantity = BigDecimal.ZERO;
+        
+        // Create initial buy transaction
+        StockTransaction buyTransaction = new StockTransaction(this, quantity, purchasePrice, purchaseDate);
+        this.transactions.add(buyTransaction);
     }
 
     // Business methods
@@ -99,7 +116,7 @@ public class Stock {
         if (status == StockStatus.SOLD) {
             return BigDecimal.ZERO;
         }
-        return quantity.multiply(currentMarketPrice);
+        return availableQuantity.multiply(currentMarketPrice);
     }
 
     public BigDecimal calculateGainLoss() {
@@ -125,15 +142,65 @@ public class Stock {
     }
 
     public void sellStock(BigDecimal salePrice, LocalDate saleDate) {
+        sellPartialStock(this.availableQuantity, salePrice, saleDate);
+    }
+
+    public void sellPartialStock(BigDecimal quantityToSell, BigDecimal salePrice, LocalDate saleDate) {
         if (this.status == StockStatus.SOLD) {
-            throw new IllegalStateException("Stock is already sold");
+            throw new IllegalStateException("Stock position is already fully sold");
+        }
+        if (quantityToSell.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Quantity to sell must be greater than 0");
+        }
+        if (quantityToSell.compareTo(this.availableQuantity) > 0) {
+            throw new IllegalArgumentException("Cannot sell more than available quantity: " + this.availableQuantity);
         }
         if (saleDate.isBefore(this.purchaseDate)) {
             throw new IllegalArgumentException("Sale date cannot be before purchase date");
         }
-        this.salePrice = salePrice;
-        this.saleDate = saleDate;
-        this.status = StockStatus.SOLD;
+
+        // Create sell transaction
+        StockTransaction sellTransaction = StockTransaction.createSellTransaction(this, quantityToSell, salePrice, saleDate);
+        this.transactions.add(sellTransaction);
+
+        // Update quantities
+        this.availableQuantity = this.availableQuantity.subtract(quantityToSell);
+        this.soldQuantity = this.soldQuantity.add(quantityToSell);
+
+        // Update status if fully sold
+        if (this.availableQuantity.compareTo(BigDecimal.ZERO) == 0) {
+            this.status = StockStatus.SOLD;
+            this.salePrice = salePrice; // Keep for backward compatibility
+            this.saleDate = saleDate;   // Keep for backward compatibility
+        }
+    }
+
+    public boolean isFullySold() {
+        return this.status == StockStatus.SOLD;
+    }
+
+    public boolean isPartiallySold() {
+        return this.soldQuantity.compareTo(BigDecimal.ZERO) > 0 && this.status == StockStatus.ACTIVE;
+    }
+
+    public BigDecimal calculateTotalGainLoss() {
+        return transactions.stream()
+                .filter(t -> t.getType() == TransactionType.SELL)
+                .map(t -> t.calculateGainLoss(this.purchasePrice))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal calculateTotalGainLossPercentage() {
+        if (this.soldQuantity.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal totalGainLoss = calculateTotalGainLoss();
+        BigDecimal soldInvestmentValue = this.soldQuantity.multiply(this.purchasePrice);
+        if (soldInvestmentValue.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        return totalGainLoss.divide(soldInvestmentValue, 4, java.math.RoundingMode.HALF_UP)
+                .multiply(new BigDecimal("100"));
     }
 
     // Getters and setters
@@ -247,6 +314,30 @@ public class Stock {
 
     public void setVersion(Long version) {
         this.version = version;
+    }
+
+    public List<StockTransaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<StockTransaction> transactions) {
+        this.transactions = transactions;
+    }
+
+    public BigDecimal getAvailableQuantity() {
+        return availableQuantity;
+    }
+
+    public void setAvailableQuantity(BigDecimal availableQuantity) {
+        this.availableQuantity = availableQuantity;
+    }
+
+    public BigDecimal getSoldQuantity() {
+        return soldQuantity;
+    }
+
+    public void setSoldQuantity(BigDecimal soldQuantity) {
+        this.soldQuantity = soldQuantity;
     }
 
     @Override

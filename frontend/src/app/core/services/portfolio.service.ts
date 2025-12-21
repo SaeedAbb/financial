@@ -67,7 +67,7 @@ export class PortfolioService {
   }
 
   /**
-   * Delete a portfolio
+   * Delete a portfolio and all associated stocks and transactions
    */
   deletePortfolio(uuid: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${uuid}`).pipe(

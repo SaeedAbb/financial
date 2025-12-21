@@ -3,9 +3,11 @@ package com.basis.api.features.investment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +59,10 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     boolean existsByUserIdAndNameIgnoreCaseAndUuidNot(@Param("userId") String userId, @Param("name") String name, @Param("excludeUuid") UUID excludeUuid);
 
     /**
-     * Delete a portfolio by UUID and user ID (for security)
+     * Delete portfolio by UUID and user ID (ensures ownership)
      */
-    void deleteByUuidAndUserId(UUID uuid, String userId);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Portfolio p WHERE p.uuid = :uuid AND p.userId = :userId")
+    void deleteByUuidAndUserId(@Param("uuid") UUID uuid, @Param("userId") String userId);
 }

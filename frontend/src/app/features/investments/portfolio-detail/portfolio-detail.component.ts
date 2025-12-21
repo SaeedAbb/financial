@@ -18,7 +18,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
 import { AccordionModule } from 'primeng/accordion';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, forkJoin, of, concat, EMPTY } from 'rxjs';
+import { switchMap, map, catchError, finalize } from 'rxjs/operators';
 import { Portfolio } from '../../../core/models/portfolio.model';
 import { Stock, BuyStockRequest, SellStockRequest, StockStatus, StockGroup, getStockStatusLabel, getStockStatusSeverity } from '../../../core/models/stock.model';
 import { PortfolioService } from '../../../core/services/portfolio.service';
@@ -173,9 +174,17 @@ import { StockService } from '../../../core/services/stock.service';
                     <div class="stock-header-row">
                       <span class="stock-symbol">{{ group.symbol }}</span>
                       <span class="long-tag">LONG</span>
-                      <span class="stock-quantity">{{ group.totalQuantity }}</span>
+                      <span class="stock-quantity">
+                        {{ group.totalAvailableQuantity }}
+                        <small *ngIf="group.totalSoldQuantity > 0" class="sold-info">
+                          ({{ group.totalSoldQuantity }} sold)
+                        </small>
+                      </span>
                     </div>
                     <div class="company-name">{{ group.companyName }}</div>
+                    <div class="holdings-date">
+                      <small>Held since {{ formatDate(group.weightedAveragePurchaseDate) }}</small>
+                    </div>
                   </div>
                   
                   <!-- Current Price -->
@@ -196,6 +205,18 @@ import { StockService } from '../../../core/services/stock.service';
                     </div>
                     <div class="performance-label">Performance</div>
                   </div>
+
+                  <!-- Sell Button -->
+                  <div class="header-actions" *ngIf="group.canSell">
+                    <p-button 
+                      icon="pi pi-dollar" 
+                      size="small" 
+                      class="sell-button header-sell-button"
+                      [pTooltip]="'Sell ' + group.symbol + ' (' + group.totalAvailableQuantity + ' available)'"
+                      (click)="showSellStockGroupDialog(group, $event)"
+                      [disabled]="!group.canSell">
+                    </p-button>
+                  </div>
                   
                   <!-- Expand Icon -->
                   <div class="expand-icon" [class.expanded]="isGroupExpanded(group)">
@@ -215,12 +236,23 @@ import { StockService } from '../../../core/services/stock.service';
                     <div class="position-content">
                       <div class="position-info">
                         <div class="position-details">
-                          <span class="position-amount">{{ position.quantity }}</span>
+                          <div class="position-quantity-info">
+                            <span class="position-amount">{{ position.availableQuantity }}</span>
+                            <span *ngIf="position.soldQuantity > 0" class="sold-portion">
+                              ({{ position.soldQuantity }} sold)
+                            </span>
+                            <span class="position-total">of {{ position.quantity }} total</span>
+                          </div>
                           <span class="position-price">@ {{ formatAmount(position.purchasePrice) }}</span>
                           <span class="position-date">{{ formatDate(position.purchaseDate) }}</span>
                         </div>
                         <div class="position-investment">
-                          <strong>Investment:</strong> {{ formatAmount(position.investmentValue) }}
+                          <div class="investment-row">
+                            <strong>Original Investment:</strong> {{ formatAmount(position.investmentValue) }}
+                          </div>
+                          <div *ngIf="position.soldQuantity > 0" class="remaining-investment">
+                            <strong>Remaining Value:</strong> {{ formatAmount(position.availableQuantity * position.purchasePrice) }}
+                          </div>
                         </div>
                       </div>
                       <div class="position-actions">
@@ -237,13 +269,6 @@ import { StockService } from '../../../core/services/stock.service';
                             {{ formatPercentage(position.gainLossPercentage) }}
                           </div>
                         </div>
-                        <p-button 
-                          icon="pi pi-dollar" 
-                          size="small" 
-                          class="sell-button"
-                          pTooltip="Sell Position"
-                          (click)="showSellStockDialog(position)">
-                        </p-button>
                       </div>
                     </div>
                   </div>
@@ -258,7 +283,13 @@ import { StockService } from '../../../core/services/stock.service';
                     <div class="position-content">
                       <div class="position-info">
                         <div class="position-details">
-                          <span class="position-amount">{{ position.quantity }}</span>
+                          <div class="position-quantity-info">
+                            <span class="position-amount sold-amount">{{ position.soldQuantity }}</span>
+                            <span *ngIf="position.availableQuantity > 0" class="remaining-portion">
+                              ({{ position.availableQuantity }} remaining)
+                            </span>
+                            <span class="position-total">of {{ position.quantity }} total</span>
+                          </div>
                           <span class="position-price">{{ formatAmount(position.purchasePrice) }} → {{ formatAmount(position.salePrice!) }}</span>
                         </div>
                         <div class="position-date">
@@ -360,6 +391,8 @@ import { StockService } from '../../../core/services/stock.service';
                   formControlName="purchaseDate"
                   [maxDate]="today"
                   dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  [appendTo]="'body'"
                   styleClass="w-full">
                 </p-datePicker>
               </div>
@@ -391,16 +424,74 @@ import { StockService } from '../../../core/services/stock.service';
         [closable]="false"
         [style]="{width: '400px'}">
         
-        <div *ngIf="selectedStock" class="mb-4">
+        <!-- Individual Stock Sale Info -->
+        <div *ngIf="selectedStock && !selectedStockGroup" class="mb-4">
           <h4>{{ selectedStock.symbol }} - {{ selectedStock.companyName }}</h4>
-          <p>Quantity: {{ selectedStock.quantity }}</p>
+          <div class="stock-quantity-info mb-3">
+            <p><strong>Total Quantity:</strong> {{ selectedStock.quantity }}</p>
+            <p><strong>Available to Sell:</strong> {{ selectedStock.availableQuantity }}</p>
+            <p *ngIf="selectedStock.soldQuantity > 0"><strong>Already Sold:</strong> {{ selectedStock.soldQuantity }}</p>
+          </div>
           <p>Purchase Price: {{ formatAmount(selectedStock.purchasePrice) }}</p>
           <p>Investment Value: {{ formatAmount(selectedStock.investmentValue) }}</p>
         </div>
 
+        <!-- Stock Group Sale Info -->
+        <div *ngIf="selectedStockGroup && !selectedStock" class="mb-4">
+          <h4>{{ selectedStockGroup.symbol }} - {{ selectedStockGroup.companyName }}</h4>
+          <div class="stock-quantity-info mb-3">
+            <p><strong>Total Positions:</strong> {{ selectedStockGroup.positions.length }}</p>
+            <p><strong>Total Quantity:</strong> {{ selectedStockGroup.totalQuantity }}</p>
+            <p><strong>Available to Sell:</strong> {{ selectedStockGroup.totalAvailableQuantity }}</p>
+            <p *ngIf="selectedStockGroup.totalSoldQuantity > 0"><strong>Already Sold:</strong> {{ selectedStockGroup.totalSoldQuantity }}</p>
+          </div>
+          <p>Average Purchase Price: {{ formatAmount(selectedStockGroup.averagePurchasePrice) }}</p>
+          <p>Total Investment: {{ formatAmount(selectedStockGroup.totalInvestment) }}</p>
+          <p>Holdings Period: {{ formatDate(selectedStockGroup.weightedAveragePurchaseDate) }} - Today</p>
+        </div>
+
         <form [formGroup]="sellStockForm" (ngSubmit)="onSellSubmit()">
           <div class="field">
-            <label for="salePrice">Sale Price *</label>
+            <label for="quantity">Quantity to Sell *</label>
+            <div class="quantity-input-container">
+              <p-inputNumber
+                id="quantity"
+                formControlName="quantity"
+                [min]="0.000001"
+                [max]="selectedStock?.availableQuantity || selectedStockGroup?.totalAvailableQuantity || 0"
+                [minFractionDigits]="0"
+                [maxFractionDigits]="6"
+                [step]="0.1"
+                styleClass="w-full">
+              </p-inputNumber>
+              <div class="quantity-actions mt-2">
+                <p-button 
+                  label="Sell All" 
+                  size="small" 
+                  severity="secondary" 
+                  type="button"
+                  (click)="setSellAllQuantity()">
+                </p-button>
+                <p-button 
+                  label="Half" 
+                  size="small" 
+                  severity="secondary" 
+                  type="button"
+                  class="ml-2"
+                  (click)="setSellHalfQuantity()">
+                </p-button>
+              </div>
+            </div>
+            <small class="form-text text-muted" *ngIf="sellStockForm.get('quantity')?.value">
+              Selling {{ sellStockForm.get('quantity')?.value }} shares
+              <span *ngIf="sellStockForm.get('salePrice')?.value">
+                for a total of {{ formatAmount(sellStockForm.get('quantity')?.value * sellStockForm.get('salePrice')?.value) }}
+              </span>
+            </small>
+          </div>
+
+          <div class="field">
+            <label for="salePrice">Sale Price per Share *</label>
             <p-inputNumber
               id="salePrice"
               formControlName="salePrice"
@@ -420,6 +511,8 @@ import { StockService } from '../../../core/services/stock.service';
               [maxDate]="today"
               [minDate]="getMinDateForSale()"
               dateFormat="yy-mm-dd"
+              [showIcon]="true"
+              [appendTo]="'body'"
               styleClass="w-full">
             </p-datePicker>
           </div>
@@ -466,6 +559,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   soldStocks: Stock[] = [];
   stockGroups: StockGroup[] = [];
   selectedStock: Stock | null = null;
+  selectedStockGroup: StockGroup | null = null;
   expandedGroups: Set<string> = new Set();
   
   loading = false;
@@ -485,6 +579,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   });
 
   sellStockForm: FormGroup = this.fb.group({
+    quantity: [null, [Validators.required, Validators.min(0.000001)]],
     salePrice: [null, [Validators.required, Validators.min(0.01)]],
     saleDate: [new Date(), [Validators.required]]
   });
@@ -568,7 +663,20 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
 
   showSellStockDialog(stock: Stock): void {
     this.selectedStock = stock;
+    this.selectedStockGroup = null;
     this.sellStockForm.reset({
+      quantity: stock.availableQuantity,
+      saleDate: new Date()
+    });
+    this.showSellDialog = true;
+  }
+
+  showSellStockGroupDialog(group: StockGroup, event: Event): void {
+    event.stopPropagation(); // Prevent group expansion
+    this.selectedStockGroup = group;
+    this.selectedStock = null;
+    this.sellStockForm.reset({
+      quantity: group.totalAvailableQuantity,
       saleDate: new Date()
     });
     this.showSellDialog = true;
@@ -578,6 +686,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
     this.showSellDialog = false;
     this.sellStockForm.reset();
     this.selectedStock = null;
+    this.selectedStockGroup = null;
   }
 
   onBuySubmit(): void {
@@ -620,39 +729,138 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   }
 
   onSellSubmit(): void {
-    if (this.sellStockForm.valid && this.selectedStock) {
+    if (this.sellStockForm.valid && (this.selectedStock || this.selectedStockGroup)) {
       this.submittingSell = true;
       const formValue = this.sellStockForm.value;
       
-      const request: SellStockRequest = {
-        stockUuid: this.selectedStock.uuid,
-        salePrice: formValue.salePrice,
-        saleDate: this.formatDateForAPI(formValue.saleDate)
-      };
-
-      this.stockService.sellStock(request)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (stock) => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Stock sold successfully'
-            });
-            this.hideSellDialog();
-            this.submittingSell = false;
-          },
-          error: (error) => {
-            console.error('Error selling stock:', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: error.error?.message || 'Failed to sell stock. Please try again.'
-            });
-            this.submittingSell = false;
-          }
-        });
+      if (this.selectedStock) {
+        // Individual stock sale
+        this.sellIndividualStock(formValue);
+      } else if (this.selectedStockGroup) {
+        // Stock group sale
+        this.sellStockGroup(formValue);
+      }
     }
+  }
+
+  sellIndividualStock(formValue: any): void {
+    const request: SellStockRequest = {
+      stockUuid: this.selectedStock!.uuid,
+      quantity: formValue.quantity,
+      salePrice: formValue.salePrice,
+      saleDate: this.formatDateForAPI(formValue.saleDate)
+    };
+
+    this.stockService.sellStock(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (stock) => {
+          const quantitySold = formValue.quantity;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Successfully sold ${quantitySold} shares of ${this.selectedStock?.symbol}`
+          });
+          this.hideSellDialog();
+          this.submittingSell = false;
+        },
+        error: (error) => {
+          console.error('Error selling stock:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.error?.message || 'Failed to sell stock. Please try again.'
+          });
+          this.submittingSell = false;
+        }
+      });
+  }
+
+  sellStockGroup(formValue: any): void {
+    const group = this.selectedStockGroup!;
+    const quantityToSell = formValue.quantity;
+    const salePrice = formValue.salePrice;
+    const saleDate = this.formatDateForAPI(formValue.saleDate);
+
+    // Get active positions sorted by purchase date (FIFO)
+    const activePositions = group.activePositions
+      .filter(stock => stock.availableQuantity > 0)
+      .sort((a, b) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
+
+    // Calculate which positions to sell and how much from each
+    const sellInstructions = this.calculateSellInstructions(activePositions, quantityToSell);
+    
+    if (sellInstructions.length === 0) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No available shares to sell'
+      });
+      this.submittingSell = false;
+      return;
+    }
+
+    // Execute sales sequentially
+    this.executeSales(sellInstructions, salePrice, saleDate, quantityToSell);
+  }
+
+  calculateSellInstructions(positions: Stock[], quantityToSell: number): Array<{stock: Stock, quantity: number}> {
+    const instructions: Array<{stock: Stock, quantity: number}> = [];
+    let remainingToSell = quantityToSell;
+
+    for (const position of positions) {
+      if (remainingToSell <= 0) break;
+      
+      const availableFromThis = position.availableQuantity;
+      const sellFromThis = Math.min(remainingToSell, availableFromThis);
+      
+      instructions.push({
+        stock: position,
+        quantity: sellFromThis
+      });
+      
+      remainingToSell -= sellFromThis;
+    }
+
+    return instructions;
+  }
+
+  executeSales(instructions: Array<{stock: Stock, quantity: number}>, salePrice: number, saleDate: string, totalQuantity: number): void {
+    const saleObservables = instructions.map(instruction => {
+      const request: SellStockRequest = {
+        stockUuid: instruction.stock.uuid,
+        quantity: instruction.quantity,
+        salePrice: salePrice,
+        saleDate: saleDate
+      };
+      return this.stockService.sellStock(request);
+    });
+
+    // Execute all sales and handle results
+    forkJoin(saleObservables)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.submittingSell = false)
+      )
+      .subscribe({
+        next: (results) => {
+          const symbol = this.selectedStockGroup?.symbol;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Successfully sold ${totalQuantity} shares of ${symbol} across ${results.length} positions`
+          });
+          this.hideSellDialog();
+        },
+        error: (error) => {
+          console.error('Error selling stock group:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Some sales may have failed. Please refresh and check your positions.'
+          });
+        }
+      });
   }
 
   viewStockDetails(stock: Stock): void {
@@ -674,6 +882,8 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
           companyName: stock.companyName,
           positions: [],
           totalQuantity: 0,
+          totalAvailableQuantity: 0,
+          totalSoldQuantity: 0,
           totalInvestment: 0,
           totalCurrentValue: 0,
           totalGainLoss: 0,
@@ -681,30 +891,68 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
           activePositions: [],
           soldPositions: [],
           activePositionsCount: 0,
-          soldPositionsCount: 0
+          soldPositionsCount: 0,
+          earliestPurchaseDate: '',
+          latestPurchaseDate: '',
+          weightedAveragePurchaseDate: '',
+          averagePurchasePrice: 0,
+          canSell: false
         });
       }
 
       const group = groupMap.get(stock.symbol)!;
       group.positions.push(stock);
 
-      if (stock.status === StockStatus.ACTIVE) {
+      // Update total quantities
+      group.totalQuantity += stock.quantity;
+      group.totalAvailableQuantity += stock.availableQuantity;
+      group.totalSoldQuantity += stock.soldQuantity;
+
+      // Add to appropriate position lists
+      if (stock.status === StockStatus.ACTIVE || stock.availableQuantity > 0) {
         group.activePositions.push(stock);
-        group.totalQuantity += stock.quantity;
-        group.totalInvestment += stock.investmentValue;
         group.activePositionsCount++;
-      } else {
+      }
+      
+      if (stock.status === StockStatus.SOLD || stock.soldQuantity > 0) {
         group.soldPositions.push(stock);
-        group.totalGainLoss += stock.gainLoss;
         group.soldPositionsCount++;
       }
+
+      // Add gain/loss from all sales
+      group.totalGainLoss += stock.gainLoss;
     });
 
-    // Calculate performance metrics for each group
+    // Calculate derived fields for each group
     groupMap.forEach(group => {
+      // Calculate total investment (original investment for all positions)
+      group.totalInvestment = group.positions.reduce((sum, stock) => 
+        sum + (stock.quantity * stock.purchasePrice), 0);
+
+      // Calculate average purchase price (weighted by original quantities)
+      const totalOriginalValue = group.positions.reduce((sum, stock) => 
+        sum + (stock.quantity * stock.purchasePrice), 0);
+      group.averagePurchasePrice = group.totalQuantity > 0 ? totalOriginalValue / group.totalQuantity : 0;
+
+      // Calculate performance metrics
       if (group.totalInvestment > 0) {
         group.totalGainLossPercentage = (group.totalGainLoss / group.totalInvestment) * 100;
       }
+
+      // Calculate date fields
+      if (group.positions.length > 0) {
+        const sortedPositions = group.positions.sort((a, b) => 
+          new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
+        
+        group.earliestPurchaseDate = sortedPositions[0].purchaseDate;
+        group.latestPurchaseDate = sortedPositions[sortedPositions.length - 1].purchaseDate;
+        
+        // Calculate weighted average purchase date
+        group.weightedAveragePurchaseDate = this.calculateWeightedAverageDate(group.positions);
+      }
+
+      // Set canSell flag
+      group.canSell = group.totalAvailableQuantity > 0;
     });
 
     return Array.from(groupMap.values()).sort((a, b) => a.symbol.localeCompare(b.symbol));
@@ -762,5 +1010,46 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
 
   trackBySymbol(index: number, group: StockGroup): string {
     return group.symbol;
+  }
+
+  setSellAllQuantity(): void {
+    const maxQuantity = this.selectedStock?.availableQuantity || this.selectedStockGroup?.totalAvailableQuantity || 0;
+    this.sellStockForm.patchValue({
+      quantity: maxQuantity
+    });
+  }
+
+  setSellHalfQuantity(): void {
+    const maxQuantity = this.selectedStock?.availableQuantity || this.selectedStockGroup?.totalAvailableQuantity || 0;
+    const halfQuantity = maxQuantity / 2;
+    this.sellStockForm.patchValue({
+      quantity: Math.round(halfQuantity * 1000000) / 1000000 // Round to 6 decimal places
+    });
+  }
+
+  calculateWeightedAverageDate(positions: Stock[]): string {
+    if (positions.length === 0) return '';
+    if (positions.length === 1) return positions[0].purchaseDate;
+
+    let totalWeightedDays = 0;
+    let totalWeight = 0;
+
+    // Use original quantity as weight for the calculation
+    positions.forEach(position => {
+      const purchaseDate = new Date(position.purchaseDate);
+      const daysSinceEpoch = Math.floor(purchaseDate.getTime() / (1000 * 60 * 60 * 24));
+      const weight = position.quantity;
+
+      totalWeightedDays += daysSinceEpoch * weight;
+      totalWeight += weight;
+    });
+
+    if (totalWeight === 0) return positions[0].purchaseDate;
+
+    const averageDays = Math.round(totalWeightedDays / totalWeight);
+    const averageDate = new Date(averageDays * 1000 * 60 * 60 * 24);
+    
+    // Format as YYYY-MM-DD
+    return averageDate.toISOString().split('T')[0];
   }
 }
