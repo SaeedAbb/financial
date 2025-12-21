@@ -16,10 +16,11 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
+import { AccordionModule } from 'primeng/accordion';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subject, takeUntil } from 'rxjs';
 import { Portfolio } from '../../../core/models/portfolio.model';
-import { Stock, BuyStockRequest, SellStockRequest, StockStatus, getStockStatusLabel, getStockStatusSeverity } from '../../../core/models/stock.model';
+import { Stock, BuyStockRequest, SellStockRequest, StockStatus, StockGroup, getStockStatusLabel, getStockStatusSeverity } from '../../../core/models/stock.model';
 import { PortfolioService } from '../../../core/services/portfolio.service';
 import { StockService } from '../../../core/services/stock.service';
 
@@ -42,52 +43,57 @@ import { StockService } from '../../../core/services/stock.service';
     ProgressSpinnerModule,
     TagModule,
     TooltipModule,
-    SkeletonModule
+    SkeletonModule,
+    AccordionModule
   ],
   providers: [MessageService, ConfirmationService],
+  styleUrls: ['./portfolio-detail.component.scss'],
   template: `
     <div class="portfolio-detail">
       <!-- Header -->
-      <div class="flex justify-content-between align-items-center mb-4">
-        <div class="flex align-items-center">
-          <p-button 
-            icon="pi pi-arrow-left" 
-            severity="secondary" 
-            size="small"
-            class="mr-3"
-            (click)="goBack()">
-          </p-button>
-          <div>
-            <h2 class="m-0">{{ portfolio?.name || 'Loading...' }}</h2>
-            <p class="text-500 m-0" *ngIf="portfolio?.description">{{ portfolio!.description }}</p>
+      <div class="portfolio-header">
+        <div class="flex justify-content-between align-items-center">
+          <div class="flex align-items-center back-button-container">
+            <p-button 
+              icon="pi pi-arrow-left" 
+              severity="secondary" 
+              size="small"
+              class="back-nav-button mr-3"
+              (click)="goBack()">
+            </p-button>
+            <div class="portfolio-title">
+              <h2>{{ portfolio?.name || 'Loading...' }}</h2>
+              <p *ngIf="portfolio?.description">{{ portfolio!.description }}</p>
+            </div>
           </div>
+          <p-button 
+            label="Buy Stock" 
+            icon="pi pi-plus" 
+            class="buy-stock-button"
+            (click)="showBuyStockDialog()"
+            [disabled]="!portfolio">
+          </p-button>
         </div>
-        <p-button 
-          label="Buy Stock" 
-          icon="pi pi-plus" 
-          (click)="showBuyStockDialog()"
-          [disabled]="!portfolio">
-        </p-button>
       </div>
 
       <!-- Portfolio Overview -->
-      <div class="grid mb-4" *ngIf="portfolio">
+      <div class="portfolio-overview grid" *ngIf="portfolio">
         <div class="col-12 md:col-3">
           <p-card>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-blue-500">{{ formatAmount(portfolio.totalInvestment) }}</div>
-              <div class="text-500">Total Investment</div>
+            <div class="stats-card">
+              <div class="stats-value investment">{{ formatAmount(portfolio.totalInvestment) }}</div>
+              <div class="stats-label">Total Investment</div>
             </div>
           </p-card>
         </div>
         <div class="col-12 md:col-3">
           <p-card>
-            <div class="text-center">
-              <div class="text-2xl font-bold" [class]="getGainLossColorClass(portfolio.totalGainLoss)">
+            <div class="stats-card">
+              <div class="stats-value" [ngClass]="getGainLossColorClass(portfolio.totalGainLoss)">
                 {{ formatAmount(portfolio.totalGainLoss) }}
               </div>
-              <div class="text-500">Total Gain/Loss</div>
-              <div class="text-sm" [class]="getGainLossColorClass(portfolio.totalGainLoss)">
+              <div class="stats-label">Total Gain/Loss</div>
+              <div class="stats-percentage" [ngClass]="getGainLossColorClass(portfolio.totalGainLoss)">
                 {{ formatPercentage(portfolio.gainLossPercentage) }}
               </div>
             </div>
@@ -95,130 +101,193 @@ import { StockService } from '../../../core/services/stock.service';
         </div>
         <div class="col-12 md:col-3">
           <p-card>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-green-500">{{ portfolio.activeStocksCount }}</div>
-              <div class="text-500">Active Stocks</div>
+            <div class="stats-card">
+              <div class="stats-value count">{{ portfolio.activeStocksCount }}</div>
+              <div class="stats-label">Active Stocks</div>
             </div>
           </p-card>
         </div>
         <div class="col-12 md:col-3">
           <p-card>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-gray-500">{{ portfolio.soldStocksCount }}</div>
-              <div class="text-500">Sold Stocks</div>
+            <div class="stats-card">
+              <div class="stats-value sold-count">{{ portfolio.soldStocksCount }}</div>
+              <div class="stats-label">Sold Stocks</div>
             </div>
           </p-card>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="loading" class="text-center py-8">
+      <div *ngIf="loading" class="loading-state">
         <p-progressSpinner></p-progressSpinner>
-        <p class="text-500 mt-3">Loading portfolio...</p>
+        <p class="loading-text">Loading portfolio...</p>
       </div>
 
-      <!-- Stocks Table -->
-      <p-card *ngIf="!loading && portfolio">
-        <ng-template pTemplate="header">
-          <h3>Portfolio Stocks</h3>
-        </ng-template>
-        <p-table 
-              [value]="allStocks" 
-              [paginator]="true" 
-              [rows]="10"
-              [showCurrentPageReport]="true"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} stocks"
-              [globalFilterFields]="['symbol', 'companyName']"
-              styleClass="p-datatable-gridlines">
-              
-              <ng-template pTemplate="caption">
-                <div class="flex justify-content-between align-items-center">
-                  <h3 class="m-0">All Stocks</h3>
-                  <span class="p-input-icon-left">
-                    <i class="pi pi-search"></i>
-                    <input 
-                      type="text" 
-                      pInputText 
-                      placeholder="Search stocks..."
-                      (input)="applyGlobalFilter($event, 'allStocks')">
-                  </span>
+      <!-- Stocks List -->
+      <div *ngIf="!loading && portfolio" class="stock-groups-container">
+        <!-- Search Bar -->
+        <div class="section-header">
+          <h3>Portfolio Holdings</h3>
+          <div class="search-container">
+            <i class="pi pi-search search-icon"></i>
+            <input 
+              type="text" 
+              pInputText 
+              placeholder="Search stocks..."
+              class="search-input">
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="stockGroups.length === 0" class="empty-state">
+          <i class="pi pi-chart-line empty-icon"></i>
+          <h3>No Stocks Yet</h3>
+          <p>Start building your portfolio by purchasing your first stock</p>
+          <p-button 
+            label="Buy First Stock" 
+            icon="pi pi-plus" 
+            class="buy-stock-button"
+            (click)="showBuyStockDialog()">
+          </p-button>
+        </div>
+
+        <!-- Stock Groups List -->
+        <div *ngIf="stockGroups.length > 0" class="stock-groups">
+          <div *ngFor="let group of stockGroups; trackBy: trackBySymbol" class="stock-group">
+            <div class="stock-group-card">
+              <!-- Stock Group Header -->
+              <div class="stock-group-header cursor-pointer" 
+                   (click)="toggleGroup(group)"
+                   [class.expanded]="isGroupExpanded(group)">
+                <div class="header-content">
+                  <!-- Status Indicator -->
+                  <div class="status-indicator"></div>
+                  
+                  <!-- Company Icon -->
+                  <div class="company-icon">
+                    <i class="pi pi-building"></i>
+                  </div>
+                  
+                  <!-- Stock Info -->
+                  <div class="stock-info">
+                    <div class="stock-header-row">
+                      <span class="stock-symbol">{{ group.symbol }}</span>
+                      <span class="long-tag">LONG</span>
+                      <span class="stock-quantity">{{ group.totalQuantity }}</span>
+                    </div>
+                    <div class="company-name">{{ group.companyName }}</div>
+                  </div>
+                  
+                  <!-- Current Price -->
+                  <div class="price-info">
+                    <div class="current-price">{{ formatAmount(26.08) }}</div>
+                    <div class="price-label">Current</div>
+                  </div>
+                  
+                  <!-- Performance -->
+                  <div class="performance-info">
+                    <div class="performance" 
+                         [ngClass]="{
+                           'gain': group.totalGainLoss > 0,
+                           'loss': group.totalGainLoss < 0,
+                           'neutral': group.totalGainLoss === 0
+                         }">
+                      {{ formatPercentage(group.totalGainLossPercentage) }}
+                    </div>
+                    <div class="performance-label">Performance</div>
+                  </div>
+                  
+                  <!-- Expand Icon -->
+                  <div class="expand-icon" [class.expanded]="isGroupExpanded(group)">
+                    <i class="pi pi-chevron-down"></i>
+                  </div>
                 </div>
-              </ng-template>
-
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Symbol</th>
-                  <th>Company</th>
-                  <th>Quantity</th>
-                  <th>Purchase Price</th>
-                  <th>Purchase Date</th>
-                  <th>Status</th>
-                  <th>Investment Value</th>
-                  <th>Gain/Loss</th>
-                  <th>Actions</th>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="body" let-stock>
-                <tr>
-                  <td>
-                    <span class="font-bold">{{ stock.symbol }}</span>
-                  </td>
-                  <td>{{ stock.companyName }}</td>
-                  <td>{{ stock.quantity }}</td>
-                  <td>{{ formatAmount(stock.purchasePrice) }}</td>
-                  <td>{{ formatDate(stock.purchaseDate) }}</td>
-                  <td>
-                    <p-tag 
-                      [value]="getStockStatusLabel(stock.status)" 
-                      [severity]="getStockStatusSeverity(stock.status)">
-                    </p-tag>
-                  </td>
-                  <td>{{ formatAmount(stock.investmentValue) }}</td>
-                  <td [class]="getGainLossColorClass(stock.gainLoss)">
-                    {{ formatAmount(stock.gainLoss) }}
-                    <div class="text-sm" *ngIf="stock.gainLossPercentage !== 0">
-                      ({{ formatPercentage(stock.gainLossPercentage) }})
+              </div>
+              
+              <!-- Stock Group Positions (Expanded Content) -->
+              <div class="stock-group-content" *ngIf="isGroupExpanded(group)">
+                <!-- Active Positions -->
+                <div *ngIf="group.activePositions.length > 0" class="positions-section">
+                  <div class="section-header">
+                    <span class="active-positions">Active Positions ({{ group.activePositionsCount }})</span>
+                  </div>
+                  <div *ngFor="let position of group.activePositions" class="position-row">
+                    <div class="position-content">
+                      <div class="position-info">
+                        <div class="position-details">
+                          <span class="position-amount">{{ position.quantity }}</span>
+                          <span class="position-price">@ {{ formatAmount(position.purchasePrice) }}</span>
+                          <span class="position-date">{{ formatDate(position.purchaseDate) }}</span>
+                        </div>
+                        <div class="position-investment">
+                          <strong>Investment:</strong> {{ formatAmount(position.investmentValue) }}
+                        </div>
+                      </div>
+                      <div class="position-actions">
+                        <div class="position-performance">
+                          <div class="performance-value" 
+                               [ngClass]="{
+                                 'gain': position.gainLoss > 0,
+                                 'loss': position.gainLoss < 0,
+                                 'neutral': position.gainLoss === 0
+                               }">
+                            {{ formatAmount(position.gainLoss) }}
+                          </div>
+                          <div class="performance-percentage" *ngIf="position.gainLossPercentage !== 0">
+                            {{ formatPercentage(position.gainLossPercentage) }}
+                          </div>
+                        </div>
+                        <p-button 
+                          icon="pi pi-dollar" 
+                          size="small" 
+                          class="sell-button"
+                          pTooltip="Sell Position"
+                          (click)="showSellStockDialog(position)">
+                        </p-button>
+                      </div>
                     </div>
-                  </td>
-                  <td>
-                    <div class="flex gap-2">
-                      <p-button 
-                        icon="pi pi-dollar" 
-                        size="small" 
-                        severity="success"
-                        pTooltip="Sell Stock"
-                        [disabled]="stock.status === 'SOLD'"
-                        (click)="showSellStockDialog(stock)">
-                      </p-button>
-                      <p-button 
-                        icon="pi pi-eye" 
-                        size="small" 
-                        severity="secondary"
-                        pTooltip="View Details"
-                        (click)="viewStockDetails(stock)">
-                      </p-button>
+                  </div>
+                </div>
+                
+                <!-- Sold Positions -->
+                <div *ngIf="group.soldPositions.length > 0" class="positions-section">
+                  <div class="section-header">
+                    <span class="sold-positions">Sold Positions ({{ group.soldPositionsCount }})</span>
+                  </div>
+                  <div *ngFor="let position of group.soldPositions" class="position-row sold-position">
+                    <div class="position-content">
+                      <div class="position-info">
+                        <div class="position-details">
+                          <span class="position-amount">{{ position.quantity }}</span>
+                          <span class="position-price">{{ formatAmount(position.purchasePrice) }} → {{ formatAmount(position.salePrice!) }}</span>
+                        </div>
+                        <div class="position-date">
+                          {{ formatDate(position.purchaseDate) }} → {{ formatDate(position.saleDate!) }}
+                        </div>
+                      </div>
+                      <div class="position-actions">
+                        <div class="position-performance">
+                          <div class="performance-value" 
+                               [ngClass]="{
+                                 'gain': position.gainLoss > 0,
+                                 'loss': position.gainLoss < 0,
+                                 'neutral': position.gainLoss === 0
+                               }">
+                            {{ formatAmount(position.gainLoss) }}
+                          </div>
+                          <div class="performance-percentage">
+                            {{ formatPercentage(position.gainLossPercentage) }}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </td>
-                </tr>
-              </ng-template>
-
-              <ng-template pTemplate="emptymessage">
-                <tr>
-                  <td colspan="9" class="text-center py-4">
-                    <i class="pi pi-chart-line text-4xl text-300 mb-3"></i>
-                    <p class="text-600">No stocks in this portfolio yet</p>
-                    <p-button 
-                      label="Buy First Stock" 
-                      icon="pi pi-plus" 
-                      size="small"
-                      (click)="showBuyStockDialog()">
-                    </p-button>
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
-      </p-card>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Buy Stock Dialog -->
       <p-dialog 
@@ -379,22 +448,7 @@ import { StockService } from '../../../core/services/stock.service';
       <!-- Confirm Dialog -->
       <p-confirmDialog></p-confirmDialog>
     </div>
-  `,
-  styles: [`
-    .portfolio-detail {
-      padding: 1rem;
-    }
-
-    .field {
-      margin-bottom: 1rem;
-    }
-
-    .field label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-  `]
+  `
 })
 export class PortfolioDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -410,7 +464,9 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   allStocks: Stock[] = [];
   activeStocks: Stock[] = [];
   soldStocks: Stock[] = [];
+  stockGroups: StockGroup[] = [];
   selectedStock: Stock | null = null;
+  expandedGroups: Set<string> = new Set();
   
   loading = false;
   submittingBuy = false;
@@ -485,6 +541,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
           this.allStocks = stocks;
           this.activeStocks = stocks.filter(s => s.status === StockStatus.ACTIVE);
           this.soldStocks = stocks.filter(s => s.status === StockStatus.SOLD);
+          this.stockGroups = this.groupStocksBySymbol(stocks);
         },
         error: (error) => {
           console.error('Error loading stocks:', error);
@@ -607,6 +664,52 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/investments']);
   }
 
+  groupStocksBySymbol(stocks: Stock[]): StockGroup[] {
+    const groupMap = new Map<string, StockGroup>();
+
+    stocks.forEach(stock => {
+      if (!groupMap.has(stock.symbol)) {
+        groupMap.set(stock.symbol, {
+          symbol: stock.symbol,
+          companyName: stock.companyName,
+          positions: [],
+          totalQuantity: 0,
+          totalInvestment: 0,
+          totalCurrentValue: 0,
+          totalGainLoss: 0,
+          totalGainLossPercentage: 0,
+          activePositions: [],
+          soldPositions: [],
+          activePositionsCount: 0,
+          soldPositionsCount: 0
+        });
+      }
+
+      const group = groupMap.get(stock.symbol)!;
+      group.positions.push(stock);
+
+      if (stock.status === StockStatus.ACTIVE) {
+        group.activePositions.push(stock);
+        group.totalQuantity += stock.quantity;
+        group.totalInvestment += stock.investmentValue;
+        group.activePositionsCount++;
+      } else {
+        group.soldPositions.push(stock);
+        group.totalGainLoss += stock.gainLoss;
+        group.soldPositionsCount++;
+      }
+    });
+
+    // Calculate performance metrics for each group
+    groupMap.forEach(group => {
+      if (group.totalInvestment > 0) {
+        group.totalGainLossPercentage = (group.totalGainLoss / group.totalInvestment) * 100;
+      }
+    });
+
+    return Array.from(groupMap.values()).sort((a, b) => a.symbol.localeCompare(b.symbol));
+  }
+
   applyGlobalFilter(event: any, target: string): void {
     const value = (event.target as HTMLInputElement).value;
     // This would typically be handled by the PrimeNG table component's global filter
@@ -643,5 +746,21 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
 
   getMinDateForSale(): Date | undefined {
     return this.selectedStock ? new Date(this.selectedStock.purchaseDate) : undefined;
+  }
+
+  toggleGroup(group: StockGroup): void {
+    if (this.expandedGroups.has(group.symbol)) {
+      this.expandedGroups.delete(group.symbol);
+    } else {
+      this.expandedGroups.add(group.symbol);
+    }
+  }
+
+  isGroupExpanded(group: StockGroup): boolean {
+    return this.expandedGroups.has(group.symbol);
+  }
+
+  trackBySymbol(index: number, group: StockGroup): string {
+    return group.symbol;
   }
 }

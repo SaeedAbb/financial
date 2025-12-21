@@ -1,0 +1,1121 @@
+// Portfolio Detail Component Styles
+// Following application's dark theme design system
+
+// ============================
+// MIXINS & VARIABLES
+// ============================
+
+@mixin card-hover-effect {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    border-color: var(--surface-300) !important;
+  }
+}
+
+@mixin performance-color($color, $glow-color) {
+  color: $color;
+  text-shadow: 0 0 10px $glow-color;
+}
+
+@mixin glass-effect {
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--surface-border);
+}
+
+// ============================
+// LAYOUT & CONTAINER
+// ============================
+
+.portfolio-detail {
+  padding: 1.5rem;
+  background: var(--surface-ground);
+  min-height: 100vh;
+  color: var(--text-color);
+  max-width: 1400px;
+  margin: 0 auto;
+
+  // Fade-in animation for content
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+// ============================
+// HEADER SECTION
+// ============================
+
+.portfolio-header {
+  border-bottom: 1px solid var(--surface-border);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+
+  .back-button-container {
+    .back-nav-button {
+      transition: all 0.3s ease;
+      background: var(--surface-card) !important;
+      border: 1px solid var(--surface-border) !important;
+      color: var(--text-color) !important;
+
+      &:hover {
+        background: var(--surface-hover) !important;
+        transform: translateX(-2px);
+      }
+    }
+  }
+
+  .portfolio-title {
+    h2 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+      margin: 0.5rem 0 0 0;
+      font-size: 1rem;
+    }
+  }
+
+  .buy-stock-button {
+    background: linear-gradient(135deg, var(--primary-color), var(--blue-500)) !important;
+    border: none !important;
+    color: white !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+
+    &:hover:not([disabled]) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+// ============================
+// PORTFOLIO OVERVIEW CARDS
+// ============================
+
+.portfolio-overview {
+  margin-bottom: 2.5rem;
+
+  ::ng-deep .p-card {
+    @include glass-effect;
+    @include card-hover-effect;
+    border-radius: 12px !important;
+    height: 100%;
+
+    .p-card-content {
+      padding: 1.5rem !important;
+    }
+  }
+
+  .stats-card {
+    text-align: center;
+
+    .stats-value {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'Segoe UI', monospace;
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+
+      &.gain {
+        @include performance-color(var(--green-500), rgba(16, 185, 129, 0.3));
+      }
+
+      &.loss {
+        @include performance-color(var(--red-500), rgba(239, 68, 68, 0.3));
+      }
+
+      &.neutral {
+        @include performance-color(var(--blue-500), rgba(59, 130, 246, 0.3));
+      }
+
+      &.investment {
+        @include performance-color(var(--blue-500), rgba(59, 130, 246, 0.3));
+      }
+
+      &.count {
+        @include performance-color(var(--green-500), rgba(16, 185, 129, 0.3));
+      }
+
+      &.sold-count {
+        color: var(--text-color-secondary);
+      }
+    }
+
+    .stats-label {
+      color: var(--text-color-secondary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stats-percentage {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-top: 0.25rem;
+      font-family: 'Segoe UI', monospace;
+    }
+  }
+}
+
+// ============================
+// LOADING & EMPTY STATES
+// ============================
+
+.loading-state {
+  text-align: center;
+  padding: 4rem 2rem;
+
+  ::ng-deep .p-progress-spinner {
+    .p-progress-spinner-circle {
+      stroke: var(--primary-color);
+    }
+  }
+
+  .loading-text {
+    color: var(--text-color-secondary);
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--surface-card);
+  border-radius: 16px;
+  border: 1px solid var(--surface-border);
+
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--surface-400);
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+
+  h3 {
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: var(--text-color-secondary);
+    margin-bottom: 2rem;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+}
+
+// ============================
+// STOCK GROUPS CONTAINER
+// ============================
+
+.stock-groups-container {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .search-container {
+      position: relative;
+      
+      .search-input {
+        background: var(--surface-card) !important;
+        border: 1px solid var(--surface-border) !important;
+        border-radius: 8px;
+        color: var(--text-color) !important;
+        padding: 0.75rem 1rem 0.75rem 2.5rem !important;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        min-width: 300px;
+
+        &:focus {
+          border-color: var(--primary-color) !important;
+          box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        &::placeholder {
+          color: var(--text-color-secondary);
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-color-secondary);
+        font-size: 0.875rem;
+      }
+    }
+  }
+}
+
+// ============================
+// STOCK GROUP CARDS
+// ============================
+
+.stock-groups {
+  .stock-group {
+    margin-bottom: 1rem;
+
+    .stock-group-card {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        border-color: var(--surface-300);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      // ============================
+      // STOCK GROUP HEADER
+      // ============================
+
+      .stock-group-header {
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--green-500);
+        position: relative;
+
+        &:hover {
+          background: var(--surface-hover);
+        }
+
+        &.expanded {
+          background: var(--surface-hover);
+          border-bottom: 1px solid var(--surface-border);
+        }
+
+        .header-content {
+          display: flex;
+          align-items: center;
+
+          .status-indicator {
+            width: 4px;
+            height: 40px;
+            background: var(--green-500);
+            border-radius: 2px;
+            margin-right: 1rem;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+          }
+
+          .company-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--surface-200), var(--surface-300));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            border: 1px solid var(--surface-border);
+
+            .pi {
+              font-size: 1.25rem;
+              color: var(--text-color-secondary);
+            }
+          }
+
+          .stock-info {
+            flex: 1;
+
+            .stock-header-row {
+              display: flex;
+              align-items: center;
+              margin-bottom: 0.5rem;
+
+              .stock-symbol {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: var(--text-color);
+                letter-spacing: 0.05em;
+                margin-right: 0.75rem;
+              }
+
+              .long-tag {
+                background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+                color: #065f46;
+                padding: 0.25rem 0.5rem;
+                border-radius: 6px;
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-right: 0.75rem;
+                box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+              }
+
+              .stock-quantity {
+                font-size: 0.875rem;
+                color: var(--text-color-secondary);
+                font-weight: 500;
+                padding: 0.25rem 0.5rem;
+                background: var(--surface-100);
+                border-radius: 4px;
+                border: 1px solid var(--surface-border);
+              }
+            }
+
+            .company-name {
+              font-size: 0.975rem;
+              color: var(--text-color-secondary);
+              font-weight: 400;
+              line-height: 1.4;
+            }
+          }
+
+          .price-info {
+            text-align: right;
+            margin-right: 2rem;
+
+            .current-price {
+              font-size: 1.125rem;
+              font-weight: 700;
+              color: var(--text-color);
+              font-family: 'Segoe UI', monospace;
+              margin-bottom: 0.25rem;
+            }
+
+            .price-label {
+              font-size: 0.75rem;
+              color: var(--text-color-secondary);
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              font-weight: 500;
+            }
+          }
+
+          .performance-info {
+            text-align: right;
+            margin-right: 2rem;
+
+            .performance {
+              font-size: 1.125rem;
+              font-weight: 700;
+              font-family: 'Segoe UI', monospace;
+              margin-bottom: 0.25rem;
+
+              &.gain {
+                color: var(--green-500);
+                text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+              }
+
+              &.loss {
+                color: var(--red-500);
+                text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+              }
+
+              &.neutral {
+                color: var(--text-color-secondary);
+              }
+            }
+
+            .performance-label {
+              font-size: 0.75rem;
+              color: var(--text-color-secondary);
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              font-weight: 500;
+            }
+          }
+
+          .expand-icon {
+            color: var(--text-color-secondary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+
+            &.expanded {
+              transform: rotate(180deg);
+            }
+          }
+        }
+      }
+
+      // ============================
+      // STOCK GROUP CONTENT
+      // ============================
+
+      .stock-group-content {
+        background: var(--surface-card);
+        border-top: 1px solid var(--surface-border);
+        overflow: hidden;
+
+        .positions-section {
+          .section-header {
+            background: var(--surface-hover);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--surface-border);
+            margin-bottom: 0;
+
+            span {
+              font-size: 0.875rem;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+
+              &.active-positions {
+                color: var(--green-500);
+              }
+
+              &.sold-positions {
+                color: var(--blue-500);
+              }
+            }
+          }
+
+          .position-row {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--surface-border);
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: var(--surface-hover);
+            }
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &.sold-position {
+              background: rgba(59, 130, 246, 0.05);
+              border-left: 3px solid var(--blue-500);
+            }
+
+            .position-content {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+
+              .position-info {
+                flex: 1;
+
+                .position-details {
+                  display: flex;
+                  align-items: center;
+                  margin-bottom: 0.5rem;
+
+                  .position-amount {
+                    font-size: 0.975rem;
+                    font-weight: 600;
+                    color: var(--text-color);
+                    margin-right: 1rem;
+                    padding: 0.25rem 0.5rem;
+                    background: var(--surface-100);
+                    border-radius: 4px;
+                    border: 1px solid var(--surface-border);
+                  }
+
+                  .position-price {
+                    font-size: 0.875rem;
+                    color: var(--text-color-secondary);
+                    font-family: 'Segoe UI', monospace;
+                    margin-right: 1rem;
+                  }
+
+                  .position-date {
+                    font-size: 0.8125rem;
+                    color: var(--text-color-secondary);
+                    opacity: 0.8;
+                  }
+                }
+
+                .position-investment {
+                  font-size: 0.875rem;
+                  color: var(--text-color-secondary);
+                  font-weight: 500;
+
+                  strong {
+                    color: var(--text-color);
+                  }
+                }
+              }
+
+              .position-actions {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+
+                .position-performance {
+                  text-align: right;
+
+                  .performance-value {
+                    font-size: 0.975rem;
+                    font-weight: 600;
+                    font-family: 'Segoe UI', monospace;
+                    margin-bottom: 0.25rem;
+
+                    &.gain {
+                      color: var(--green-500);
+                    }
+
+                    &.loss {
+                      color: var(--red-500);
+                    }
+
+                    &.neutral {
+                      color: var(--text-color-secondary);
+                    }
+                  }
+
+                  .performance-percentage {
+                    font-size: 0.8125rem;
+                    color: var(--text-color-secondary);
+                    font-family: 'Segoe UI', monospace;
+                  }
+                }
+
+                .sell-button {
+                  background: var(--green-500) !important;
+                  border-color: var(--green-500) !important;
+                  color: white !important;
+                  padding: 0.5rem !important;
+                  border-radius: 8px;
+                  transition: all 0.3s ease;
+                  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+                  &:hover {
+                    background: #0d9488 !important;
+                    border-color: #0d9488 !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+                  }
+
+                  .p-button-icon {
+                    font-size: 0.875rem;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// ============================
+// FORM STYLING
+// ============================
+
+.field {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.925rem;
+  }
+}
+
+// ============================
+// DIALOG OVERRIDES
+// ============================
+
+::ng-deep .p-dialog {
+  .p-dialog-header {
+    background: var(--surface-card) !important;
+    border-bottom: 1px solid var(--surface-border) !important;
+    padding: 1.5rem !important;
+
+    .p-dialog-title {
+      color: var(--text-color) !important;
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+  }
+
+  .p-dialog-content {
+    background: var(--surface-card) !important;
+    padding: 2rem !important;
+    color: var(--text-color) !important;
+  }
+
+  .p-dialog-footer {
+    background: var(--surface-card) !important;
+    border-top: 1px solid var(--surface-border) !important;
+    padding: 1.5rem !important;
+    
+    .p-button {
+      margin-left: 0.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+  }
+}
+
+// ============================
+// ANIMATIONS
+// ============================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 1000px;
+    opacity: 1;
+  }
+}
+
+.stock-group-content {
+  animation: slideDown 0.3s ease-in-out;
+}
+
+// ============================
+// RESPONSIVE DESIGN
+// ============================
+
+@media (max-width: 1024px) {
+  .portfolio-detail {
+    padding: 1rem;
+  }
+
+  .portfolio-overview {
+    .stats-card .stats-value {
+      font-size: 1.75rem;
+    }
+  }
+
+  .stock-groups-container {
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .search-container .search-input {
+        min-width: 100%;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .portfolio-detail {
+    padding: 0.75rem;
+  }
+
+  .portfolio-header {
+    .portfolio-title h2 {
+      font-size: 1.75rem;
+    }
+
+    .buy-stock-button {
+      padding: 0.625rem 1.25rem !important;
+      font-size: 0.875rem;
+    }
+  }
+
+  .stock-group-card {
+    .stock-group-header {
+      padding: 1rem !important;
+
+      .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+
+        .stock-info,
+        .price-info,
+        .performance-info {
+          width: 100%;
+          text-align: left;
+        }
+
+        .price-info,
+        .performance-info {
+          margin-right: 0;
+        }
+      }
+    }
+
+    .position-row {
+      padding: 0.75rem 1rem !important;
+
+      .position-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+
+        .position-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+
+  .portfolio-overview {
+    .stats-card .stats-value {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .portfolio-detail {
+    padding: 0.5rem;
+  }
+
+  .portfolio-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
+
+    .buy-stock-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .stock-group-card {
+    .company-icon {
+      width: 40px !important;
+      height: 40px !important;
+
+      .pi {
+        font-size: 1rem !important;
+      }
+    }
+
+    .stock-symbol {
+      font-size: 1.125rem !important;
+    }
+
+    .position-details {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.5rem;
+    }
+  }
+
+  .portfolio-overview {
+    .stats-card {
+      .stats-value {
+        font-size: 1.375rem;
+      }
+
+      .stats-label {
+        font-size: 0.8125rem;
+      }
+    }
+  }
+}
+
+// ============================
+// UTILITY CLASSES
+// ============================
+
+.text-gain {
+  color: var(--green-500) !important;
+}
+
+.text-loss {
+  color: var(--red-500) !important;
+}
+
+.text-neutral {
+  color: var(--text-color-secondary) !important;
+}
+
+.bg-gain-soft {
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+
+.bg-loss-soft {
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.border-gain {
+  border-color: var(--green-500) !important;
+}
+
+.border-loss {
+  border-color: var(--red-500) !important;
+}
+
+// ============================
+// ENHANCED VISUAL EFFECTS
+// ============================
+
+// Gradient overlays for premium feel
+.portfolio-detail::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  z-index: 1000;
+  opacity: 0.6;
+}
+
+// Subtle pulse animation for active indicators
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.status-indicator {
+  animation: pulse 2s infinite;
+}
+
+// Enhanced focus states for better accessibility
+.search-input:focus,
+::ng-deep .p-inputtext:focus,
+::ng-deep .p-inputnumber-input:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: var(--primary-color) !important;
+}
+
+// Custom scrollbar for webkit browsers
+.stock-group-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.stock-group-content::-webkit-scrollbar-track {
+  background: var(--surface-100);
+}
+
+.stock-group-content::-webkit-scrollbar-thumb {
+  background: var(--surface-400);
+  border-radius: 2px;
+}
+
+.stock-group-content::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-500);
+}
+
+// Smooth reveal animation for stock groups
+.stock-group {
+  animation: fadeInUp 0.4s ease-out;
+  
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Enhanced hover states with spring animations
+.stock-group-card {
+  will-change: transform, box-shadow;
+  
+  &:hover {
+    .company-icon {
+      transform: scale(1.1);
+      background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+      
+      .pi {
+        color: white;
+      }
+    }
+    
+    .stock-symbol {
+      background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+}
+
+// Premium tooltip styling
+::ng-deep .p-tooltip {
+  .p-tooltip-text {
+    background: var(--surface-card) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--surface-border) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.75rem 1rem !important;
+    backdrop-filter: blur(10px);
+  }
+  
+  .p-tooltip-arrow {
+    border-top-color: var(--surface-card) !important;
+    border-bottom-color: var(--surface-card) !important;
+    border-left-color: var(--surface-card) !important;
+    border-right-color: var(--surface-card) !important;
+  }
+}
+
+// Loading shimmer effect
+.loading-shimmer {
+  background: linear-gradient(90deg, var(--surface-100) 25%, var(--surface-200) 50%, var(--surface-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Performance indicators with subtle glow effects
+.performance.gain,
+.performance-value.gain {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.performance.loss,
+.performance-value.loss {
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+// Enhanced button hover states
+.sell-button {
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+  }
+  
+  &:hover::before {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Mobile touch improvements
+@media (hover: none) and (pointer: coarse) {
+  .stock-group-header {
+    padding: 1.25rem !important;
+  }
+  
+  .position-row {
+    padding: 1rem !important;
+  }
+  
+  .sell-button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .portfolio-detail {
+    --surface-border: #ffffff;
+    --surface-hover: #333333;
+  }
+  
+  .stock-group-card {
+    border-width: 2px !important;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .status-indicator {
+    animation: none;
+  }
+}
+
+// Dark mode enhancements for better contrast
+@media (prefers-color-scheme: dark) {
+  .portfolio-detail {
+    background: var(--surface-ground);
+  }
+  
+  .stats-value {
+    &.gain,
+    &.count {
+      text-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+    
+    &.loss {
+      text-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+    
+    &.investment,
+    &.neutral {
+      text-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+  }
+}
