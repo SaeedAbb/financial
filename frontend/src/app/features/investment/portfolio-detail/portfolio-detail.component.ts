@@ -23,6 +23,7 @@ import { Portfolio } from '../../../core/models/portfolio.model';
 import { PortfolioPosition, BuyPositionRequest, SellPositionRequest, PositionStatus } from '../../../core/models/portfolio-position.model';
 import { PortfolioService } from '../../../core/services/portfolio.service';
 import { PortfolioPositionService } from '../../../core/services/portfolio-position.service';
+import { TransactionSidebarComponent } from '../components/transaction-sidebar/transaction-sidebar.component';
 
 // TODO: This component needs significant refactoring to work with the new backend structure
 // The backend has been refactored to separate portfolio positions, stock master data, and transactions
@@ -49,7 +50,8 @@ import { PortfolioPositionService } from '../../../core/services/portfolio-posit
     TagModule,
     TooltipModule,
     SkeletonModule,
-    AccordionModule
+    AccordionModule,
+    TransactionSidebarComponent
   ],
   providers: [MessageService, ConfirmationService]
 })
@@ -75,6 +77,8 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   submittingSell = false;
   showBuyDialog = false;
   showSellDialog = false;
+  showTransactionSidebar = false;
+  selectedPositionForTransactions: PortfolioPosition | null = null;
   
   today = new Date();
 
@@ -280,6 +284,18 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
 
   private formatDateForAPI(date: Date): string {
     return date.toISOString().split('T')[0];
+  }
+
+  onPositionRowClick(position: PortfolioPosition): void {
+    this.selectedPositionForTransactions = position;
+    this.showTransactionSidebar = true;
+  }
+
+  onTransactionSidebarVisibilityChange(visible: boolean): void {
+    this.showTransactionSidebar = visible;
+    if (!visible) {
+      this.selectedPositionForTransactions = null;
+    }
   }
 
   trackByPositionId(index: number, position: PortfolioPosition): string {

@@ -111,7 +111,10 @@
         </ng-template>
         
         <ng-template pTemplate="body" let-position>
-          <tr>
+          <tr class="clickable-row" 
+              (click)="onPositionRowClick(position)"
+              pTooltip="Click to view transaction history"
+              tooltipPosition="top">
             <td>
               <div class="flex flex-column">
                 <span class="font-semibold">{{ position.stock.symbol }}</span>
@@ -136,13 +139,21 @@
             <td>
               <div class="flex gap-1">
                 <p-button 
+                  icon="pi pi-chart-line" 
+                  size="small"
+                  severity="info"
+                  [text]="true"
+                  pTooltip="View Transactions"
+                  (onClick)="onPositionRowClick(position); $event.stopPropagation()">
+                </p-button>
+                <p-button 
                   *ngIf="position.status === 'ACTIVE'"
                   icon="pi pi-minus" 
                   size="small"
                   severity="danger"
                   [text]="true"
                   pTooltip="Sell Position"
-                  (onClick)="showSellPositionDialog(position)">
+                  (onClick)="showSellPositionDialog(position); $event.stopPropagation()">
                 </p-button>
               </div>
             </td>
@@ -337,6 +348,13 @@
     </div>
   </ng-template>
 </p-dialog>
+
+<!-- Transaction Sidebar -->
+<app-transaction-sidebar
+  [visible]="showTransactionSidebar"
+  [position]="selectedPositionForTransactions"
+  (visibleChange)="onTransactionSidebarVisibilityChange($event)">
+</app-transaction-sidebar>
 
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>

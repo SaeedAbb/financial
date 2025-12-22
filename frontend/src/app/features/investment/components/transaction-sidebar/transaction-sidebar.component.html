@@ -1,0 +1,272 @@
+<p-drawer 
+  [(visible)]="visible" 
+  position="right" 
+  [style]="{ width: '50vw', minWidth: '600px' }"
+  (onHide)="onHide()"
+  [modal]="false">
+  
+  <ng-template pTemplate="header">
+    <div class="sidebar-header">
+      <h3 class="m-0">
+        <i class="pi pi-chart-line mr-2"></i>
+        Transaction History
+      </h3>
+      @if (position) {
+        <div class="position-info">
+          <span class="position-symbol">{{ position.stock.symbol }}</span>
+          <span class="position-details">
+            {{ position.quantity | number:'1.0-2' }} shares
+          </span>
+        </div>
+      }
+    </div>
+  </ng-template>
+
+  <div class="transaction-sidebar-content">
+    <!-- Loading State -->
+    @if (loading) {
+      <div class="loading-container">
+        <p-progressSpinner strokeWidth="3"></p-progressSpinner>
+        <p>Loading transactions...</p>
+      </div>
+    } @else {
+      <!-- Summary Cards -->
+      <div class="summary-cards">
+        <p-card class="summary-card buy-card">
+          <div class="summary-content">
+            <div class="summary-icon">
+              <i class="pi pi-plus-circle"></i>
+            </div>
+            <div class="summary-details">
+              <span class="summary-label">Total Bought</span>
+              <span class="summary-value buy-value">
+                ${{ getTotalBought() | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card class="summary-card sell-card">
+          <div class="summary-content">
+            <div class="summary-icon">
+              <i class="pi pi-minus-circle"></i>
+            </div>
+            <div class="summary-details">
+              <span class="summary-label">Total Sold</span>
+              <span class="summary-value sell-value">
+                ${{ getTotalSold() | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card class="summary-card fees-card">
+          <div class="summary-content">
+            <div class="summary-icon">
+              <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <div class="summary-details">
+              <span class="summary-label">Total Fees</span>
+              <span class="summary-value fees-value">
+                ${{ getTotalFees() | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card class="summary-card quantity-card">
+          <div class="summary-content">
+            <div class="summary-icon">
+              <i class="pi pi-chart-bar"></i>
+            </div>
+            <div class="summary-details">
+              <span class="summary-label">Net Quantity</span>
+              <span class="summary-value quantity-value">
+                {{ getNetQuantity() | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="filter-row">
+          <div class="filter-item">
+            <label for="search-input">Search</label>
+            <p-iconField iconPosition="left">
+              <p-inputIcon styleClass="pi pi-search"></p-inputIcon>
+              <input 
+                pInputText 
+                id="search-input"
+                [(ngModel)]="filterValue" 
+                (input)="onFilter()"
+                placeholder="Search symbol, type, or notes..."
+                class="w-full" />
+            </p-iconField>
+          </div>
+          
+          <div class="filter-item">
+            <p-button 
+              icon="pi pi-filter-slash" 
+              label="Reset Filters" 
+              severity="secondary"
+              size="small"
+              (onClick)="resetFilters()"
+              [text]="true">
+            </p-button>
+          </div>
+        </div>
+
+        <div class="filter-row">
+          <div class="filter-item">
+            <label>Date From</label>
+            <p-datePicker 
+              [(ngModel)]="dateFilterStart"
+              (onSelect)="onFilter()"
+              [showIcon]="true"
+              dateFormat="yy-mm-dd"
+              placeholder="Start date">
+            </p-datePicker>
+          </div>
+          
+          <div class="filter-item">
+            <label>Date To</label>
+            <p-datePicker 
+              [(ngModel)]="dateFilterEnd"
+              (onSelect)="onFilter()"
+              [showIcon]="true"
+              dateFormat="yy-mm-dd"
+              placeholder="End date">
+            </p-datePicker>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transactions Table -->
+      <div class="transactions-table-container">
+        @if (filteredTransactions.length === 0 && !loading) {
+          <div class="no-transactions">
+            <i class="pi pi-info-circle"></i>
+            <p>No transactions found for this position.</p>
+          </div>
+        } @else {
+          <p-table 
+            [value]="filteredTransactions"
+            [scrollable]="true"
+            scrollHeight="400px"
+            styleClass="p-datatable-sm"
+            [tableStyle]="{ 'min-width': '100%' }">
+            
+            <ng-template pTemplate="header">
+              <tr>
+                <th 
+                  class="sortable-header" 
+                  (click)="onSort('transactionDate')"
+                  pTooltip="Click to sort by date">
+                  Date
+                  <i [class]="getSortIcon('transactionDate')"></i>
+                </th>
+                <th 
+                  class="sortable-header" 
+                  (click)="onSort('transactionType')"
+                  pTooltip="Click to sort by type">
+                  Type
+                  <i [class]="getSortIcon('transactionType')"></i>
+                </th>
+                <th 
+                  class="sortable-header text-right" 
+                  (click)="onSort('quantity')"
+                  pTooltip="Click to sort by quantity">
+                  Quantity
+                  <i [class]="getSortIcon('quantity')"></i>
+                </th>
+                <th 
+                  class="sortable-header text-right" 
+                  (click)="onSort('pricePerUnit')"
+                  pTooltip="Click to sort by price">
+                  Price
+                  <i [class]="getSortIcon('pricePerUnit')"></i>
+                </th>
+                <th 
+                  class="sortable-header text-right" 
+                  (click)="onSort('totalAmount')"
+                  pTooltip="Click to sort by total">
+                  Total Amount
+                  <i [class]="getSortIcon('totalAmount')"></i>
+                </th>
+                <th class="text-right">Fees</th>
+                <th>Notes</th>
+              </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="body" let-transaction>
+              <tr class="transaction-row">
+                <td>
+                  <span class="transaction-date">
+                    {{ transaction.transactionDate | date:'MMM d, y' }}
+                  </span>
+                </td>
+                <td>
+                  <p-tag 
+                    [value]="transaction.transactionType"
+                    [severity]="getTransactionTypeSeverity(transaction.transactionType)"
+                    [icon]="getTransactionTypeIcon(transaction.transactionType)">
+                  </p-tag>
+                </td>
+                <td class="text-right">
+                  <span class="quantity-value">
+                    {{ transaction.quantity | number:'1.2-2' }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  <span class="price-value">
+                    ${{ transaction.pricePerUnit | number:'1.2-2' }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  <span class="total-value" 
+                    [class.buy-total]="transaction.transactionType === TransactionType.BUY"
+                    [class.sell-total]="transaction.transactionType === TransactionType.SELL">
+                    ${{ transaction.totalAmount | number:'1.2-2' }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  @if (transaction.fees && transaction.fees > 0) {
+                    <span class="fees-value">
+                      ${{ transaction.fees | number:'1.2-2' }}
+                    </span>
+                  } @else {
+                    <span class="no-fees">-</span>
+                  }
+                </td>
+                <td>
+                  @if (transaction.notes) {
+                    <span class="notes-text" [pTooltip]="transaction.notes">
+                      {{ transaction.notes.length > 30 ? (transaction.notes | slice:0:30) + '...' : transaction.notes }}
+                    </span>
+                  } @else {
+                    <span class="no-notes">-</span>
+                  }
+                </td>
+              </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="7" class="text-center">
+                  <div class="empty-message">
+                    <i class="pi pi-filter"></i>
+                    <p>No transactions match the current filters.</p>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      </div>
+    }
+  </div>
+</p-drawer>
