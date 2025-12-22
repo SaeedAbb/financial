@@ -1,4 +1,4 @@
-package com.basis.api.features.investment;
+package com.basis.api.features.investment.portfolio;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,5 +1,7 @@
-package com.basis.api.features.investment;
+package com.basis.api.features.investment.portfolio;
 
+import com.basis.api.features.investment.stock.Stock;
+import com.basis.api.features.investment.stock.StockStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;

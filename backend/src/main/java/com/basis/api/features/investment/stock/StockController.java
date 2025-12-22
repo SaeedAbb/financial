@@ -1,4 +1,4 @@
-package com.basis.api.features.investment;
+package com.basis.api.features.investment.stock;
 
 import com.basis.api.features.investment.dto.BuyStockRequest;
 import com.basis.api.features.investment.dto.SellStockRequest;

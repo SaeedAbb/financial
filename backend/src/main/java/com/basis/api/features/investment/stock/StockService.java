@@ -1,8 +1,10 @@
-package com.basis.api.features.investment;
+package com.basis.api.features.investment.stock;
 
 import com.basis.api.features.investment.dto.BuyStockRequest;
 import com.basis.api.features.investment.dto.SellStockRequest;
 import com.basis.api.features.investment.dto.StockDTO;
+import com.basis.api.features.investment.portfolio.Portfolio;
+import com.basis.api.features.investment.portfolio.PortfolioRepository;
 import com.basis.api.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

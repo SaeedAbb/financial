@@ -1,4 +1,4 @@
-package com.basis.api.features.investment;
+package com.basis.api.features.investment.stock;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;

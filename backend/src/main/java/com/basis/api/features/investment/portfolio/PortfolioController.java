@@ -1,4 +1,4 @@
-package com.basis.api.features.investment;
+package com.basis.api.features.investment.portfolio;
 
 import com.basis.api.features.investment.dto.CreatePortfolioRequest;
 import com.basis.api.features.investment.dto.PortfolioDTO;

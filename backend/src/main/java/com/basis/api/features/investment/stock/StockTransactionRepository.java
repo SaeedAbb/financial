@@ -1,4 +1,4 @@
-package com.basis.api.features.investment;
+package com.basis.api.features.investment.stock;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

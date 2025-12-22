@@ -1,6 +1,6 @@
 package com.basis.api.features.investment.dto;
 
-import com.basis.api.features.investment.StockStatus;
+import com.basis.api.features.investment.stock.StockStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.math.BigDecimal;

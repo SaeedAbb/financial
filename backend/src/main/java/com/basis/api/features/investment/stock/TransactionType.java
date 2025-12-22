@@ -1,4 +1,4 @@
-package com.basis.api.features.investment;
+package com.basis.api.features.investment.stock;
 
 public enum TransactionType {
     BUY("BUY"),
