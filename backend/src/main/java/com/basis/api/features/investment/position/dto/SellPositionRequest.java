@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 public class SellPositionRequest {
 
-    @NotNull(message = "Position ID is required")
+    // Note: positionId is set by the controller from the UUID path parameter
     private Long positionId;
 
     @NotNull(message = "Quantity to sell is required")
