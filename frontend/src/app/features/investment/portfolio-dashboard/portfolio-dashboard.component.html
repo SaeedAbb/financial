@@ -1,0 +1,208 @@
+<div class="portfolio-dashboard">
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>Investment Portfolios</h2>
+    <p-button 
+      label="Create Portfolio" 
+      icon="pi pi-plus" 
+      (click)="showCreateDialog()"
+      [loading]="loading">
+    </p-button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid mb-4" *ngIf="summary">
+    <div class="col-12 md:col-3">
+      <p-card>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-primary">{{ summary.totalPortfolios }}</div>
+          <div class="text-500">Total Portfolios</div>
+        </div>
+      </p-card>
+    </div>
+    <div class="col-12 md:col-3">
+      <p-card>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-green-500">{{ summary.totalActiveStocks }}</div>
+          <div class="text-500">Active Stocks</div>
+        </div>
+      </p-card>
+    </div>
+    <div class="col-12 md:col-3">
+      <p-card>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-blue-500">{{ formatAmount(summary.totalInvestment) }}</div>
+          <div class="text-500">Total Investment</div>
+        </div>
+      </p-card>
+    </div>
+    <div class="col-12 md:col-3">
+      <p-card>
+        <div class="text-center">
+          <div class="text-2xl font-bold" [class]="getGainLossColorClass(summary.totalGainLoss)">
+            {{ formatAmount(summary.totalGainLoss) }}
+          </div>
+          <div class="text-500">Total Gain/Loss</div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="grid">
+    <div class="col-12" *ngFor="let item of [1,2,3]">
+      <p-card>
+        <p-skeleton height="4rem"></p-skeleton>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && portfolios.length === 0" class="text-center py-8">
+    <i class="pi pi-briefcase text-6xl text-300 mb-3"></i>
+    <h3 class="text-900 font-bold mb-2">No Portfolios Yet</h3>
+    <p class="text-600 mb-4">Create your first portfolio to start tracking your investments</p>
+    <p-button 
+      label="Create Portfolio" 
+      icon="pi pi-plus" 
+      (click)="showCreateDialog()">
+    </p-button>
+  </div>
+
+  <!-- Portfolios Grid -->
+  <div class="grid" *ngIf="!loading && portfolios.length > 0">
+    <div class="col-12 md:col-6 lg:col-4" *ngFor="let portfolio of portfolios">
+      <p-card 
+        [header]="portfolio.name"
+        styleClass="h-full cursor-pointer hover:shadow-lg transition-all transition-duration-200"
+        (click)="viewPortfolio(portfolio)">
+        
+        <div class="portfolio-metrics">
+          <div class="flex justify-content-between align-items-center mb-3">
+            <span class="text-500">Investment</span>
+            <span class="font-bold">{{ formatAmount(portfolio.totalInvestment) }}</span>
+          </div>
+          
+          <div class="flex justify-content-between align-items-center mb-3">
+            <span class="text-500">Gain/Loss</span>
+            <span class="font-bold" [class]="getGainLossColorClass(portfolio.totalGainLoss)">
+              {{ formatAmount(portfolio.totalGainLoss) }}
+              <span class="text-sm ml-1">({{ formatPercentage(portfolio.gainLossPercentage) }})</span>
+            </span>
+          </div>
+
+          <div class="flex justify-content-between align-items-center mb-3">
+            <span class="text-500">Active Stocks</span>
+            <p-tag [value]="portfolio.activeStocksCount.toString()" severity="success"></p-tag>
+          </div>
+
+          <div class="flex justify-content-between align-items-center mb-3" *ngIf="portfolio.soldStocksCount > 0">
+            <span class="text-500">Sold Stocks</span>
+            <p-tag [value]="portfolio.soldStocksCount.toString()" severity="info"></p-tag>
+          </div>
+
+          <div *ngIf="portfolio.description" class="text-500 text-sm mt-2">
+            {{ portfolio.description }}
+          </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+          <div class="flex justify-content-between">
+            <p-button 
+              icon="pi pi-eye" 
+              severity="secondary" 
+              size="small"
+              pTooltip="View Portfolio"
+              (click)="viewPortfolio(portfolio); $event.stopPropagation()">
+            </p-button>
+            <p-button 
+              icon="pi pi-pencil" 
+              severity="secondary" 
+              size="small"
+              pTooltip="Edit Portfolio"
+              (click)="editPortfolio(portfolio); $event.stopPropagation()">
+            </p-button>
+            <p-button 
+              icon="pi pi-trash" 
+              severity="danger" 
+              size="small"
+              pTooltip="Delete Portfolio"
+              (click)="confirmDeletePortfolio(portfolio); $event.stopPropagation()">
+            </p-button>
+          </div>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Create/Edit Portfolio Dialog -->
+  <p-dialog 
+    [header]="isEditMode ? 'Edit Portfolio' : 'Create Portfolio'"
+    [(visible)]="showDialog"
+    [modal]="true"
+    [closable]="false"
+    [style]="{width: '450px'}">
+    
+    <form [formGroup]="portfolioForm" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="name">Portfolio Name *</label>
+        <input 
+          type="text" 
+          id="name"
+          formControlName="name"
+          pInputText 
+          class="w-full"
+          [class.ng-invalid]="portfolioForm.get('name')?.invalid && portfolioForm.get('name')?.touched"
+          placeholder="Enter portfolio name">
+        <small 
+          class="p-error" 
+          *ngIf="portfolioForm.get('name')?.hasError('required') && portfolioForm.get('name')?.touched">
+          Portfolio name is required
+        </small>
+        <small 
+          class="p-error" 
+          *ngIf="portfolioForm.get('name')?.hasError('maxlength')">
+          Portfolio name cannot exceed 100 characters
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea 
+          id="description"
+          formControlName="description"
+          pTextarea 
+          rows="3" 
+          class="w-full"
+          [class.ng-invalid]="portfolioForm.get('description')?.invalid"
+          placeholder="Enter portfolio description (optional)">
+        </textarea>
+        <small 
+          class="p-error" 
+          *ngIf="portfolioForm.get('description')?.hasError('maxlength')">
+          Description cannot exceed 1000 characters
+        </small>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <p-button 
+        label="Cancel" 
+        severity="secondary" 
+        (click)="hideDialog()"
+        [disabled]="submitting">
+      </p-button>
+      <p-button 
+        [label]="isEditMode ? 'Update' : 'Create'"
+        (click)="onSubmit()"
+        [loading]="submitting"
+        [disabled]="portfolioForm.invalid">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Toast Messages -->
+  <p-toast></p-toast>
+  
+  <!-- Confirm Dialog -->
+  <p-confirmDialog></p-confirmDialog>
+</div>

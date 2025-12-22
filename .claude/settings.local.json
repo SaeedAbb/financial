@@ -34,7 +34,13 @@
       "Bash(docker-compose logs:*)",
       "Bash(docker-compose ps:*)",
       "Bash(docker-compose up:*)",
-      "Bash(docker:*)"
+      "Bash(docker:*)",
+      "Bash(mv:*)",
+      "Bash(git mv:*)",
+      "Bash(cp:*)",
+      "Bash(sed:*)",
+      "Bash(npm start)",
+      "Bash(ng build:*)"
     ],
     "deny": []
   }
