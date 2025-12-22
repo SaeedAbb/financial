@@ -1,16 +1,11 @@
 package com.basis.api.features.investment.portfolio;
 
-import com.basis.api.features.investment.stock.Stock;
-import com.basis.api.features.investment.stock.StockStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -37,9 +32,6 @@ public class Portfolio {
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     private String description;
 
-    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Stock> stocks = new ArrayList<>();
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private ZonedDateTime createdAt;
@@ -59,48 +51,6 @@ public class Portfolio {
         this.userId = userId;
         this.name = name;
         this.description = description;
-    }
-
-    // Business methods
-    public List<Stock> getActiveStocks() {
-        return stocks.stream()
-                .filter(stock -> stock.getStatus() == StockStatus.ACTIVE)
-                .toList();
-    }
-
-    public List<Stock> getSoldStocks() {
-        return stocks.stream()
-                .filter(stock -> stock.getStatus() == StockStatus.SOLD)
-                .toList();
-    }
-
-    public BigDecimal calculateTotalInvestment() {
-        return stocks.stream()
-                .filter(stock -> stock.getStatus() == StockStatus.ACTIVE)
-                .map(stock -> stock.getPurchasePrice().multiply(stock.getQuantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public BigDecimal calculateTotalCurrentValue(BigDecimal currentMarketPrice) {
-        return getActiveStocks().stream()
-                .map(stock -> currentMarketPrice.multiply(stock.getQuantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public BigDecimal calculateTotalGainLoss() {
-        return getSoldStocks().stream()
-                .map(Stock::calculateGainLoss)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public void addStock(Stock stock) {
-        stocks.add(stock);
-        stock.setPortfolio(this);
-    }
-
-    public void removeStock(Stock stock) {
-        stocks.remove(stock);
-        stock.setPortfolio(null);
     }
 
     // Getters and setters
@@ -142,14 +92,6 @@ public class Portfolio {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public List<Stock> getStocks() {
-        return stocks;
-    }
-
-    public void setStocks(List<Stock> stocks) {
-        this.stocks = stocks;
     }
 
     public ZonedDateTime getCreatedAt() {

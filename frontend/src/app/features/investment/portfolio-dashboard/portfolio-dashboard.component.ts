@@ -17,7 +17,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subject, takeUntil } from 'rxjs';
-import { Portfolio, CreatePortfolioRequest, PortfolioSummary } from '../../../core/models/portfolio.model';
+import { Portfolio, CreatePortfolioRequest, PortfolioSummary, PortfolioStatistics } from '../../../core/models/portfolio.model';
 import { PortfolioService } from '../../../core/services/portfolio.service';
 
 @Component({
@@ -53,8 +53,11 @@ export class PortfolioDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   portfolios: Portfolio[] = [];
-  summary: PortfolioSummary | null = null;
+  portfolioStatistics: Map<string, PortfolioStatistics> = new Map();
+  portfolioSummary: PortfolioSummary | null = null;
   loading = false;
+  loadingSummary = false;
+  loadingStatistics = false;
   submitting = false;
   showDialog = false;
   isEditMode = false;
@@ -66,21 +69,24 @@ export class PortfolioDashboardComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.loadPortfolios();
-    this.loadSummary();
+    this.loadData();
     
     // Subscribe to portfolio updates
     this.portfolioService.portfoliosUpdated
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.loadPortfolios();
-        this.loadSummary();
+        this.loadData();
       });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  loadData(): void {
+    this.loadPortfolios();
+    this.loadSummary();
   }
 
   loadPortfolios(): void {
@@ -91,6 +97,8 @@ export class PortfolioDashboardComponent implements OnInit, OnDestroy {
         next: (portfolios) => {
           this.portfolios = portfolios;
           this.loading = false;
+          // Load individual portfolio statistics
+          this.loadPortfolioStatistics();
         },
         error: (error) => {
           console.error('Error loading portfolios:', error);
@@ -105,16 +113,45 @@ export class PortfolioDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadSummary(): void {
+    this.loadingSummary = true;
     this.portfolioService.getPortfoliosSummary()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (summary) => {
-          this.summary = summary;
+          this.portfolioSummary = summary;
+          this.loadingSummary = false;
         },
         error: (error) => {
-          console.error('Error loading summary:', error);
+          console.error('Error loading portfolio summary:', error);
+          this.loadingSummary = false;
         }
       });
+  }
+
+  loadPortfolioStatistics(): void {
+    if (this.portfolios.length === 0) return;
+    
+    this.loadingStatistics = true;
+    this.portfolioStatistics.clear();
+    
+    // Load statistics for each portfolio
+    const statisticsPromises = this.portfolios.map(portfolio =>
+      this.portfolioService.getPortfolioStatistics(portfolio.uuid)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (statistics) => {
+            this.portfolioStatistics.set(portfolio.uuid, statistics);
+          },
+          error: (error) => {
+            console.error(`Error loading statistics for portfolio ${portfolio.uuid}:`, error);
+          }
+        })
+    );
+    
+    // Set loading to false when all are done (or after a timeout)
+    setTimeout(() => {
+      this.loadingStatistics = false;
+    }, 2000);
   }
 
   showCreateDialog(): void {
@@ -217,15 +254,117 @@ export class PortfolioDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  formatAmount(amount: number): string {
-    return this.portfolioService.formatAmount(amount);
+  // Utility methods for getting portfolio statistics
+  getPortfolioStatistics(portfolioUuid: string): PortfolioStatistics | null {
+    return this.portfolioStatistics.get(portfolioUuid) || null;
+  }
+
+  getPortfolioInvestment(portfolioUuid: string): number {
+    const stats = this.getPortfolioStatistics(portfolioUuid);
+    return stats?.totalInvestment || 0;
+  }
+
+  getPortfolioCurrentValue(portfolioUuid: string): number {
+    const stats = this.getPortfolioStatistics(portfolioUuid);
+    return stats?.totalCurrentValue || 0;
+  }
+
+  getPortfolioGainLoss(portfolioUuid: string): number {
+    const stats = this.getPortfolioStatistics(portfolioUuid);
+    return stats?.totalGainLoss || 0;
+  }
+
+  getPortfolioGainLossPercentage(portfolioUuid: string): number {
+    const stats = this.getPortfolioStatistics(portfolioUuid);
+    return stats?.gainLossPercentage || 0;
+  }
+
+  getPortfolioActivePositions(portfolioUuid: string): number {
+    const stats = this.getPortfolioStatistics(portfolioUuid);
+    return stats?.activePositionsCount || 0;
+  }
+
+  getPortfolioDistinctStocks(portfolioUuid: string): number {
+    const stats = this.getPortfolioStatistics(portfolioUuid);
+    return stats?.distinctStocksCount || 0;
+  }
+
+  // Formatting methods
+  formatCurrency(amount: number): string {
+    return this.portfolioService.formatCurrency(amount);
+  }
+
+  formatCurrencyCompact(amount: number): string {
+    return this.portfolioService.formatCurrencyCompact(amount);
   }
 
   formatPercentage(percentage: number): string {
     return this.portfolioService.formatPercentage(percentage);
   }
 
+  formatQuantity(quantity: number): string {
+    return this.portfolioService.formatQuantity(quantity);
+  }
+
   getGainLossColorClass(gainLoss: number): string {
     return this.portfolioService.getGainLossColorClass(gainLoss);
+  }
+
+  getPerformanceSeverity(gainLoss: number): 'success' | 'danger' | 'info' {
+    return this.portfolioService.getPerformanceSeverity(gainLoss);
+  }
+
+  getPerformanceBadgeClass(gainLoss: number): string {
+    return this.portfolioService.getPerformanceBadgeClass(gainLoss);
+  }
+
+  formatDate(dateString: string): string {
+    return this.portfolioService.formatDate(dateString);
+  }
+
+  getRelativeDateString(dateString: string): string {
+    return this.portfolioService.getRelativeDateString(dateString);
+  }
+
+  // Summary calculations
+  get totalPortfolios(): number {
+    return this.portfolioSummary?.totalPortfolios || 0;
+  }
+
+  get totalInvestment(): number {
+    return this.portfolioSummary?.totalInvestment || 0;
+  }
+
+  get totalCurrentValue(): number {
+    return this.portfolioSummary?.totalCurrentValue || 0;
+  }
+
+  get totalGainLoss(): number {
+    return this.portfolioSummary?.totalGainLoss || 0;
+  }
+
+  get totalGainLossPercentage(): number {
+    return this.portfolioSummary?.totalGainLossPercentage || 0;
+  }
+
+  get totalActivePositions(): number {
+    return this.portfolioSummary?.totalActivePositions || 0;
+  }
+
+  get totalDistinctStocks(): number {
+    return this.portfolioSummary?.totalDistinctStocks || 0;
+  }
+
+  // Helper methods
+  hasData(): boolean {
+    return this.portfolios.length > 0;
+  }
+
+  isGainer(portfolioUuid: string): boolean {
+    return this.getPortfolioGainLoss(portfolioUuid) > 0;
+  }
+
+  isLoser(portfolioUuid: string): boolean {
+    return this.getPortfolioGainLoss(portfolioUuid) < 0;
   }
 }

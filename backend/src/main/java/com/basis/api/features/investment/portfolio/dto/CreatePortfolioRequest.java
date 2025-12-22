@@ -1,7 +1,6 @@
-package com.basis.api.features.investment.dto;
+package com.basis.api.features.investment.portfolio.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 public class CreatePortfolioRequest {
 
@@ -36,13 +35,5 @@ public class CreatePortfolioRequest {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public String toString() {
-        return "CreatePortfolioRequest{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                '}';
     }
 }

@@ -5,9 +5,11 @@ import {
   Portfolio,
   CreatePortfolioRequest,
   UpdatePortfolioRequest,
-  PortfolioSummary,
-  PagedPortfolios
+  PagedPortfolios,
+  PortfolioStatistics,
+  PortfolioSummary
 } from '../models/portfolio.model';
+import { StockGroup } from '../models/stock-group.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -47,21 +49,21 @@ export class PortfolioService {
    * Get all portfolios for the current user (no pagination)
    */
   getAllPortfolios(): Observable<Portfolio[]> {
-    return this.http.get<Portfolio[]>(`${this.apiUrl}/all`);
+    return this.http.get<Portfolio[]>(this.apiUrl);
   }
 
   /**
    * Get a specific portfolio by UUID
    */
   getPortfolioByUuid(uuid: string): Observable<Portfolio> {
-    return this.http.get<Portfolio>(`${this.apiUrl}/${uuid}`);
+    return this.http.get<Portfolio>(`${this.apiUrl}/uuid/${uuid}`);
   }
 
   /**
    * Update an existing portfolio
    */
   updatePortfolio(uuid: string, portfolioData: UpdatePortfolioRequest): Observable<Portfolio> {
-    return this.http.put<Portfolio>(`${this.apiUrl}/${uuid}`, portfolioData).pipe(
+    return this.http.put<Portfolio>(`${this.apiUrl}/uuid/${uuid}`, portfolioData).pipe(
       tap(() => this.notifyPortfoliosUpdated())
     );
   }
@@ -70,7 +72,7 @@ export class PortfolioService {
    * Delete a portfolio and all associated stocks and transactions
    */
   deletePortfolio(uuid: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${uuid}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/uuid/${uuid}`).pipe(
       tap(() => this.notifyPortfoliosUpdated())
     );
   }
@@ -81,13 +83,6 @@ export class PortfolioService {
   searchPortfolios(name: string): Observable<Portfolio[]> {
     const params = new HttpParams().set('name', name);
     return this.http.get<Portfolio[]>(`${this.apiUrl}/search`, { params });
-  }
-
-  /**
-   * Get portfolios summary (totals, counts, etc.)
-   */
-  getPortfoliosSummary(): Observable<PortfolioSummary> {
-    return this.http.get<PortfolioSummary>(`${this.apiUrl}/summary`);
   }
 
   /**
@@ -168,17 +163,6 @@ export class PortfolioService {
     return 'pi pi-minus';
   }
 
-  /**
-   * Calculate portfolio performance metrics
-   */
-  calculatePerformanceMetrics(portfolio: Portfolio) {
-    return {
-      totalValue: portfolio.totalInvestment + portfolio.totalGainLoss,
-      isProfit: portfolio.totalGainLoss > 0,
-      isLoss: portfolio.totalGainLoss < 0,
-      hasStocks: portfolio.activeStocksCount > 0 || portfolio.soldStocksCount > 0
-    };
-  }
 
   /**
    * Validate portfolio name
@@ -192,5 +176,143 @@ export class PortfolioService {
    */
   validatePortfolioDescription(description: string | undefined): boolean {
     return !description || description.length <= 1000;
+  }
+
+  // ========== Portfolio Statistics Methods ==========
+
+  /**
+   * Get comprehensive statistics for a specific portfolio
+   */
+  getPortfolioStatistics(uuid: string): Observable<PortfolioStatistics> {
+    return this.http.get<PortfolioStatistics>(`${this.apiUrl}/${uuid}/statistics`);
+  }
+
+  /**
+   * Get summary statistics for all user portfolios
+   */
+  getPortfoliosSummary(): Observable<PortfolioSummary> {
+    return this.http.get<PortfolioSummary>(`${this.apiUrl}/summary`);
+  }
+
+  // ========== Stock Grouping Methods ==========
+
+  /**
+   * Get all stock groups for a portfolio
+   */
+  getStockGroups(
+    uuid: string, 
+    search?: string, 
+    sortBy: string = 'symbol', 
+    sortDir: string = 'asc'
+  ): Observable<StockGroup[]> {
+    let params = new HttpParams()
+      .set('sortBy', sortBy)
+      .set('sortDir', sortDir);
+
+    if (search && search.trim()) {
+      params = params.set('search', search.trim());
+    }
+
+    return this.http.get<StockGroup[]>(`${this.apiUrl}/${uuid}/stock-groups`, { params });
+  }
+
+  /**
+   * Get a specific stock group for a portfolio
+   */
+  getStockGroup(uuid: string, symbol: string): Observable<StockGroup> {
+    return this.http.get<StockGroup>(`${this.apiUrl}/${uuid}/stock-groups/${symbol}`);
+  }
+
+  // ========== Enhanced Utility Methods ==========
+
+  /**
+   * Format currency amount (changed to USD)
+   */
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  }
+
+  /**
+   * Format large currency amounts with K, M, B suffixes
+   */
+  formatCurrencyCompact(amount: number): string {
+    if (Math.abs(amount) >= 1e9) {
+      return this.formatCurrency(amount / 1e9) + 'B';
+    } else if (Math.abs(amount) >= 1e6) {
+      return this.formatCurrency(amount / 1e6) + 'M';
+    } else if (Math.abs(amount) >= 1e3) {
+      return this.formatCurrency(amount / 1e3) + 'K';
+    } else {
+      return this.formatCurrency(amount);
+    }
+  }
+
+  /**
+   * Format quantity with appropriate decimal places
+   */
+  formatQuantity(quantity: number): string {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: quantity >= 1 ? 2 : 6
+    }).format(quantity);
+  }
+
+  /**
+   * Get performance severity for PrimeNG components
+   */
+  getPerformanceSeverity(gainLoss: number): 'success' | 'danger' | 'info' {
+    if (gainLoss > 0) return 'success';
+    if (gainLoss < 0) return 'danger';
+    return 'info';
+  }
+
+  /**
+   * Get performance badge class
+   */
+  getPerformanceBadgeClass(gainLoss: number): string {
+    if (gainLoss > 0) return 'bg-green-100 text-green-800';
+    if (gainLoss < 0) return 'bg-red-100 text-red-800';
+    return 'bg-gray-100 text-gray-800';
+  }
+
+  /**
+   * Calculate days since date
+   */
+  getDaysSince(dateString: string): number {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  /**
+   * Get relative date string (e.g., "2 days ago")
+   */
+  getRelativeDateString(dateString: string): string {
+    const days = this.getDaysSince(dateString);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 30) return `${days} days ago`;
+    if (days < 365) return `${Math.floor(days / 30)} months ago`;
+    return `${Math.floor(days / 365)} years ago`;
+  }
+
+  /**
+   * Validate percentage (0-100)
+   */
+  validatePercentage(percentage: number): boolean {
+    return !isNaN(percentage) && percentage >= -100 && percentage <= 1000;
+  }
+
+  /**
+   * Validate currency amount (positive)
+   */
+  validateCurrencyAmount(amount: number): boolean {
+    return !isNaN(amount) && amount >= 0 && amount <= 1000000000; // Max 1 billion
   }
 }

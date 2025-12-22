@@ -1,10 +1,7 @@
 package com.basis.api.features.investment.portfolio;
 
-import com.basis.api.features.investment.dto.CreatePortfolioRequest;
-import com.basis.api.features.investment.dto.PortfolioDTO;
-import com.basis.api.features.investment.dto.StockDTO;
-import com.basis.api.features.investment.stock.Stock;
-import com.basis.api.features.investment.stock.StockStatus;
+import com.basis.api.features.investment.portfolio.dto.CreatePortfolioRequest;
+import com.basis.api.features.investment.portfolio.dto.PortfolioDTO;
 import com.basis.api.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,226 +21,120 @@ import java.util.stream.Collectors;
 public class PortfolioService {
 
     private static final Logger logger = LoggerFactory.getLogger(PortfolioService.class);
-    
+
     private final PortfolioRepository portfolioRepository;
 
     public PortfolioService(PortfolioRepository portfolioRepository) {
         this.portfolioRepository = portfolioRepository;
     }
 
-    /**
-     * Create a new portfolio
-     */
-    public PortfolioDTO createPortfolio(String userId, CreatePortfolioRequest request) {
-        logger.info("Creating new portfolio for user: {}", userId);
+    public PortfolioDTO createPortfolio(CreatePortfolioRequest request, String userId) {
+        logger.debug("Creating portfolio for user: {}", userId);
         
-        // Check for duplicate portfolio name
-        if (portfolioRepository.existsByUserIdAndNameIgnoreCase(userId, request.getName())) {
-            throw new IllegalArgumentException("Portfolio with name '" + request.getName() + "' already exists");
+        Portfolio portfolio = new Portfolio(userId, request.getName(), request.getDescription());
+        Portfolio savedPortfolio = portfolioRepository.save(portfolio);
+        
+        logger.info("Created portfolio with ID: {} for user: {}", savedPortfolio.getId(), userId);
+        return toDTO(savedPortfolio);
+    }
+
+    @Transactional(readOnly = true)
+    public PortfolioDTO getPortfolio(Long id, String userId) {
+        logger.debug("Fetching portfolio ID: {} for user: {}", id, userId);
+        
+        Portfolio portfolio = portfolioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with id: " + id));
+        
+        if (!portfolio.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Portfolio does not belong to user");
         }
         
-        Portfolio portfolio = new Portfolio(
-                userId,
-                request.getName().trim(),
-                request.getDescription() != null ? request.getDescription().trim() : null
-        );
-        
-        portfolio = portfolioRepository.save(portfolio);
-        logger.info("Created portfolio with UUID: {} for user: {}", portfolio.getUuid(), userId);
-        
-        return convertToDTO(portfolio, true);
+        return toDTO(portfolio);
     }
 
-    /**
-     * Get all portfolios for a user with pagination
-     */
     @Transactional(readOnly = true)
-    public Page<PortfolioDTO> getUserPortfolios(String userId, int page, int size, String sortBy, String sortDir) {
-        logger.debug("Fetching portfolios for user: {} (page: {}, size: {})", userId, page, size);
+    public PortfolioDTO getPortfolioByUuid(UUID uuid, String userId) {
+        logger.debug("Fetching portfolio UUID: {} for user: {}", uuid, userId);
         
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Portfolio portfolio = portfolioRepository.findByUuid(uuid)
+                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with UUID: " + uuid));
         
-        Page<Portfolio> portfoliosPage = portfolioRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        if (!portfolio.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Portfolio does not belong to user");
+        }
         
-        return portfoliosPage.map(portfolio -> convertToDTO(portfolio, false));
+        return toDTO(portfolio);
     }
 
-    /**
-     * Get all portfolios for a user (no pagination)
-     */
     @Transactional(readOnly = true)
-    public List<PortfolioDTO> getAllUserPortfolios(String userId) {
-        logger.debug("Fetching all portfolios for user: {}", userId);
+    public List<PortfolioDTO> getUserPortfolios(String userId) {
+        logger.debug("Fetching portfolios for user: {}", userId);
         
         List<Portfolio> portfolios = portfolioRepository.findByUserIdOrderByCreatedAtDesc(userId);
-        
         return portfolios.stream()
-                .map(portfolio -> convertToDTO(portfolio, false))
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get a specific portfolio by UUID
-     */
     @Transactional(readOnly = true)
-    public PortfolioDTO getPortfolioByUuid(String userId, UUID uuid) {
-        logger.debug("Fetching portfolio with UUID: {} for user: {}", uuid, userId);
+    public Page<PortfolioDTO> getUserPortfoliosPaged(String userId, int page, int size, String sortBy, String sortDir) {
+        logger.debug("Fetching paged portfolios for user: {} (page: {}, size: {})", userId, page, size);
         
-        Portfolio portfolio = portfolioRepository.findByUuidAndUserId(uuid, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with UUID: " + uuid));
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+            Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
         
-        return convertToDTO(portfolio, true);
+        return portfolioRepository.findByUserId(userId, pageable)
+                .map(this::toDTO);
     }
 
-    /**
-     * Update an existing portfolio
-     */
-    public PortfolioDTO updatePortfolio(String userId, UUID uuid, CreatePortfolioRequest request) {
-        logger.info("Updating portfolio with UUID: {} for user: {}", uuid, userId);
+    public PortfolioDTO updatePortfolio(Long id, CreatePortfolioRequest request, String userId) {
+        logger.debug("Updating portfolio ID: {} for user: {}", id, userId);
         
-        Portfolio portfolio = portfolioRepository.findByUuidAndUserId(uuid, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with UUID: " + uuid));
+        Portfolio portfolio = portfolioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with id: " + id));
         
-        // Check for duplicate portfolio name (excluding current portfolio)
-        if (portfolioRepository.existsByUserIdAndNameIgnoreCaseAndUuidNot(userId, request.getName(), uuid)) {
-            throw new IllegalArgumentException("Portfolio with name '" + request.getName() + "' already exists");
+        if (!portfolio.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Portfolio does not belong to user");
         }
         
-        portfolio.setName(request.getName().trim());
-        portfolio.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
+        portfolio.setName(request.getName());
+        portfolio.setDescription(request.getDescription());
         
-        portfolio = portfolioRepository.save(portfolio);
-        logger.info("Updated portfolio with UUID: {} for user: {}", uuid, userId);
+        Portfolio updatedPortfolio = portfolioRepository.save(portfolio);
+        logger.info("Updated portfolio ID: {} for user: {}", id, userId);
         
-        return convertToDTO(portfolio, true);
+        return toDTO(updatedPortfolio);
     }
 
-    /**
-     * Delete a portfolio and all associated stocks and transactions
-     * Note: Database CASCADE constraints handle the deletion of stocks and stock_transactions automatically
-     */
-    public void deletePortfolio(String userId, UUID uuid) {
-        logger.info("Deleting portfolio with UUID: {} for user: {}", uuid, userId);
+    public void deletePortfolio(Long id, String userId) {
+        logger.debug("Deleting portfolio ID: {} for user: {}", id, userId);
         
-        // Find and verify ownership
-        Portfolio portfolio = portfolioRepository.findByUuidAndUserId(uuid, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with UUID: " + uuid));
+        Portfolio portfolio = portfolioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with id: " + id));
         
-        logger.info("Found portfolio '{}' with {} stocks for deletion", portfolio.getName(), portfolio.getStocks().size());
+        if (!portfolio.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Portfolio does not belong to user");
+        }
         
-        // Delete the portfolio (CASCADE constraints will handle stocks and transactions)
-        portfolioRepository.deleteByUuidAndUserId(uuid, userId);
-        
-        logger.info("Successfully deleted portfolio '{}' and all associated data for user: {}", portfolio.getName(), userId);
+        portfolioRepository.delete(portfolio);
+        logger.info("Deleted portfolio ID: {} for user: {}", id, userId);
     }
 
-    /**
-     * Get portfolios count for a user
-     */
     @Transactional(readOnly = true)
-    public long getPortfoliosCount(String userId) {
-        logger.debug("Counting portfolios for user: {}", userId);
+    public long getUserPortfolioCount(String userId) {
         return portfolioRepository.countByUserId(userId);
     }
 
-    /**
-     * Search portfolios by name
-     */
-    @Transactional(readOnly = true)
-    public List<PortfolioDTO> searchPortfoliosByName(String userId, String name) {
-        logger.debug("Searching portfolios for user: {} with name containing: {}", userId, name);
-        
-        List<Portfolio> portfolios = portfolioRepository.findByUserIdAndNameContainingIgnoreCase(userId, name);
-        
-        return portfolios.stream()
-                .map(portfolio -> convertToDTO(portfolio, false))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Convert Portfolio entity to PortfolioDTO
-     */
-    private PortfolioDTO convertToDTO(Portfolio portfolio, boolean includeStocks) {
-        PortfolioDTO dto = new PortfolioDTO(
-                portfolio.getId(),
-                portfolio.getUuid(),
-                portfolio.getName(),
-                portfolio.getDescription(),
-                portfolio.getCreatedAt(),
-                portfolio.getUpdatedAt()
-        );
-
-        // Calculate performance metrics
-        List<Stock> activeStocks = portfolio.getActiveStocks();
-        List<Stock> soldStocks = portfolio.getSoldStocks();
-
-        dto.setActiveStocksCount(activeStocks.size());
-        dto.setSoldStocksCount(soldStocks.size());
-        
-        // Calculate total investment for active stocks
-        BigDecimal totalInvestment = activeStocks.stream()
-                .map(Stock::calculateInvestmentValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        dto.setTotalInvestment(totalInvestment);
-
-        // Calculate total gain/loss for sold stocks
-        BigDecimal totalGainLoss = soldStocks.stream()
-                .map(Stock::calculateGainLoss)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        dto.setTotalGainLoss(totalGainLoss);
-
-        // Calculate gain/loss percentage
-        if (totalInvestment.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal gainLossPercentage = totalGainLoss
-                    .divide(totalInvestment, 4, RoundingMode.HALF_UP)
-                    .multiply(new BigDecimal("100"));
-            dto.setGainLossPercentage(gainLossPercentage);
-        } else {
-            dto.setGainLossPercentage(BigDecimal.ZERO);
-        }
-
-        // Include stocks if requested
-        if (includeStocks) {
-            List<StockDTO> stockDTOs = portfolio.getStocks().stream()
-                    .map(this::convertStockToDTO)
-                    .collect(Collectors.toList());
-            dto.setStocks(stockDTOs);
-        }
-
-        return dto;
-    }
-
-    /**
-     * Convert Stock entity to StockDTO (basic conversion for portfolio view)
-     */
-    private StockDTO convertStockToDTO(Stock stock) {
-        StockDTO dto = new StockDTO(
-                stock.getId(),
-                stock.getUuid(),
-                stock.getPortfolio().getId(),
-                stock.getPortfolio().getName(),
-                stock.getSymbol(),
-                stock.getCompanyName(),
-                stock.getQuantity(),
-                stock.getPurchasePrice(),
-                stock.getPurchaseDate(),
-                stock.getStatus(),
-                stock.getSalePrice(),
-                stock.getSaleDate(),
-                stock.getCreatedAt(),
-                stock.getUpdatedAt()
-        );
-
-        // Calculate investment value
-        dto.setInvestmentValue(stock.calculateInvestmentValue());
-        
-        // Calculate gain/loss for sold stocks
-        if (stock.getStatus() == StockStatus.SOLD) {
-            dto.setGainLoss(stock.calculateGainLoss());
-            dto.setGainLossPercentage(stock.calculateGainLossPercentage());
-        }
-
+    private PortfolioDTO toDTO(Portfolio portfolio) {
+        PortfolioDTO dto = new PortfolioDTO();
+        dto.setId(portfolio.getId());
+        dto.setUuid(portfolio.getUuid());
+        dto.setUserId(portfolio.getUserId());
+        dto.setName(portfolio.getName());
+        dto.setDescription(portfolio.getDescription());
+        dto.setCreatedAt(portfolio.getCreatedAt());
+        dto.setUpdatedAt(portfolio.getUpdatedAt());
         return dto;
     }
 }

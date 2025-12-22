@@ -1,3 +1,8 @@
+// DEPRECATED: This model is deprecated. Use PortfolioPosition and StockMaster instead.
+// The backend has been refactored to separate concerns:
+// - PortfolioPosition for position data
+// - StockMaster for stock reference data
+// - Transaction for transaction history
 export interface Stock {
   id: number;
   uuid: string;

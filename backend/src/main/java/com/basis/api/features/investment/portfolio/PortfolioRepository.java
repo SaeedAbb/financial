@@ -22,6 +22,11 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     Page<Portfolio> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
 
     /**
+     * Find all portfolios for a specific user with pagination (generic method)
+     */
+    Page<Portfolio> findByUserId(String userId, Pageable pageable);
+
+    /**
      * Find all portfolios for a specific user
      */
     List<Portfolio> findByUserIdOrderByCreatedAtDesc(String userId);
@@ -30,6 +35,11 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
      * Find a specific portfolio by UUID and user ID
      */
     Optional<Portfolio> findByUuidAndUserId(UUID uuid, String userId);
+
+    /**
+     * Find a specific portfolio by UUID (without user restriction)
+     */
+    Optional<Portfolio> findByUuid(UUID uuid);
 
     /**
      * Find portfolios by user ID and name (case insensitive search)
@@ -57,6 +67,7 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
      */
     @Query("SELECT COUNT(p) > 0 FROM Portfolio p WHERE p.userId = :userId AND LOWER(p.name) = LOWER(:name) AND p.uuid != :excludeUuid")
     boolean existsByUserIdAndNameIgnoreCaseAndUuidNot(@Param("userId") String userId, @Param("name") String name, @Param("excludeUuid") UUID excludeUuid);
+
 
     /**
      * Delete portfolio by UUID and user ID (ensures ownership)

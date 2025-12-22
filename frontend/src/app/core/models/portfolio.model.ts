@@ -1,19 +1,52 @@
-import { Stock } from './stock.model';
-
 export interface Portfolio {
   id: number;
   uuid: string;
+  userId: string;
   name: string;
   description?: string;
-  stocks?: Stock[];
+  createdAt: string; // ISO datetime string
+  updatedAt: string; // ISO datetime string
+}
+
+// Enhanced portfolio with statistics
+export interface PortfolioWithStatistics extends Portfolio {
   totalInvestment: number;
   totalCurrentValue: number;
   totalGainLoss: number;
   gainLossPercentage: number;
-  activeStocksCount: number;
-  soldStocksCount: number;
-  createdAt: string; // ISO datetime string
-  updatedAt: string; // ISO datetime string
+  activePositionsCount: number;
+  closedPositionsCount: number;
+  totalPositionsCount: number;
+  distinctStocksCount: number;
+}
+
+// Portfolio statistics interface
+export interface PortfolioStatistics {
+  id: number;
+  uuid: string;
+  name: string;
+  totalInvestment: number;
+  totalCurrentValue: number;
+  totalGainLoss: number;
+  gainLossPercentage: number;
+  activePositionsCount: number;
+  closedPositionsCount: number;
+  totalPositionsCount: number;
+  distinctStocksCount: number;
+  oldestPositionDate?: string;
+  newestPositionDate?: string;
+}
+
+// Portfolio summary for dashboard
+export interface PortfolioSummary {
+  totalPortfolios: number;
+  totalActivePositions: number;
+  totalClosedPositions: number;
+  totalDistinctStocks: number;
+  totalInvestment: number;
+  totalCurrentValue: number;
+  totalGainLoss: number;
+  totalGainLossPercentage: number;
 }
 
 export interface CreatePortfolioRequest {
@@ -24,14 +57,6 @@ export interface CreatePortfolioRequest {
 export interface UpdatePortfolioRequest {
   name: string;
   description?: string;
-}
-
-export interface PortfolioSummary {
-  totalPortfolios: number;
-  totalActiveStocks: number;
-  totalSoldStocks: number;
-  totalInvestment: number;
-  totalGainLoss: number;
 }
 
 export interface PagedPortfolios {
