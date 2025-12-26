@@ -28,6 +28,9 @@ public class CreateStockMasterRequest {
     @Pattern(regexp = "^[A-Z]{2}[A-Z0-9]{9}[0-9]$", message = "Invalid ISIN format")
     private String isin;
 
+    @Size(max = 50, message = "Stock type must not exceed 50 characters")
+    private String stockType;
+
     // Default constructor
     public CreateStockMasterRequest() {}
 
@@ -92,5 +95,13 @@ public class CreateStockMasterRequest {
 
     public void setIsin(String isin) {
         this.isin = isin;
+    }
+
+    public String getStockType() {
+        return stockType;
+    }
+
+    public void setStockType(String stockType) {
+        this.stockType = stockType;
     }
 }

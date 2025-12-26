@@ -52,6 +52,10 @@ public class StockMaster {
     @DecimalMin(value = "0", message = "Current price cannot be negative")
     private BigDecimal currentPrice = BigDecimal.ZERO;
 
+    @Column(name = "stock_type", length = 50)
+    @Size(max = 50, message = "Stock type must not exceed 50 characters")
+    private String stockType;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private ZonedDateTime createdAt;
@@ -157,6 +161,14 @@ public class StockMaster {
         return currentPrice != null ? currentPrice : BigDecimal.ZERO;
     }
 
+    public String getStockType() {
+        return stockType;
+    }
+
+    public void setStockType(String stockType) {
+        this.stockType = stockType;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -194,6 +206,7 @@ public class StockMaster {
                 ", companyName='" + companyName + '\'' +
                 ", exchange='" + exchange + '\'' +
                 ", sector='" + sector + '\'' +
+                ", stockType='" + stockType + '\'' +
                 '}';
     }
 }

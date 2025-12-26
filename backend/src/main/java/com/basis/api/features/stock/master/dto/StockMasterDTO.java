@@ -13,6 +13,7 @@ public class StockMasterDTO {
     private String industry;
     private MarketCapCategory marketCapCategory;
     private String isin;
+    private String stockType;
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
 
@@ -91,6 +92,14 @@ public class StockMasterDTO {
 
     public void setIsin(String isin) {
         this.isin = isin;
+    }
+
+    public String getStockType() {
+        return stockType;
+    }
+
+    public void setStockType(String stockType) {
+        this.stockType = stockType;
     }
 
     public ZonedDateTime getCreatedAt() {

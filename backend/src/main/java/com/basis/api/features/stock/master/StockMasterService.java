@@ -29,6 +29,7 @@ public class StockMasterService {
         stock.setSector(request.getSector());
         stock.setIndustry(request.getIndustry());
         stock.setIsin(request.getIsin());
+        stock.setStockType(request.getStockType());
         
         if (request.getMarketCapCategory() != null) {
             try {
@@ -110,6 +111,7 @@ public class StockMasterService {
         stock.setSector(request.getSector());
         stock.setIndustry(request.getIndustry());
         stock.setIsin(request.getIsin());
+        stock.setStockType(request.getStockType());
         
         if (request.getMarketCapCategory() != null) {
             try {
@@ -150,6 +152,7 @@ public class StockMasterService {
         dto.setIndustry(stock.getIndustry());
         dto.setMarketCapCategory(stock.getMarketCapCategory());
         dto.setIsin(stock.getIsin());
+        dto.setStockType(stock.getStockType());
         dto.setCreatedAt(stock.getCreatedAt());
         dto.setUpdatedAt(stock.getUpdatedAt());
         return dto;
