@@ -177,26 +177,39 @@
   <form [formGroup]="buyPositionForm" (ngSubmit)="onBuySubmit()">
     <div class="flex flex-column gap-3">
       <div class="field">
-        <label for="stockSymbol" class="font-semibold">Stock Symbol *</label>
-        <input 
-          id="stockSymbol"
-          type="text" 
-          pInputText 
-          formControlName="stockSymbol" 
-          placeholder="e.g., AAPL"
-          class="w-full" 
-          [class.ng-invalid]="buyPositionForm.get('stockSymbol')?.invalid && buyPositionForm.get('stockSymbol')?.touched" />
-      </div>
-      
-      <div class="field">
-        <label for="companyName" class="font-semibold">Company Name</label>
-        <input 
-          id="companyName"
-          type="text" 
-          pInputText 
-          formControlName="companyName" 
-          placeholder="e.g., Apple Inc."
-          class="w-full" />
+        <label for="stock" class="font-semibold">Stock *</label>
+        <p-autoComplete
+          id="stock"
+          formControlName="stock"
+          [suggestions]="stockSuggestions"
+          (completeMethod)="searchStocks($event)"
+          field="symbol"
+          optionLabel="symbol"
+          [dropdown]="true"
+          [forceSelection]="false"
+          placeholder="Search by symbol or company name"
+          styleClass="w-full"
+          [class.ng-invalid]="buyPositionForm.get('stock')?.invalid && buyPositionForm.get('stock')?.touched">
+          <ng-template let-stock pTemplate="item">
+            <div class="flex justify-content-between align-items-center">
+              <div>
+                <span class="font-bold mr-2">{{ stock.symbol }}</span>
+                <span class="text-500">{{ stock.companyName }}</span>
+              </div>
+              <div class="text-right text-sm text-500">
+                <span *ngIf="stock.exchange">{{ stock.exchange }}</span>
+                <span *ngIf="stock.stockType" class="ml-2">{{ stock.stockType }}</span>
+              </div>
+            </div>
+          </ng-template>
+          <ng-template let-stock pTemplate="selectedItem">
+            <span>{{ stock.symbol }} - {{ stock.companyName }}</span>
+          </ng-template>
+        </p-autoComplete>
+        <small *ngIf="buyPositionForm.get('stock')?.value" class="block mt-2 text-500">
+          Selected: {{ buyPositionForm.get('stock')?.value.symbol }} - {{ buyPositionForm.get('stock')?.value.companyName }}
+          <span *ngIf="buyPositionForm.get('stock')?.value.exchange">({{ buyPositionForm.get('stock')?.value.exchange }})</span>
+        </small>
       </div>
       
       <div class="field">

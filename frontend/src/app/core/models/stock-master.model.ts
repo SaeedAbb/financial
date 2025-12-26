@@ -7,6 +7,7 @@ export interface StockMaster {
   industry?: string;
   marketCapCategory?: MarketCapCategory;
   isin?: string;
+  stockType?: string;
   createdAt: string; // ISO datetime string
   updatedAt: string; // ISO datetime string
 }
@@ -19,6 +20,7 @@ export interface CreateStockMasterRequest {
   industry?: string;
   marketCapCategory?: MarketCapCategory;
   isin?: string;
+  stockType?: string;
 }
 
 export interface PagedStockMasters {

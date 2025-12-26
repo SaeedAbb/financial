@@ -18,13 +18,16 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
 import { AccordionModule } from 'primeng/accordion';
 import { TextareaModule } from 'primeng/textarea';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subject, takeUntil } from 'rxjs';
 import { Portfolio } from '../../../core/models/portfolio.model';
 import { PortfolioPosition, BuyPositionRequest, SellPositionRequest, PositionStatus } from '../../../core/models/portfolio-position.model';
 import { PortfolioService } from '../../../core/services/portfolio.service';
 import { PortfolioPositionService } from '../../../core/services/portfolio-position.service';
+import { StockMasterService } from '../../../core/services/stock-master.service';
 import { TransactionSidebarComponent } from '../components/transaction-sidebar/transaction-sidebar.component';
+import { StockMaster } from '../../../core/models/stock-master.model';
 
 // TODO: This component needs significant refactoring to work with the new backend structure
 // The backend has been refactored to separate portfolio positions, stock master data, and transactions
@@ -53,6 +56,7 @@ import { TransactionSidebarComponent } from '../components/transaction-sidebar/t
     SkeletonModule,
     AccordionModule,
     TextareaModule,
+    AutoCompleteModule,
     TransactionSidebarComponent
   ],
   providers: [MessageService, ConfirmationService]
@@ -63,6 +67,7 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private portfolioService = inject(PortfolioService);
   private positionService = inject(PortfolioPositionService);
+  private stockMasterService = inject(StockMasterService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private destroy$ = new Subject<void>();
@@ -82,11 +87,14 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   showTransactionSidebar = false;
   selectedPositionForTransactions: PortfolioPosition | null = null;
   
+  // Stock search properties
+  stockSuggestions: StockMaster[] = [];
+  selectedStock: StockMaster | null = null;
+  
   today = new Date();
 
   buyPositionForm: FormGroup = this.fb.group({
-    stockSymbol: ['', [Validators.required, Validators.maxLength(20), Validators.pattern(/^[A-Z0-9.-]+$/)]],
-    companyName: ['', [Validators.maxLength(255)]],
+    stock: [null, [Validators.required]],
     quantity: [null, [Validators.required, Validators.min(0.000001)]],
     pricePerShare: [null, [Validators.required, Validators.min(0.01)]],
     transactionDate: [new Date(), [Validators.required]],
@@ -167,14 +175,19 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
 
   showBuyPositionDialog(): void {
     this.buyPositionForm.reset({
+      stock: null,
       transactionDate: new Date()
     });
+    this.selectedStock = null;
+    this.stockSuggestions = [];
     this.showBuyDialog = true;
   }
 
   hideBuyDialog(): void {
     this.showBuyDialog = false;
     this.buyPositionForm.reset();
+    this.selectedStock = null;
+    this.stockSuggestions = [];
   }
 
   showSellPositionDialog(position: PortfolioPosition): void {
@@ -194,15 +207,26 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
 
   onBuySubmit(): void {
     if (this.buyPositionForm.valid && this.portfolio) {
-      this.submittingBuy = true;
       const formValue = this.buyPositionForm.value;
+      const stock: StockMaster = formValue.stock;
+      
+      if (!stock) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Please select a stock'
+        });
+        return;
+      }
+      
+      this.submittingBuy = true;
       
       const request: BuyPositionRequest = {
-        stockSymbol: formValue.stockSymbol.toUpperCase(),
+        stockSymbol: stock.symbol,
         quantity: formValue.quantity,
         pricePerShare: formValue.pricePerShare,
         transactionDate: this.formatDateForAPI(formValue.transactionDate),
-        companyName: formValue.companyName?.trim(),
+        companyName: stock.companyName,
         notes: formValue.notes?.trim()
       };
 
@@ -307,4 +331,24 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
   trackByPositionId(index: number, position: PortfolioPosition): string {
     return position.uuid;
   }
+
+  searchStocks(event: { query: string }): void {
+    const query = event.query.trim();
+    if (query.length >= 1) {
+      this.stockMasterService.searchStockMasters(query)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (stocks) => {
+            this.stockSuggestions = stocks;
+          },
+          error: (error) => {
+            console.error('Error searching stocks:', error);
+            this.stockSuggestions = [];
+          }
+        });
+    } else {
+      this.stockSuggestions = [];
+    }
+  }
+
 }

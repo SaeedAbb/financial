@@ -85,7 +85,7 @@ export class StockMasterService {
    * Search stock masters by symbol or company name
    */
   searchStockMasters(query: string): Observable<StockMaster[]> {
-    const params = new HttpParams().set('query', query);
+    const params = new HttpParams().set('search', query);
     return this.http.get<StockMaster[]>(`${this.apiUrl}/search`, { params });
   }
 
