@@ -1453,7 +1453,14 @@
 
 // Datepicker overlay fix for dialogs - must have higher z-index than dialog
 ::ng-deep .p-datepicker {
-  z-index: 1100 !important; // Higher than dialog z-index (1000)
+  z-index: 2100 !important; // Much higher than dialog z-index (1000)
+}
+
+// Specific fix for date picker in dialogs
+::ng-deep .p-dialog .p-datepicker-panel,
+::ng-deep .p-datepicker-panel {
+  z-index: 2100 !important;
+  position: fixed !important;
 }
 
 // Enhanced datepicker styling for dark theme
