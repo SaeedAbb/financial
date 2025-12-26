@@ -91,75 +91,93 @@
       </div>
 
       <!-- Positions Table -->
-      <p-table 
-        *ngIf="positions.length > 0 && !loading"
-        [value]="filteredPositions" 
-        [paginator]="true" 
-        [rows]="10"
-        responsiveLayout="scroll">
+      <div class="table-container" style="overflow-x: auto;">
+        <table class="custom-positions-table" style="width: 100%; border-collapse: collapse; min-width: 800px;">
+          <thead>
+            <tr style="background-color: var(--surface-hover); border-bottom: 1px solid var(--surface-border);">
+              <th style="padding: 1rem; text-align: left; border-right: 1px solid var(--surface-border); width: 200px;">Stock</th>
+              <th style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 120px;">Quantity</th>
+              <th style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 150px;">Cost Basis</th>
+              <th style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 150px;">Current Value</th>
+              <th style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 180px;">Gain/Loss</th>
+              <th style="padding: 1rem; text-align: center; border-right: 1px solid var(--surface-border); width: 100px;">Status</th>
+              <th style="padding: 1rem; text-align: center; width: 100px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let position of filteredPositions; trackBy: trackByPositionId" 
+                class="clickable-row" 
+                style="border-bottom: 1px solid var(--surface-border); transition: background-color 0.2s;"
+                (click)="onPositionRowClick(position)"
+                pTooltip="Click to view transaction history"
+                tooltipPosition="top">
+              <td style="padding: 1rem; border-right: 1px solid var(--surface-border); width: 200px;">
+                <div class="flex flex-column">
+                  <span class="font-semibold" style="color: var(--text-color);">{{ position.stock.symbol }}</span>
+                  <span class="text-500 text-sm">{{ position.stock.companyName }}</span>
+                </div>
+              </td>
+              <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 120px; color: var(--text-color);">
+                {{ position.quantity }}
+              </td>
+              <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 150px; color: var(--text-color);">
+                {{ formatAmount(position.totalCost) }}
+              </td>
+              <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 150px; color: var(--text-color);">
+                <span *ngIf="position.currentValue; else totalCostFallback">
+                  {{ formatAmount(position.currentValue) }}
+                </span>
+                <ng-template #totalCostFallback>
+                  <span class="text-muted-color">{{ formatAmount(position.totalCost) }}</span>
+                  <small class="block text-xs text-500">*No market data</small>
+                </ng-template>
+              </td>
+              <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 180px;" 
+                  [ngClass]="getGainLossColorClass(position.unrealizedGainLoss)">
+                <div>{{ formatAmount(position.unrealizedGainLoss) }}</div>
+                <div class="text-sm">
+                  ({{ formatPercentage(position.unrealizedGainLossPercentage) }})
+                </div>
+              </td>
+              <td style="padding: 1rem; text-align: center; border-right: 1px solid var(--surface-border); width: 100px;">
+                <p-tag 
+                  [value]="position.status" 
+                  [severity]="position.status === 'ACTIVE' ? 'success' : 'info'">
+                </p-tag>
+              </td>
+              <td style="padding: 1rem; text-align: center; width: 100px;">
+                <div class="flex gap-1 justify-content-center">
+                  <p-button 
+                    icon="pi pi-chart-line" 
+                    size="small"
+                    severity="info"
+                    [text]="true"
+                    pTooltip="View Transactions"
+                    (onClick)="onPositionRowClick(position); $event.stopPropagation()">
+                  </p-button>
+                  <p-button 
+                    *ngIf="position.status === 'ACTIVE'"
+                    icon="pi pi-minus" 
+                    size="small"
+                    severity="danger"
+                    [text]="true"
+                    pTooltip="Sell Position"
+                    (onClick)="showSellPositionDialog(position); $event.stopPropagation()">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Stock</th>
-            <th>Quantity</th>
-            <th class="text-right">Cost Basis</th>
-            <th class="text-right">Current Value</th>
-            <th class="text-right">Gain/Loss</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </ng-template>
-        
-        <ng-template pTemplate="body" let-position>
-          <tr class="clickable-row" 
-              (click)="onPositionRowClick(position)"
-              pTooltip="Click to view transaction history"
-              tooltipPosition="top">
-            <td>
-              <div class="flex flex-column">
-                <span class="font-semibold">{{ position.stock.symbol }}</span>
-                <span class="text-500 text-sm">{{ position.stock.companyName }}</span>
-              </div>
-            </td>
-            <td>{{ position.quantity }}</td>
-            <td class="text-right">{{ formatAmount(position.averageCostBasis) }}</td>
-            <td class="text-right">{{ formatAmount(position.currentValue || position.totalCost) }}</td>
-            <td class="text-right" [ngClass]="getGainLossColorClass(position.unrealizedGainLoss)">
-              {{ formatAmount(position.unrealizedGainLoss) }}
-              <div class="text-sm">
-                ({{ formatPercentage(position.unrealizedGainLossPercentage) }})
-              </div>
-            </td>
-            <td>
-              <p-tag 
-                [value]="position.status" 
-                [severity]="position.status === 'ACTIVE' ? 'success' : 'info'">
-              </p-tag>
-            </td>
-            <td>
-              <div class="flex gap-1">
-                <p-button 
-                  icon="pi pi-chart-line" 
-                  size="small"
-                  severity="info"
-                  [text]="true"
-                  pTooltip="View Transactions"
-                  (onClick)="onPositionRowClick(position); $event.stopPropagation()">
-                </p-button>
-                <p-button 
-                  *ngIf="position.status === 'ACTIVE'"
-                  icon="pi pi-minus" 
-                  size="small"
-                  severity="danger"
-                  [text]="true"
-                  pTooltip="Sell Position"
-                  (onClick)="showSellPositionDialog(position); $event.stopPropagation()">
-                </p-button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
+        <!-- Pagination Controls -->
+        <div *ngIf="filteredPositions.length > 10" class="pagination-container" style="margin-top: 1rem; text-align: center;">
+          <p-paginator 
+            [rows]="10" 
+            [totalRecords]="filteredPositions.length">
+          </p-paginator>
+        </div>
+      </div>
     </p-card>
   </div>
 </div>

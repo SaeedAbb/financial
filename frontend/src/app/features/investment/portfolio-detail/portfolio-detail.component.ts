@@ -19,6 +19,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { AccordionModule } from 'primeng/accordion';
 import { TextareaModule } from 'primeng/textarea';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { PaginatorModule } from 'primeng/paginator';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subject, takeUntil } from 'rxjs';
 import { Portfolio } from '../../../core/models/portfolio.model';
@@ -57,6 +58,7 @@ import { StockMaster } from '../../../core/models/stock-master.model';
     AccordionModule,
     TextareaModule,
     AutoCompleteModule,
+    PaginatorModule,
     TransactionSidebarComponent
   ],
   providers: [MessageService, ConfirmationService]
