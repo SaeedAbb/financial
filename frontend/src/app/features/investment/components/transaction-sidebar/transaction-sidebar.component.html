@@ -127,8 +127,11 @@
               [(ngModel)]="dateFilterStart"
               (onSelect)="onFilter()"
               [showIcon]="true"
+              [showOnFocus]="false"
               dateFormat="yy-mm-dd"
-              placeholder="Start date">
+              placeholder="Start date"
+              styleClass="w-full"
+              inputStyleClass="w-full">
             </p-datePicker>
           </div>
           
@@ -138,8 +141,11 @@
               [(ngModel)]="dateFilterEnd"
               (onSelect)="onFilter()"
               [showIcon]="true"
+              [showOnFocus]="false"
               dateFormat="yy-mm-dd"
-              placeholder="End date">
+              placeholder="End date"
+              styleClass="w-full"
+              inputStyleClass="w-full">
             </p-datePicker>
           </div>
         </div>
