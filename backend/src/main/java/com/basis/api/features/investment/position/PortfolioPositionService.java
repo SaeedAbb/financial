@@ -73,7 +73,8 @@ public class PortfolioPositionService {
                 stock.getSymbol(),
                 request.getQuantity(),
                 request.getPricePerShare(),
-                request.getTransactionDate()
+                request.getTransactionDate(),
+                request.getNotes()
         );
         transactionRepository.save(transaction);
 
@@ -102,7 +103,8 @@ public class PortfolioPositionService {
                 position.getStock().getSymbol(),
                 request.getQuantity(),
                 request.getPricePerShare(),
-                request.getTransactionDate()
+                request.getTransactionDate(),
+                request.getNotes()
         );
         transactionRepository.save(transaction);
 

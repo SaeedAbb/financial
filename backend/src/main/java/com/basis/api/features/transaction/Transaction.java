@@ -84,7 +84,7 @@ public class Transaction {
 
     // Constructor for stock transactions
     public static Transaction createStockTransaction(String userId, TransactionType type, Long positionId, 
-            String symbol, BigDecimal quantity, BigDecimal pricePerUnit, LocalDate transactionDate) {
+            String symbol, BigDecimal quantity, BigDecimal pricePerUnit, LocalDate transactionDate, String notes) {
         Transaction transaction = new Transaction();
         transaction.userId = userId;
         transaction.transactionCategory = TransactionCategory.STOCK;
@@ -96,6 +96,7 @@ public class Transaction {
         transaction.pricePerUnit = pricePerUnit;
         transaction.totalAmount = quantity.multiply(pricePerUnit);
         transaction.transactionDate = transactionDate;
+        transaction.notes = notes;
         return transaction;
     }
 

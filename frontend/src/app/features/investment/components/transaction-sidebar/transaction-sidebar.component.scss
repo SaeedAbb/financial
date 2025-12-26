@@ -281,15 +281,40 @@
     font-family: 'Courier New', monospace;
   }
 
-  .no-fees,
-  .no-notes {
+  .no-fees {
     color: var(--text-color-secondary);
     font-style: italic;
   }
 
-  .notes-text {
-    color: var(--text-color);
-    cursor: help;
+  .notes-cell {
+    .notes-container {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.25rem;
+      
+      i {
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+      }
+    }
+    
+    .notes-text {
+      color: var(--text-color);
+      cursor: help;
+      line-height: 1.4;
+      display: inline-block;
+      border-bottom: 1px dashed var(--text-color-secondary);
+      
+      &:hover {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+      }
+    }
+    
+    .no-notes {
+      font-size: 0.85rem;
+      font-style: italic;
+    }
   }
 }
 

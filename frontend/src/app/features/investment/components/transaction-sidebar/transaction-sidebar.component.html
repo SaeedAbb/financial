@@ -198,7 +198,7 @@
                   <i [class]="getSortIcon('totalAmount')"></i>
                 </th>
                 <th class="text-right">Fees</th>
-                <th>Notes</th>
+                <th style="width: 25%;">Notes</th>
               </tr>
             </ng-template>
             
@@ -242,13 +242,21 @@
                     <span class="no-fees">-</span>
                   }
                 </td>
-                <td>
+                <td class="notes-cell">
                   @if (transaction.notes) {
-                    <span class="notes-text" [pTooltip]="transaction.notes">
-                      {{ transaction.notes.length > 30 ? (transaction.notes | slice:0:30) + '...' : transaction.notes }}
-                    </span>
+                    <div class="notes-container">
+                      <i class="pi pi-comment mr-2 text-500"></i>
+                      <span 
+                        class="notes-text" 
+                        [pTooltip]="transaction.notes" 
+                        tooltipPosition="left"
+                        [escape]="true"
+                        [showDelay]="300">
+                        {{ transaction.notes.length > 40 ? (transaction.notes | slice:0:40) + '...' : transaction.notes }}
+                      </span>
+                    </div>
                   } @else {
-                    <span class="no-notes">-</span>
+                    <span class="no-notes text-500">No notes</span>
                   }
                 </td>
               </tr>

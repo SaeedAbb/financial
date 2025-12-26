@@ -1370,6 +1370,45 @@
     color: var(--text-color);
     font-size: 0.925rem;
   }
+
+  // Textarea styling
+  textarea[pTextarea] {
+    width: 100%;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-family: var(--font-family);
+    font-size: 0.925rem;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    resize: vertical;
+    min-height: 80px;
+
+    &:hover {
+      border-color: var(--surface-hover);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.2);
+    }
+
+    &::placeholder {
+      color: var(--text-color-secondary);
+      opacity: 0.7;
+    }
+  }
+
+  // Character counter styling
+  small.text-500 {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    display: block;
+    text-align: right;
+    margin-top: 0.25rem;
+  }
 }
 
 // ============================

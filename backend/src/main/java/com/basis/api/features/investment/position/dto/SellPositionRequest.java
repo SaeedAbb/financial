@@ -24,6 +24,9 @@ public class SellPositionRequest {
     @PastOrPresent(message = "Transaction date cannot be in the future")
     private LocalDate transactionDate;
 
+    @Size(max = 500, message = "Notes cannot exceed 500 characters")
+    private String notes; // Optional - transaction notes
+
     // Default constructor
     public SellPositionRequest() {}
 
@@ -66,5 +69,13 @@ public class SellPositionRequest {
 
     public void setTransactionDate(LocalDate transactionDate) {
         this.transactionDate = transactionDate;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

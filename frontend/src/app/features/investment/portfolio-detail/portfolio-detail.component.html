@@ -238,6 +238,23 @@
           styleClass="w-full">
         </p-datePicker>
       </div>
+      
+      <div class="field">
+        <label for="buyNotes" class="font-semibold">Notes</label>
+        <textarea 
+          id="buyNotes"
+          pTextarea 
+          formControlName="notes"
+          rows="3"
+          [autoResize]="true"
+          placeholder="Add transaction notes (optional)"
+          class="w-full"
+          [maxlength]="500">
+        </textarea>
+        <small class="block text-500 mt-1">
+          {{ buyPositionForm.get('notes')?.value?.length || 0 }}/500 characters
+        </small>
+      </div>
     </div>
   </form>
   
@@ -324,6 +341,23 @@
           placeholder="Select date"
           styleClass="w-full">
         </p-datePicker>
+      </div>
+      
+      <div class="field">
+        <label for="sellNotes" class="font-semibold">Notes</label>
+        <textarea 
+          id="sellNotes"
+          pTextarea 
+          formControlName="notes"
+          rows="3"
+          [autoResize]="true"
+          placeholder="Add transaction notes (optional)"
+          class="w-full"
+          [maxlength]="500">
+        </textarea>
+        <small class="block text-500 mt-1">
+          {{ sellPositionForm.get('notes')?.value?.length || 0 }}/500 characters
+        </small>
       </div>
     </div>
   </form>

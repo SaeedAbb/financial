@@ -17,6 +17,7 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
 import { AccordionModule } from 'primeng/accordion';
+import { TextareaModule } from 'primeng/textarea';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subject, takeUntil } from 'rxjs';
 import { Portfolio } from '../../../core/models/portfolio.model';
@@ -51,6 +52,7 @@ import { TransactionSidebarComponent } from '../components/transaction-sidebar/t
     TooltipModule,
     SkeletonModule,
     AccordionModule,
+    TextareaModule,
     TransactionSidebarComponent
   ],
   providers: [MessageService, ConfirmationService]
@@ -87,13 +89,15 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
     companyName: ['', [Validators.maxLength(255)]],
     quantity: [null, [Validators.required, Validators.min(0.000001)]],
     pricePerShare: [null, [Validators.required, Validators.min(0.01)]],
-    transactionDate: [new Date(), [Validators.required]]
+    transactionDate: [new Date(), [Validators.required]],
+    notes: ['', [Validators.maxLength(500)]]
   });
 
   sellPositionForm: FormGroup = this.fb.group({
     quantity: [null, [Validators.required, Validators.min(0.000001)]],
     pricePerShare: [null, [Validators.required, Validators.min(0.01)]],
-    transactionDate: [new Date(), [Validators.required]]
+    transactionDate: [new Date(), [Validators.required]],
+    notes: ['', [Validators.maxLength(500)]]
   });
 
   ngOnInit(): void {
@@ -198,7 +202,8 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
         quantity: formValue.quantity,
         pricePerShare: formValue.pricePerShare,
         transactionDate: this.formatDateForAPI(formValue.transactionDate),
-        companyName: formValue.companyName?.trim()
+        companyName: formValue.companyName?.trim(),
+        notes: formValue.notes?.trim()
       };
 
       this.positionService.buyPosition(this.portfolio.uuid, request)
@@ -234,7 +239,8 @@ export class PortfolioDetailComponent implements OnInit, OnDestroy {
       const request: SellPositionRequest = {
         quantity: formValue.quantity,
         pricePerShare: formValue.pricePerShare,
-        transactionDate: this.formatDateForAPI(formValue.transactionDate)
+        transactionDate: this.formatDateForAPI(formValue.transactionDate),
+        notes: formValue.notes?.trim()
       };
 
       this.positionService.sellPosition(this.portfolio.uuid, this.selectedPosition.uuid, request)

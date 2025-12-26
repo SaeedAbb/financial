@@ -27,6 +27,9 @@ public class BuyPositionRequest {
 
     private String companyName; // Optional - used if stock doesn't exist in master
 
+    @Size(max = 500, message = "Notes cannot exceed 500 characters")
+    private String notes; // Optional - transaction notes
+
     // Default constructor
     public BuyPositionRequest() {}
 
@@ -77,5 +80,13 @@ public class BuyPositionRequest {
 
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

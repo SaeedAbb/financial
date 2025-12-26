@@ -24,12 +24,14 @@ export interface BuyPositionRequest {
   pricePerShare: number;
   transactionDate: string; // ISO date string (yyyy-MM-dd)
   companyName?: string; // Optional - used if stock doesn't exist in master
+  notes?: string; // Optional - transaction notes
 }
 
 export interface SellPositionRequest {
   quantity: number;
   pricePerShare: number;
   transactionDate: string; // ISO date string (yyyy-MM-dd)
+  notes?: string; // Optional - transaction notes
 }
 
 export interface PagedPositions {
