@@ -1,5 +1,5 @@
-<!-- TODO: This template needs to be rebuilt to work with the new portfolio position structure -->
-<div class="portfolio-detail-container" *ngIf="portfolio">
+<!-- Portfolio Detail Component - Refactored with Angular Best Practices -->
+<div class="portfolio-detail-container" *ngIf="portfolio$ | async as portfolio">
   <!-- Header -->
   <div class="header-section mb-4">
     <p-card>
@@ -13,14 +13,14 @@
           <p-button 
             icon="pi pi-plus" 
             label="Buy Position" 
-            (onClick)="showBuyPositionDialog()"
-            [disabled]="loading">
+            (onClick)="facade.showBuyPositionDialog()"
+            [disabled]="anyLoading$ | async">
           </p-button>
           <p-button 
             icon="pi pi-arrow-left" 
             label="Back to Portfolios" 
             severity="secondary"
-            (onClick)="goBack()">
+            (onClick)="facade.goBack()">
           </p-button>
         </div>
       </div>
@@ -28,29 +28,29 @@
   </div>
 
   <!-- Portfolio Statistics -->
-  <div class="stats-section mb-4">
+  <div class="stats-section mb-4" *ngIf="portfolioStats$ | async as stats">
     <div class="grid">
       <div class="col-12 lg:col-3">
         <p-card class="text-center">
-          <div class="stat-value text-xl font-bold text-primary">{{ positions.length }}</div>
+          <div class="stat-value text-xl font-bold text-primary">{{ stats.totalPositions }}</div>
           <div class="stat-label">Total Positions</div>
         </p-card>
       </div>
       <div class="col-12 lg:col-3">
         <p-card class="text-center">
-          <div class="stat-value text-xl font-bold text-green-500">{{ activePositions.length }}</div>
+          <div class="stat-value text-xl font-bold text-green-500">{{ stats.activePositions }}</div>
           <div class="stat-label">Open Positions</div>
         </p-card>
       </div>
       <div class="col-12 lg:col-3">
         <p-card class="text-center">
-          <div class="stat-value text-xl font-bold text-blue-500">{{ closedPositions.length }}</div>
+          <div class="stat-value text-xl font-bold text-blue-500">{{ stats.closedPositions }}</div>
           <div class="stat-label">Closed Positions</div>
         </p-card>
       </div>
       <div class="col-12 lg:col-3">
         <p-card class="text-center">
-          <div class="stat-value text-xl font-bold">{{ formatDate(portfolio.createdAt) }}</div>
+          <div class="stat-value text-xl font-bold">{{ facade.formatDate(portfolio.createdAt) }}</div>
           <div class="stat-label">Created</div>
         </p-card>
       </div>
@@ -67,31 +67,31 @@
             icon="pi pi-plus" 
             label="Add Position" 
             size="small"
-            (onClick)="showBuyPositionDialog()">
+            (onClick)="facade.showBuyPositionDialog()">
           </p-button>
         </div>
       </ng-template>
 
       <!-- Empty State -->
-      <div *ngIf="positions.length === 0 && !loading" class="text-center p-4">
+      <div *ngIf="(positions$ | async)?.length === 0 && !(loadingPositions$ | async)" class="text-center p-4">
         <i class="pi pi-info-circle text-4xl text-400 mb-3"></i>
         <h3 class="text-600">No positions yet</h3>
         <p class="text-500 mb-3">Start building your portfolio by adding your first position.</p>
         <p-button 
           icon="pi pi-plus" 
           label="Add First Position" 
-          (onClick)="showBuyPositionDialog()">
+          (onClick)="facade.showBuyPositionDialog()">
         </p-button>
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="loading" class="text-center p-4">
+      <div *ngIf="loadingPositions$ | async" class="text-center p-4">
         <p-progressSpinner></p-progressSpinner>
         <p>Loading positions...</p>
       </div>
 
       <!-- Positions Table -->
-      <div class="table-container" style="overflow-x: auto;">
+      <div class="table-container" style="overflow-x: auto;" *ngIf="((positions$ | async)?.length || 0) > 0 && !(loadingPositions$ | async)">
         <table class="custom-positions-table" style="width: 100%; border-collapse: collapse; min-width: 800px;">
           <thead>
             <tr style="background-color: var(--surface-hover); border-bottom: 1px solid var(--surface-border);">
@@ -105,10 +105,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let position of filteredPositions; trackBy: trackByPositionId" 
+            <tr *ngFor="let position of filteredPositions$ | async; trackBy: trackByPositionId" 
                 class="clickable-row" 
                 style="border-bottom: 1px solid var(--surface-border); transition: background-color 0.2s;"
-                (click)="onPositionRowClick(position)"
+                (click)="facade.onPositionRowClick(position)"
                 pTooltip="Click to view transaction history"
                 tooltipPosition="top">
               <td style="padding: 1rem; border-right: 1px solid var(--surface-border); width: 200px;">
@@ -118,25 +118,25 @@
                 </div>
               </td>
               <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 120px; color: var(--text-color);">
-                {{ position.quantity }}
+                {{ facade.formatQuantity(position.quantity) }}
               </td>
               <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 150px; color: var(--text-color);">
-                {{ formatAmount(position.totalCost) }}
+                {{ facade.formatAmount(position.totalCost) }}
               </td>
               <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 150px; color: var(--text-color);">
                 <span *ngIf="position.currentValue; else totalCostFallback">
-                  {{ formatAmount(position.currentValue) }}
+                  {{ facade.formatAmount(position.currentValue) }}
                 </span>
                 <ng-template #totalCostFallback>
-                  <span class="text-muted-color">{{ formatAmount(position.totalCost) }}</span>
+                  <span class="text-muted-color">{{ facade.formatAmount(position.totalCost) }}</span>
                   <small class="block text-xs text-500">*No market data</small>
                 </ng-template>
               </td>
               <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 180px;" 
-                  [ngClass]="getGainLossColorClass(position.unrealizedGainLoss)">
-                <div>{{ formatAmount(position.unrealizedGainLoss) }}</div>
+                  [ngClass]="facade.getGainLossColorClass(position.unrealizedGainLoss)">
+                <div>{{ facade.formatAmount(position.unrealizedGainLoss) }}</div>
                 <div class="text-sm">
-                  ({{ formatPercentage(position.unrealizedGainLossPercentage) }})
+                  ({{ facade.formatPercentage(position.unrealizedGainLossPercentage) }})
                 </div>
               </td>
               <td style="padding: 1rem; text-align: center; border-right: 1px solid var(--surface-border); width: 100px;">
@@ -153,7 +153,7 @@
                     severity="info"
                     [text]="true"
                     pTooltip="View Transactions"
-                    (onClick)="onPositionRowClick(position); $event.stopPropagation()">
+                    (onClick)="facade.onPositionRowClick(position); $event.stopPropagation()">
                   </p-button>
                   <p-button 
                     *ngIf="position.status === 'ACTIVE'"
@@ -162,7 +162,7 @@
                     severity="danger"
                     [text]="true"
                     pTooltip="Sell Position"
-                    (onClick)="showSellPositionDialog(position); $event.stopPropagation()">
+                    (onClick)="facade.showSellPositionDialog(position); $event.stopPropagation()">
                   </p-button>
                 </div>
               </td>
@@ -171,10 +171,10 @@
         </table>
         
         <!-- Pagination Controls -->
-        <div *ngIf="filteredPositions.length > 10" class="pagination-container" style="margin-top: 1rem; text-align: center;">
+        <div *ngIf="((filteredPositions$ | async)?.length || 0) > 10" class="pagination-container" style="margin-top: 1rem; text-align: center;">
           <p-paginator 
             [rows]="10" 
-            [totalRecords]="filteredPositions.length">
+            [totalRecords]="(filteredPositions$ | async)?.length || 0">
           </p-paginator>
         </div>
       </div>
@@ -188,18 +188,19 @@
   [modal]="true" 
   [closable]="true"
   [dismissableMask]="false"
-  [(visible)]="showBuyDialog" 
+  [visible]="(buyFormState$ | async)?.visible || false"
+  (visibleChange)="$event ? null : facade.hideBuyDialog()" 
   [style]="{width: '30rem'}"
-  (onHide)="hideBuyDialog()">
+  (onHide)="facade.hideBuyDialog()">
   
-  <form [formGroup]="buyPositionForm" (ngSubmit)="onBuySubmit()">
+  <form [formGroup]="buyForm" (ngSubmit)="facade.submitBuyForm()">
     <div class="flex flex-column gap-3">
       <div class="field">
         <label for="stock" class="font-semibold">Stock *</label>
         <p-autoComplete
           id="stock"
           formControlName="stock"
-          [suggestions]="stockSuggestions"
+          [suggestions]="(stockSuggestions$ | async) || []"
           (completeMethod)="searchStocks($event)"
           field="symbol"
           optionLabel="symbol"
@@ -207,7 +208,7 @@
           [forceSelection]="false"
           placeholder="Search by symbol or company name"
           styleClass="w-full"
-          [class.ng-invalid]="buyPositionForm.get('stock')?.invalid && buyPositionForm.get('stock')?.touched">
+          [class.ng-invalid]="facade.hasBuyFormError('stock')">
           <ng-template let-stock pTemplate="item">
             <div class="flex justify-content-between align-items-center">
               <div>
@@ -224,9 +225,12 @@
             <span>{{ stock.symbol }} - {{ stock.companyName }}</span>
           </ng-template>
         </p-autoComplete>
-        <small *ngIf="buyPositionForm.get('stock')?.value" class="block mt-2 text-500">
-          Selected: {{ buyPositionForm.get('stock')?.value.symbol }} - {{ buyPositionForm.get('stock')?.value.companyName }}
-          <span *ngIf="buyPositionForm.get('stock')?.value.exchange">({{ buyPositionForm.get('stock')?.value.exchange }})</span>
+        <small *ngIf="facade.selectedStock" class="block mt-2 text-500">
+          Selected: {{ facade.getStockDisplayName(facade.selectedStock) }}
+          <span *ngIf="facade.selectedStock?.exchange">({{ facade.selectedStock.exchange }})</span>
+        </small>
+        <small class="p-error" *ngIf="facade.hasBuyFormError('stock')">
+          {{ facade.getBuyFormErrorMessage('stock') }}
         </small>
       </div>
       
@@ -269,7 +273,10 @@
           styleClass="w-full"
           appendTo="body"
           [showIcon]="true"
-          [showOnFocus]="false">
+          [showOnFocus]="false"
+          [touchUI]="false"
+          [readonlyInput]="false"
+          [showClear]="true">
         </p-datePicker>
       </div>
       
@@ -286,7 +293,7 @@
           [maxlength]="500">
         </textarea>
         <small class="block text-500 mt-1">
-          {{ buyPositionForm.get('notes')?.value?.length || 0 }}/500 characters
+          {{ buyForm.get('notes')?.value?.length || 0 }}/500 characters
         </small>
       </div>
     </div>
@@ -298,15 +305,15 @@
         type="button"
         label="Cancel" 
         severity="secondary"
-        (onClick)="hideBuyDialog()">
+        (onClick)="facade.hideBuyDialog()">
       </p-button>
       <p-button 
         type="submit"
         label="Buy Position" 
         icon="pi pi-check"
-        [loading]="submittingBuy"
-        [disabled]="buyPositionForm.invalid"
-        (onClick)="onBuySubmit()">
+        [loading]="facade.isBuyFormSubmitting"
+        [disabled]="buyForm.invalid"
+        (onClick)="facade.submitBuyForm()">
       </p-button>
     </div>
   </ng-template>
@@ -318,23 +325,24 @@
   [modal]="true" 
   [closable]="true"
   [dismissableMask]="false"
-  [(visible)]="showSellDialog" 
+  [visible]="(sellFormState$ | async)?.visible || false"
+  (visibleChange)="$event ? null : facade.hideSellDialog()" 
   [style]="{width: '30rem'}"
-  (onHide)="hideSellDialog()">
+  (onHide)="facade.hideSellDialog()">
   
-  <div *ngIf="selectedPosition" class="mb-4">
-    <h4>{{ selectedPosition.stock.symbol }} - {{ selectedPosition.stock.companyName }}</h4>
+  <div *ngIf="facade.selectedPosition" class="mb-4">
+    <h4>{{ facade.selectedPosition.stock.symbol }} - {{ facade.selectedPosition.stock.companyName }}</h4>
     <div class="grid">
       <div class="col-6">
-        <p><strong>Available:</strong> {{ selectedPosition.quantity }}</p>
+        <p><strong>Available:</strong> {{ facade.formatQuantity(facade.selectedPosition.quantity) }}</p>
       </div>
       <div class="col-6">
-        <p><strong>Cost Basis:</strong> {{ formatAmount(selectedPosition.averageCostBasis) }}</p>
+        <p><strong>Cost Basis:</strong> {{ facade.formatAmount(facade.selectedPosition.averageCostBasis) }}</p>
       </div>
     </div>
   </div>
   
-  <form [formGroup]="sellPositionForm" (ngSubmit)="onSellSubmit()">
+  <form [formGroup]="sellForm" (ngSubmit)="facade.submitSellForm()">
     <div class="flex flex-column gap-3">
       <div class="field">
         <label for="sellQuantity" class="font-semibold">Quantity to Sell *</label>
@@ -345,7 +353,7 @@
           [minFractionDigits]="0"
           [maxFractionDigits]="6"
           [min]="0.000001"
-          [max]="selectedPosition ? selectedPosition.quantity : 0"
+          [max]="facade.selectedPosition ? facade.selectedPosition.quantity : 0"
           placeholder="Quantity to sell"
           styleClass="w-full">
         </p-inputNumber>
@@ -376,7 +384,10 @@
           styleClass="w-full"
           appendTo="body"
           [showIcon]="true"
-          [showOnFocus]="false">
+          [showOnFocus]="false"
+          [touchUI]="false"
+          [readonlyInput]="false"
+          [showClear]="true">
         </p-datePicker>
       </div>
       
@@ -393,7 +404,7 @@
           [maxlength]="500">
         </textarea>
         <small class="block text-500 mt-1">
-          {{ sellPositionForm.get('notes')?.value?.length || 0 }}/500 characters
+          {{ sellForm.get('notes')?.value?.length || 0 }}/500 characters
         </small>
       </div>
     </div>
@@ -405,16 +416,16 @@
         type="button"
         label="Cancel" 
         severity="secondary"
-        (onClick)="hideSellDialog()">
+        (onClick)="facade.hideSellDialog()">
       </p-button>
       <p-button 
         type="submit"
         label="Sell Position" 
         icon="pi pi-check"
         severity="danger"
-        [loading]="submittingSell"
-        [disabled]="sellPositionForm.invalid"
-        (onClick)="onSellSubmit()">
+        [loading]="facade.isSellFormSubmitting"
+        [disabled]="sellForm.invalid"
+        (onClick)="facade.submitSellForm()">
       </p-button>
     </div>
   </ng-template>
@@ -422,9 +433,9 @@
 
 <!-- Transaction Sidebar -->
 <app-transaction-sidebar
-  [visible]="showTransactionSidebar"
-  [position]="selectedPositionForTransactions"
-  (visibleChange)="onTransactionSidebarVisibilityChange($event)">
+  [visible]="(showTransactionSidebar$ | async) || false"
+  [position]="selectedPositionForTransactions$ | async"
+  (visibleChange)="facade.onTransactionSidebarVisibilityChange($event)">
 </app-transaction-sidebar>
 
 <p-toast></p-toast>

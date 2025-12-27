@@ -1451,16 +1451,42 @@
 // FORM INPUTS & DATEPICKER FIXES
 // ============================
 
-// Datepicker overlay fix for dialogs - must have higher z-index than dialog
-::ng-deep .p-datepicker {
-  z-index: 2100 !important; // Much higher than dialog z-index (1000)
-}
-
-// Specific fix for date picker in dialogs
-::ng-deep .p-dialog .p-datepicker-panel,
-::ng-deep .p-datepicker-panel {
-  z-index: 2100 !important;
-  position: fixed !important;
+// Fix for date picker appearing behind dialogs
+::ng-deep {
+  // PrimeNG dialog has z-index of 1100 by default
+  // Date picker overlay must be higher
+  .p-datepicker-panel {
+    z-index: 9999 !important; // Ensure it's above everything
+    position: fixed !important;
+  }
+  
+  // Calendar overlay container
+  .p-datepicker {
+    z-index: 9999 !important;
+  }
+  
+  // Ensure the overlay mask doesn't block the date picker
+  .p-component-overlay {
+    z-index: 1100 !important;
+  }
+  
+  // Make sure dialog doesn't create a stacking context that traps the date picker
+  .p-dialog {
+    .p-dialog-content {
+      overflow: visible !important;
+    }
+  }
+  
+  // Specific fix for date picker trigger in dialogs
+  .p-dialog {
+    .p-datepicker-wrapper {
+      position: relative;
+      
+      .p-datepicker-trigger {
+        z-index: auto !important;
+      }
+    }
+  }
 }
 
 // Enhanced datepicker styling for dark theme
