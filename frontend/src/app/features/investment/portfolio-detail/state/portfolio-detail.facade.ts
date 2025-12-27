@@ -7,6 +7,8 @@ import { StockMaster } from '../../../../core/models/stock-master.model';
 import { PortfolioDetailStateService } from './portfolio-detail.state';
 import { PositionFormService } from '../services/position-form.service';
 import { StockSearchService } from '../services/stock-search.service';
+import { PortfolioPositionService } from '../../../../core/services/portfolio-position.service';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { 
   CurrencyFormatter, 
   PercentageFormatter, 
@@ -24,6 +26,9 @@ export class PortfolioDetailFacade {
   private state = inject(PortfolioDetailStateService);
   private positionFormService = inject(PositionFormService);
   private stockSearchService = inject(StockSearchService);
+  private portfolioPositionService = inject(PortfolioPositionService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
   private router = inject(Router);
   
   // Expose state observables
@@ -247,5 +252,45 @@ export class PortfolioDetailFacade {
    */
   trackByIndex(index: number): number {
     return index;
+  }
+
+  /**
+   * Delete a position from the portfolio
+   */
+  deletePosition(position: PortfolioPosition): void {
+    const hasShares = position.quantity > 0;
+    const warningMessage = hasShares 
+      ? `Are you sure you want to permanently delete this ${position.stock.symbol} position? You still have ${position.quantity} shares worth ${this.formatAmount(position.currentValue || position.totalCost)}. This will remove all history and cannot be undone.`
+      : `Are you sure you want to permanently delete this ${position.stock.symbol} position? This will remove all history and cannot be undone.`;
+    
+    this.confirmationService.confirm({
+      message: warningMessage,
+      header: 'Confirm Permanent Delete',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        // Get portfolio UUID from the current portfolio in state
+        this.portfolio$.pipe(take(1)).subscribe(portfolio => {
+          if (!portfolio?.uuid || !position.uuid) return;
+          
+          this.portfolioPositionService.deletePosition(portfolio.uuid, position.uuid).subscribe({
+            next: () => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Position Deleted',
+                detail: `${position.stock.symbol} position has been deleted successfully`
+              });
+            },
+            error: (error) => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Delete Failed',
+                detail: error.error?.message || 'Failed to delete position'
+              });
+            }
+          });
+        });
+      }
+    });
   }
 }

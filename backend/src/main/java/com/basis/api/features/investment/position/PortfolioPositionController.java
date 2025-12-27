@@ -5,6 +5,8 @@ import com.basis.api.features.investment.position.dto.PortfolioPositionDTO;
 import com.basis.api.features.investment.position.dto.SellPositionRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -101,6 +103,40 @@ public class PortfolioPositionController {
         BigDecimal totalValue = positionService.calculatePortfolioTotalValue(portfolioId, userId);
         return ResponseEntity.ok(totalValue);
     }
+
+    @DeleteMapping("/{positionId}")
+    @Operation(summary = "Delete position", description = "Delete a portfolio position (soft delete)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Position deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Position not found"),
+        @ApiResponse(responseCode = "403", description = "Position does not belong to user"),
+        @ApiResponse(responseCode = "400", description = "Cannot delete position with remaining shares")
+    })
+    public ResponseEntity<Void> deletePosition(
+            @PathVariable @Parameter(description = "Portfolio ID") Long portfolioId,
+            @PathVariable @Parameter(description = "Position ID") Long positionId,
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
+        positionService.deletePosition(positionId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/uuid/{uuid}")
+    @Operation(summary = "Delete position by UUID", description = "Delete a portfolio position by UUID (soft delete)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Position deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Position not found"),
+        @ApiResponse(responseCode = "403", description = "Position does not belong to user"),
+        @ApiResponse(responseCode = "400", description = "Cannot delete position with remaining shares")
+    })
+    public ResponseEntity<Void> deletePositionByUuid(
+            @PathVariable @Parameter(description = "Portfolio ID") Long portfolioId,
+            @PathVariable @Parameter(description = "Position UUID") UUID uuid,
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
+        positionService.deletePositionByUuid(uuid, userId);
+        return ResponseEntity.noContent().build();
+    }
 }
 
 @RestController
@@ -156,6 +192,23 @@ class PortfolioPositionUuidController {
         request.setPositionId(existingPosition.getId());
         PortfolioPositionDTO position = positionService.sellStock(userId, request);
         return ResponseEntity.ok(position);
+    }
+
+    @DeleteMapping("/{positionUuid}")
+    @Operation(summary = "Delete position by UUID", description = "Delete a portfolio position using UUID (soft delete)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Position deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Position not found"),
+        @ApiResponse(responseCode = "403", description = "Position does not belong to user"),
+        @ApiResponse(responseCode = "400", description = "Cannot delete position with remaining shares")
+    })
+    public ResponseEntity<Void> deletePositionByUuid(
+            @PathVariable @Parameter(description = "Portfolio UUID") UUID portfolioUuid,
+            @PathVariable @Parameter(description = "Position UUID") UUID positionUuid,
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
+        positionService.deletePositionByUuid(positionUuid, userId);
+        return ResponseEntity.noContent().build();
     }
 }
 

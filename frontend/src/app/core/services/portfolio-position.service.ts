@@ -83,6 +83,15 @@ export class PortfolioPositionService {
   }
 
   /**
+   * Delete a position from the portfolio
+   */
+  deletePosition(portfolioUuid: string, positionUuid: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/uuid/${portfolioUuid}/positions/${positionUuid}`).pipe(
+      tap(() => this.notifyPositionsUpdated())
+    );
+  }
+
+  /**
    * Refresh positions data (triggers update notification)
    */
   refreshPositions(): void {

@@ -170,6 +170,14 @@
                     pTooltip="Sell Position"
                     (onClick)="facade.showSellPositionDialog(position); $event.stopPropagation()">
                   </p-button>
+                  <p-button 
+                    icon="pi pi-trash" 
+                    size="small"
+                    severity="danger"
+                    [text]="true"
+                    pTooltip="Delete Position"
+                    (onClick)="facade.deletePosition(position); $event.stopPropagation()">
+                  </p-button>
                 </div>
               </td>
             </tr>

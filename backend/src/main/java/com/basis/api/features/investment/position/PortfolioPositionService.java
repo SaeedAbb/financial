@@ -190,6 +190,32 @@ public class PortfolioPositionService {
         return totalValue != null ? totalValue : BigDecimal.ZERO;
     }
 
+    public void deletePosition(Long positionId, String userId) {
+        PortfolioPosition position = positionRepository.findById(positionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Position not found with id: " + positionId));
+
+        // Verify ownership
+        if (!position.getPortfolio().getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Position does not belong to user");
+        }
+
+        // Hard delete - permanently remove from database
+        positionRepository.delete(position);
+    }
+
+    public void deletePositionByUuid(UUID uuid, String userId) {
+        PortfolioPosition position = positionRepository.findByUuid(uuid)
+                .orElseThrow(() -> new ResourceNotFoundException("Position not found with uuid: " + uuid));
+
+        // Verify ownership
+        if (!position.getPortfolio().getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Position does not belong to user");
+        }
+
+        // Hard delete - permanently remove from database
+        positionRepository.delete(position);
+    }
+
     private PortfolioPositionDTO toDTO(PortfolioPosition position, BigDecimal currentPrice) {
         PortfolioPositionDTO dto = new PortfolioPositionDTO();
         dto.setId(position.getId());
