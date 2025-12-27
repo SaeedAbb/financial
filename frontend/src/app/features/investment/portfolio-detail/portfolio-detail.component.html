@@ -108,9 +108,7 @@
             <tr *ngFor="let position of filteredPositions$ | async; trackBy: trackByPositionId" 
                 class="clickable-row" 
                 style="border-bottom: 1px solid var(--surface-border); transition: background-color 0.2s;"
-                (click)="facade.onPositionRowClick(position)"
-                pTooltip="Click to view transaction history"
-                tooltipPosition="top">
+                (click)="facade.onPositionRowClick(position)">
               <td style="padding: 1rem; border-right: 1px solid var(--surface-border); width: 200px;">
                 <div class="flex align-items-center gap-3">
                   <div class="stock-logo-wrapper">
