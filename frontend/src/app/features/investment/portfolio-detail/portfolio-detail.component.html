@@ -112,9 +112,17 @@
                 pTooltip="Click to view transaction history"
                 tooltipPosition="top">
               <td style="padding: 1rem; border-right: 1px solid var(--surface-border); width: 200px;">
-                <div class="flex flex-column">
-                  <span class="font-semibold" style="color: var(--text-color);">{{ position.stock.symbol }}</span>
-                  <span class="text-500 text-sm">{{ position.stock.companyName }}</span>
+                <div class="flex align-items-center gap-3">
+                  <div class="stock-logo-wrapper">
+                    <img [src]="'https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/' + position.stock.symbol + '.png'"
+                         [alt]="position.stock.symbol + ' logo'"
+                         class="stock-logo"
+                         (error)="onStockLogoError($event, position.stock.symbol)">
+                  </div>
+                  <div class="flex flex-column">
+                    <span class="font-semibold" style="color: var(--text-color);">{{ position.stock.symbol }}</span>
+                    <span class="text-500 text-sm">{{ position.stock.companyName }}</span>
+                  </div>
                 </div>
               </td>
               <td style="padding: 1rem; text-align: right; border-right: 1px solid var(--surface-border); width: 120px; color: var(--text-color);">

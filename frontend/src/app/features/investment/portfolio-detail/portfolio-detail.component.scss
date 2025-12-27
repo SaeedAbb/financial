@@ -1700,6 +1700,15 @@
   .portfolio-detail {
     padding: 1rem;
   }
+  
+  // Adjust stock logo size for tablets
+  .stock-logo-wrapper {
+    .stock-logo,
+    .stock-logo-fallback {
+      width: 36px;
+      height: 36px;
+    }
+  }
 
   .portfolio-overview {
     .stats-card .stats-value {
@@ -1737,6 +1746,16 @@
 @media (max-width: 768px) {
   .portfolio-detail {
     padding: 0.75rem;
+  }
+  
+  // Further adjust stock logo size for mobile
+  .stock-logo-wrapper {
+    .stock-logo,
+    .stock-logo-fallback {
+      width: 32px;
+      height: 32px;
+      font-size: 1rem;
+    }
   }
 
   .portfolio-header {
@@ -2415,6 +2434,70 @@
   color: var(--red-400);
   font-style: italic;
   margin-left: 0.5rem;
+}
+
+// ============================
+// STOCK LOGO STYLING
+// ============================
+
+.stock-logo-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  
+  .stock-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-card);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+      border-color: var(--primary-color);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+  }
+  
+  .stock-logo-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border: 2px solid var(--surface-border);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    }
+  }
+}
+
+// Adjust table row hover to work nicely with logos
+.custom-positions-table {
+  tbody tr {
+    &:hover {
+      .stock-logo-wrapper {
+        .stock-logo,
+        .stock-logo-fallback {
+          transform: scale(1.1);
+          border-color: var(--primary-color);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+      }
+    }
+  }
 }
 
 // ============================

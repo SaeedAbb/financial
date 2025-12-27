@@ -127,4 +127,17 @@ export class PortfolioDetailComponent implements OnInit {
   trackByPositionId(index: number, position: PortfolioPosition): string {
     return position.uuid;
   }
+  
+  /**
+   * Handle stock logo loading errors
+   */
+  onStockLogoError(event: Event, symbol: string): void {
+    const img = event.target as HTMLImageElement;
+    // Create a fallback with the first letter of the symbol
+    img.style.display = 'none';
+    const wrapper = img.parentElement;
+    if (wrapper) {
+      wrapper.innerHTML = `<div class="stock-logo-fallback">${symbol.charAt(0)}</div>`;
+    }
+  }
 }
