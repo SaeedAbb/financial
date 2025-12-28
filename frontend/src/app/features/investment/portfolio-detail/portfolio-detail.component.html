@@ -108,7 +108,8 @@
             <tr *ngFor="let position of filteredPositions$ | async; trackBy: trackByPositionId" 
                 class="clickable-row" 
                 style="border-bottom: 1px solid var(--surface-border); transition: background-color 0.2s;"
-                (click)="facade.onPositionRowClick(position)">
+                (click)="facade.onPositionRowClick(position)"
+                [attr.title]="null">
               <td style="padding: 1rem; border-right: 1px solid var(--surface-border); width: 200px;">
                 <div class="flex align-items-center gap-3">
                   <div class="stock-logo-wrapper">
@@ -158,8 +159,9 @@
                     size="small"
                     severity="info"
                     [text]="true"
-                    pTooltip="View Transactions"
-                    tooltipPosition="top"
+                    [pTooltip]="'View Transactions'"
+                    [tooltipPosition]="'top'"
+                    [tooltipOptions]="{tooltipStyleClass: 'action-tooltip tooltip-info'}"
                     (onClick)="facade.onPositionRowClick(position); $event.stopPropagation()">
                   </p-button>
                   <p-button 
@@ -168,8 +170,9 @@
                     size="small"
                     severity="danger"
                     [text]="true"
-                    pTooltip="Sell Position"
-                    tooltipPosition="top"
+                    [pTooltip]="'Sell Position'"
+                    [tooltipPosition]="'top'"
+                    [tooltipOptions]="{tooltipStyleClass: 'action-tooltip tooltip-danger'}"
                     (onClick)="facade.showSellPositionDialog(position); $event.stopPropagation()">
                   </p-button>
                   <p-button 
@@ -177,8 +180,9 @@
                     size="small"
                     severity="danger"
                     [text]="true"
-                    pTooltip="Delete Position"
-                    tooltipPosition="top"
+                    [pTooltip]="'Delete Position'"
+                    [tooltipPosition]="'top'"
+                    [tooltipOptions]="{tooltipStyleClass: 'action-tooltip tooltip-delete'}"
                     (onClick)="facade.deletePosition(position); $event.stopPropagation()">
                   </p-button>
                 </div>

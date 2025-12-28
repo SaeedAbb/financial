@@ -2142,25 +2142,97 @@
   }
 }
 
-// Premium tooltip styling
+// Premium tooltip styling - Fixed for visibility
 ::ng-deep .p-tooltip {
+  z-index: 9999 !important;
+  
   .p-tooltip-text {
-    background: var(--surface-card) !important;
-    color: var(--text-color) !important;
-    border: 1px solid var(--surface-border) !important;
-    border-radius: 8px !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
-    font-size: 0.875rem;
-    font-weight: 500;
-    padding: 0.75rem 1rem !important;
-    backdrop-filter: blur(10px);
+    // Force dark background and white text for visibility
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    padding: 0.5rem 0.75rem !important;
+    white-space: nowrap !important;
+    
+    // Force visibility
+    opacity: 1 !important;
+    display: block !important;
+    visibility: visible !important;
+    
+    // Ensure text contrast
+    * {
+      color: #ffffff !important;
+    }
   }
   
-  .p-tooltip-arrow {
-    border-top-color: var(--surface-card) !important;
-    border-bottom-color: var(--surface-card) !important;
-    border-left-color: var(--surface-card) !important;
-    border-right-color: var(--surface-card) !important;
+  &.p-tooltip-top {
+    .p-tooltip-arrow {
+      border-top-color: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+  
+  &.p-tooltip-bottom {
+    .p-tooltip-arrow {
+      border-bottom-color: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+  
+  &.p-tooltip-left {
+    .p-tooltip-arrow {
+      border-left-color: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+  
+  &.p-tooltip-right {
+    .p-tooltip-arrow {
+      border-right-color: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+}
+
+// Action-specific tooltip styling with custom classes
+::ng-deep .action-tooltip {
+  &.tooltip-info {
+    .p-tooltip-text {
+      background-color: #3b82f6 !important;
+      color: #ffffff !important;
+      border-color: #2563eb !important;
+      font-weight: 600 !important;
+    }
+    
+    &.p-tooltip-top .p-tooltip-arrow {
+      border-top-color: #3b82f6 !important;
+    }
+  }
+  
+  &.tooltip-danger {
+    .p-tooltip-text {
+      background-color: #ef4444 !important;
+      color: #ffffff !important;
+      border-color: #dc2626 !important;
+      font-weight: 600 !important;
+    }
+    
+    &.p-tooltip-top .p-tooltip-arrow {
+      border-top-color: #ef4444 !important;
+    }
+  }
+  
+  &.tooltip-delete {
+    .p-tooltip-text {
+      background-color: #dc2626 !important;
+      color: #ffffff !important;
+      border-color: #b91c1c !important;
+      font-weight: 600 !important;
+    }
+    
+    &.p-tooltip-top .p-tooltip-arrow {
+      border-top-color: #dc2626 !important;
+    }
   }
 }
 
@@ -2487,15 +2559,14 @@
 // Adjust table row hover to work nicely with logos
 .custom-positions-table {
   tbody tr {
-    // Prevent any tooltips on the row itself
-    &[pTooltip],
+    // Remove any default browser tooltips from table rows
     &[title] {
-      &::after {
-        display: none !important;
-      }
+      title: none !important;
     }
     
     &:hover {
+      background-color: var(--surface-hover);
+      
       .stock-logo-wrapper {
         .stock-logo,
         .stock-logo-fallback {
@@ -2513,12 +2584,16 @@
     overflow: visible !important;
     text-overflow: clip !important;
     
-    // Prevent empty tooltips
-    &[title=""],
-    &[pTooltip=""] {
-      &::before,
-      &::after {
-        display: none !important;
+    // Action buttons cell specific styling
+    &:last-child {
+      .p-button {
+        transition: all 0.2s ease;
+        
+        // Ensure tooltips appear above buttons
+        &[ptooltip] {
+          position: relative;
+          z-index: auto;
+        }
       }
     }
   }
@@ -2569,32 +2644,8 @@
   }
 }
 
-// Enhanced tooltip for better UX
-::ng-deep .p-tooltip {
-  z-index: 1200 !important;
-  
-  .p-tooltip-text {
-    font-size: 0.8rem !important;
-    padding: 0.5rem 0.75rem !important;
-    max-width: 200px;
-    white-space: nowrap;
-    
-    &[data-pc-section="text"] {
-      background: var(--surface-900) !important;
-      border: 1px solid var(--surface-700) !important;
-    }
-    
-    // Hide empty tooltips
-    &:empty {
-      display: none !important;
-    }
-  }
-  
-  // Hide tooltip container if text is empty
-  &:has(.p-tooltip-text:empty) {
-    display: none !important;
-  }
-}
+// Enhanced tooltip for better UX  
+// (Styles moved to main tooltip section above)
 
 // Row hover indicator
 ::ng-deep .p-datatable {
