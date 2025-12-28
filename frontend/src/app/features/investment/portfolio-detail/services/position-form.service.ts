@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ValidationErrors } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
 import { finalize, tap } from 'rxjs/operators';
 import { 
@@ -26,6 +26,16 @@ export interface PositionFormState {
   position: PortfolioPosition | null;
   submitting: boolean;
   visible: boolean;
+}
+
+/**
+ * Extended validation errors for custom validators
+ */
+interface ExtendedValidationErrors extends ValidationErrors {
+  maxlength?: { requiredLength: number; actualLength: number };
+  minValue?: { message: string; min: number; actual: number };
+  maxValue?: { message: string; max: number; actual: number };
+  futureDate?: { message: string };
 }
 
 /**
@@ -440,7 +450,7 @@ export class PositionFormService {
   /**
    * Get error message based on validation errors
    */
-  private getErrorMessage(controlName: string, errors: Record<string, any>): string {
+  private getErrorMessage(controlName: string, errors: ExtendedValidationErrors): string {
     if (errors['required']) {
       return `${this.getFieldLabel(controlName)} is required`;
     }
