@@ -159,6 +159,7 @@
                     severity="info"
                     [text]="true"
                     pTooltip="View Transactions"
+                    tooltipPosition="top"
                     (onClick)="facade.onPositionRowClick(position); $event.stopPropagation()">
                   </p-button>
                   <p-button 
@@ -168,6 +169,7 @@
                     severity="danger"
                     [text]="true"
                     pTooltip="Sell Position"
+                    tooltipPosition="top"
                     (onClick)="facade.showSellPositionDialog(position); $event.stopPropagation()">
                   </p-button>
                   <p-button 
@@ -176,6 +178,7 @@
                     severity="danger"
                     [text]="true"
                     pTooltip="Delete Position"
+                    tooltipPosition="top"
                     (onClick)="facade.deletePosition(position); $event.stopPropagation()">
                   </p-button>
                 </div>

@@ -2487,6 +2487,14 @@
 // Adjust table row hover to work nicely with logos
 .custom-positions-table {
   tbody tr {
+    // Prevent any tooltips on the row itself
+    &[pTooltip],
+    &[title] {
+      &::after {
+        display: none !important;
+      }
+    }
+    
     &:hover {
       .stock-logo-wrapper {
         .stock-logo,
@@ -2495,6 +2503,22 @@
           border-color: var(--primary-color);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
+      }
+    }
+  }
+  
+  // Ensure tooltips only show on buttons with explicit tooltip content
+  td {
+    // Disable any automatic tooltips on table cells
+    overflow: visible !important;
+    text-overflow: clip !important;
+    
+    // Prevent empty tooltips
+    &[title=""],
+    &[pTooltip=""] {
+      &::before,
+      &::after {
+        display: none !important;
       }
     }
   }
@@ -2559,6 +2583,16 @@
       background: var(--surface-900) !important;
       border: 1px solid var(--surface-700) !important;
     }
+    
+    // Hide empty tooltips
+    &:empty {
+      display: none !important;
+    }
+  }
+  
+  // Hide tooltip container if text is empty
+  &:has(.p-tooltip-text:empty) {
+    display: none !important;
   }
 }
 
