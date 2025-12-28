@@ -269,7 +269,7 @@ export class PortfolioFormService {
    * Get field label for error messages
    */
   private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
+    const labels: Record<string, string> = {
       'name': 'Portfolio name',
       'description': 'Description'
     };

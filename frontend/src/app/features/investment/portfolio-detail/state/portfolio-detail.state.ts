@@ -5,9 +5,7 @@ import {
   finalize, 
   map, 
   shareReplay, 
-  switchMap, 
-  tap,
-  filter
+  tap
 } from 'rxjs/operators';
 import { Portfolio } from '../../../../core/models/portfolio.model';
 import { PortfolioPosition, PositionStatus } from '../../../../core/models/portfolio-position.model';

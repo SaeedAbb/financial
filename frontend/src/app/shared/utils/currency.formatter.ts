@@ -73,7 +73,7 @@ export class CurrencyFormatter {
    * @returns Currency symbol
    */
   private static getCurrencySymbol(currency: string): string {
-    const symbols: { [key: string]: string } = {
+    const symbols: Record<string, string> = {
       'EUR': '€',
       'USD': '$',
       'GBP': '£',

@@ -202,8 +202,8 @@ export class PortfolioService {
   getStockGroups(
     uuid: string, 
     search?: string, 
-    sortBy: string = 'symbol', 
-    sortDir: string = 'asc'
+    sortBy = 'symbol', 
+    sortDir = 'asc'
   ): Observable<StockGroup[]> {
     let params = new HttpParams()
       .set('sortBy', sortBy)

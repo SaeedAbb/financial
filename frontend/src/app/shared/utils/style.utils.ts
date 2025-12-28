@@ -71,7 +71,7 @@ export class StyleUtils {
    * @returns CSS class for status color
    */
   static getStatusColorClass(status: string): string {
-    const statusColors: { [key: string]: string } = {
+    const statusColors: Record<string, string> = {
       'ACTIVE': 'text-green-600',
       'CLOSED': 'text-gray-600',
       'PENDING': 'text-yellow-600',
@@ -88,7 +88,7 @@ export class StyleUtils {
    * @returns PrimeNG severity level
    */
   static getStatusSeverity(status: string): 'success' | 'danger' | 'info' | 'warn' {
-    const statusSeverity: { [key: string]: 'success' | 'danger' | 'info' | 'warn' } = {
+    const statusSeverity: Record<string, 'success' | 'danger' | 'info' | 'warn'> = {
       'ACTIVE': 'success',
       'CLOSED': 'info',
       'PENDING': 'warn',

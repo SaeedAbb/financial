@@ -42,7 +42,7 @@ export class NumberFormatter {
    * @param decimalPlaces Number of decimal places (default: 1)
    * @returns Formatted abbreviated number string
    */
-  static formatCompactNumber(value: number, decimalPlaces: number = 1): string {
+  static formatCompactNumber(value: number, decimalPlaces = 1): string {
     if (value === null || value === undefined || isNaN(value)) {
       return '0';
     }
@@ -72,7 +72,7 @@ export class NumberFormatter {
    * @param decimalPlaces Number of decimal places (default: 0)
    * @returns Formatted number with separators
    */
-  static formatWithSeparators(value: number, decimalPlaces: number = 0): string {
+  static formatWithSeparators(value: number, decimalPlaces = 0): string {
     if (value === null || value === undefined || isNaN(value)) {
       return '0';
     }
@@ -105,7 +105,7 @@ export class NumberFormatter {
    * @param decimalPlaces Number of decimal places
    * @returns Rounded number
    */
-  static round(value: number, decimalPlaces: number = 2): number {
+  static round(value: number, decimalPlaces = 2): number {
     if (value === null || value === undefined || isNaN(value)) {
       return 0;
     }

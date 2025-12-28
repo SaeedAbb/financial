@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Transaction, TransactionCategory, TransactionType, TransactionSummary } from '../models/transaction.model';
@@ -9,8 +9,7 @@ import { environment } from '../../../environments/environment';
 })
 export class TransactionService {
   private readonly apiUrl = `${environment.apiUrl}/transactions`;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   /**
    * Get all transactions for a specific position

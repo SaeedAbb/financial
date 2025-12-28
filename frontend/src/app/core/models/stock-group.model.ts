@@ -187,10 +187,10 @@ export class StockGroupUtils {
     }).format(quantity);
   }
   
-  static sortGroups(groups: StockGroup[], sortBy: string, ascending: boolean = true): StockGroup[] {
+  static sortGroups(groups: StockGroup[], sortBy: string, ascending = true): StockGroup[] {
     const sorted = [...groups].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number | Date;
+      let bValue: string | number | Date;
       
       switch (sortBy) {
         case 'symbol':
@@ -257,13 +257,14 @@ export class StockGroupUtils {
       case 'active':
         filtered = filtered.filter(group => StockGroupUtils.hasActivePositions(group));
         break;
-      case 'recent':
+      case 'recent': {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         filtered = filtered.filter(group => 
           new Date(group.lastPurchaseDate) >= thirtyDaysAgo
         );
         break;
+      }
       case 'all':
       default:
         // No additional filtering

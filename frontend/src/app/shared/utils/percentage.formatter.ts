@@ -12,7 +12,7 @@ export class PercentageFormatter {
    * @param decimalPlaces Number of decimal places (default: 2)
    * @returns Formatted percentage string with % symbol
    */
-  static formatPercentage(value: number, decimalPlaces: number = 2): string {
+  static formatPercentage(value: number, decimalPlaces = 2): string {
     if (value === null || value === undefined || isNaN(value)) {
       return '0.00%';
     }
@@ -30,7 +30,7 @@ export class PercentageFormatter {
    * @param decimalPlaces Number of decimal places (default: 2)
    * @returns Formatted percentage string with sign
    */
-  static formatPercentageWithSign(value: number, decimalPlaces: number = 2): string {
+  static formatPercentageWithSign(value: number, decimalPlaces = 2): string {
     if (value === null || value === undefined || isNaN(value)) {
       return '0.00%';
     }
@@ -45,7 +45,7 @@ export class PercentageFormatter {
    * @param decimalPlaces Number of decimal places (default: 2)
    * @returns Formatted percentage string
    */
-  static formatDecimalAsPercentage(decimal: number, decimalPlaces: number = 2): string {
+  static formatDecimalAsPercentage(decimal: number, decimalPlaces = 2): string {
     if (decimal === null || decimal === undefined || isNaN(decimal)) {
       return '0.00%';
     }

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 import { switchMap, take } from 'rxjs/operators';
 import { PortfolioPosition } from '../../../../core/models/portfolio-position.model';
 import { StockMaster } from '../../../../core/models/stock-master.model';

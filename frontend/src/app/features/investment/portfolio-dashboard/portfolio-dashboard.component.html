@@ -17,7 +17,7 @@
         <div class="flex align-items-center">
           <div class="flex-1">
             <div class="text-500 font-medium mb-1">Total Portfolios</div>
-            <div *ngIf="!(loadingSummary$ | async)" class="text-900 font-bold text-2xl">{{ totalPortfolios$ | async }}</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-2xl">{{ totalPortfolios$ | async }}</div>
             <p-skeleton *ngIf="loadingSummary$ | async" height="2rem"></p-skeleton>
           </div>
           <div class="bg-blue-100 text-blue-600 p-3 border-round">
@@ -32,7 +32,7 @@
         <div class="flex align-items-center">
           <div class="flex-1">
             <div class="text-500 font-medium mb-1">Total Investment</div>
-            <div *ngIf="!(loadingSummary$ | async)" class="text-900 font-bold text-2xl">{{ facade.formatCurrencyCompact((totalInvestment$ | async) || 0) }}</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-2xl">{{ facade.formatCurrencyCompact((totalInvestment$ | async) || 0) }}</div>
             <p-skeleton *ngIf="loadingSummary$ | async" height="2rem"></p-skeleton>
           </div>
           <div class="bg-green-100 text-green-600 p-3 border-round">
@@ -47,7 +47,7 @@
         <div class="flex align-items-center">
           <div class="flex-1">
             <div class="text-500 font-medium mb-1">Total Current Value</div>
-            <div *ngIf="!(loadingSummary$ | async)" class="text-900 font-bold text-2xl">{{ facade.formatCurrencyCompact((totalCurrentValue$ | async) || 0) }}</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-2xl">{{ facade.formatCurrencyCompact((totalCurrentValue$ | async) || 0) }}</div>
             <p-skeleton *ngIf="loadingSummary$ | async" height="2rem"></p-skeleton>
           </div>
           <div class="bg-purple-100 text-purple-600 p-3 border-round">
@@ -62,7 +62,7 @@
         <div class="flex align-items-center">
           <div class="flex-1">
             <div class="text-500 font-medium mb-1">Total Gain/Loss</div>
-            <div *ngIf="!(loadingSummary$ | async)" [class]="facade.getGainLossColorClass((totalGainLoss$ | async) || 0)" class="font-bold text-2xl">
+            <div *ngIf="(loadingSummary$ | async) === false" [class]="facade.getGainLossColorClass((totalGainLoss$ | async) || 0)" class="font-bold text-2xl">
               {{ facade.formatCurrencyCompact((totalGainLoss$ | async) || 0) }}
               <span class="text-sm ml-1">({{ facade.formatPercentage((totalGainLossPercentage$ | async) || 0) }})</span>
             </div>
@@ -81,7 +81,7 @@
         <div class="flex align-items-center">
           <div class="flex-1">
             <div class="text-500 font-medium mb-1">Active Positions</div>
-            <div *ngIf="!(loadingSummary$ | async)" class="text-900 font-bold text-xl">{{ totalActivePositions$ | async }}</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-xl">{{ totalActivePositions$ | async }}</div>
             <p-skeleton *ngIf="loadingSummary$ | async" height="1.5rem"></p-skeleton>
           </div>
           <div class="bg-blue-100 text-blue-600 p-3 border-round">
@@ -96,7 +96,7 @@
         <div class="flex align-items-center">
           <div class="flex-1">
             <div class="text-500 font-medium mb-1">Distinct Stocks</div>
-            <div *ngIf="!(loadingSummary$ | async)" class="text-900 font-bold text-xl">{{ totalDistinctStocks$ | async }}</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-xl">{{ totalDistinctStocks$ | async }}</div>
             <p-skeleton *ngIf="loadingSummary$ | async" height="1.5rem"></p-skeleton>
           </div>
           <div class="bg-orange-100 text-orange-600 p-3 border-round">
@@ -111,7 +111,7 @@
         <div class="flex align-items-center">
           <div class="flex-1">
             <div class="text-500 font-medium mb-1">Average Per Portfolio</div>
-            <div *ngIf="!(loadingSummary$ | async)" class="text-900 font-bold text-xl">
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-xl">
               {{ ((totalPortfolios$ | async) || 0) > 0 ? facade.formatCurrencyCompact(((totalInvestment$ | async) || 0) / ((totalPortfolios$ | async) || 1)) : '€0' }}
             </div>
             <p-skeleton *ngIf="loadingSummary$ | async" height="1.5rem"></p-skeleton>
@@ -134,7 +134,7 @@
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!(loading$ | async) && !(hasPortfolios$ | async)" class="text-center py-8">
+  <div *ngIf="(loading$ | async) === false && (hasPortfolios$ | async) === false" class="text-center py-8">
     <i class="pi pi-briefcase text-6xl text-300 mb-3"></i>
     <h3 class="text-900 font-bold mb-2">No Portfolios Yet</h3>
     <p class="text-600 mb-4">Create your first portfolio to start tracking your investments</p>
@@ -146,7 +146,7 @@
   </div>
 
   <!-- Portfolios Grid -->
-  <div class="grid" *ngIf="!(loading$ | async) && (hasPortfolios$ | async)">
+  <div class="grid" *ngIf="(loading$ | async) === false && (hasPortfolios$ | async)">
     <div class="col-12 md:col-6 lg:col-4" *ngFor="let portfolio of portfolios$ | async; trackBy: trackByPortfolioUuid">
       <p-card 
         styleClass="h-full cursor-pointer hover:shadow-lg transition-all transition-duration-200 portfolio-card"
@@ -173,7 +173,7 @@
         
         <div class="portfolio-metrics">
           <!-- Performance Overview -->
-          <div class="grid mb-3" *ngIf="!(loadingStatistics$ | async)">
+          <div class="grid mb-3" *ngIf="(loadingStatistics$ | async) === false">
             <div class="col-6">
               <div class="text-center">
                 <div class="text-500 text-xs mb-1">Investment</div>
@@ -189,7 +189,7 @@
           </div>
 
           <!-- Gain/Loss -->
-          <div class="text-center mb-3" *ngIf="!(loadingStatistics$ | async)">
+          <div class="text-center mb-3" *ngIf="(loadingStatistics$ | async) === false">
             <div class="text-500 text-xs mb-1">Gain/Loss</div>
             <div [class]="facade.getGainLossColorClass((getPortfolioStatistics$(portfolio.uuid) | async)?.totalGainLoss || 0)" class="font-bold">
               {{ facade.formatCurrency((getPortfolioStatistics$(portfolio.uuid) | async)?.totalGainLoss || 0) }}
@@ -198,7 +198,7 @@
           </div>
 
           <!-- Stock Summary -->
-          <div class="flex justify-content-between align-items-center mb-2" *ngIf="!(loadingStatistics$ | async)">
+          <div class="flex justify-content-between align-items-center mb-2" *ngIf="(loadingStatistics$ | async) === false">
             <div class="text-center flex-1">
               <div class="text-500 text-xs mb-1">Active Positions</div>
               <div class="text-900 font-semibold">{{ (getPortfolioStatistics$(portfolio.uuid) | async)?.activePositionsCount || 0 }}</div>

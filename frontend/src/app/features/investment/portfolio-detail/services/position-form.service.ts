@@ -440,7 +440,7 @@ export class PositionFormService {
   /**
    * Get error message based on validation errors
    */
-  private getErrorMessage(controlName: string, errors: any): string {
+  private getErrorMessage(controlName: string, errors: Record<string, any>): string {
     if (errors['required']) {
       return `${this.getFieldLabel(controlName)} is required`;
     }
@@ -468,7 +468,7 @@ export class PositionFormService {
    * Get field label for error messages
    */
   private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
+    const labels: Record<string, string> = {
       'stock': 'Stock',
       'quantity': 'Quantity',
       'pricePerShare': 'Price per share',

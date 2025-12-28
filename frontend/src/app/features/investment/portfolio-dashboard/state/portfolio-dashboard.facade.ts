@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Portfolio, PortfolioSummary, PortfolioStatistics } from '../../../../core/models/portfolio.model';
+import { Portfolio, PortfolioStatistics } from '../../../../core/models/portfolio.model';
 import { PortfolioDashboardStateService } from './portfolio-dashboard.state';
 import { PortfolioFormService } from '../services/portfolio-form.service';
 import { PortfolioService } from '../../../../core/services/portfolio.service';

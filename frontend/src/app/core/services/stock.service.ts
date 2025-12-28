@@ -303,7 +303,7 @@ export class StockService {
    * Generate stock tooltip text
    */
   generateStockTooltip(stock: Stock): string {
-    const metrics = this.calculateStockMetrics(stock);
+    // Note: metrics was previously calculated but not used
     const purchaseDateFormatted = this.formatDate(stock.purchaseDate);
     const investmentValue = this.formatAmount(stock.investmentValue);
 

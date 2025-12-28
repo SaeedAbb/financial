@@ -109,7 +109,7 @@ export class DateFormatter {
       return date.getDate() === today.getDate() &&
              date.getMonth() === today.getMonth() &&
              date.getFullYear() === today.getFullYear();
-    } catch (error) {
+    } catch {
       return false;
     }
   }

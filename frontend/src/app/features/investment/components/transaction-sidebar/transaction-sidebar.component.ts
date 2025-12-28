@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DrawerModule } from 'primeng/drawer';
@@ -41,8 +41,8 @@ import { finalize } from 'rxjs';
   templateUrl: './transaction-sidebar.component.html',
   styleUrls: ['./transaction-sidebar.component.scss']
 })
-export class TransactionSidebarComponent implements OnInit, OnChanges {
-  @Input() visible: boolean = false;
+export class TransactionSidebarComponent implements OnChanges {
+  @Input() visible = false;
   @Input() position: PortfolioPosition | null = null;
   @Output() visibleChange = new EventEmitter<boolean>();
 
@@ -62,11 +62,7 @@ export class TransactionSidebarComponent implements OnInit, OnChanges {
 
   readonly TransactionType = TransactionType;
 
-  constructor(private transactionService: TransactionService) {}
-
-  ngOnInit(): void {
-    // Component initialization
-  }
+  private transactionService = inject(TransactionService);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['position'] && this.position && this.visible) {
@@ -160,8 +156,8 @@ export class TransactionSidebarComponent implements OnInit, OnChanges {
 
     // Apply sorting
     filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       switch (this.sortField) {
         case 'transactionDate':
