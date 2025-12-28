@@ -289,7 +289,7 @@ describe('PortfolioService', () => {
       const uuid = mockPortfolio.uuid;
       const search = 'AAPL';
 
-      service.getStockGroups(uuid, search).subscribe(() => {});
+      service.getStockGroups(uuid, search).subscribe();
 
       const req = httpMock.expectOne((request) => 
         request.url === `${apiUrl}/${uuid}/stock-groups`

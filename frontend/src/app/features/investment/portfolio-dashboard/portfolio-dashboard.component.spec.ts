@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { of, throwError, BehaviorSubject } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
 
 import { PortfolioDashboardComponent } from './portfolio-dashboard.component';
 import { PortfolioDashboardFacade } from './state/portfolio-dashboard.facade';
