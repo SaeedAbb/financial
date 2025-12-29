@@ -5,6 +5,7 @@ import com.basis.api.features.investment.portfolio.PortfolioService;
 import com.basis.api.features.investment.position.dto.BuyPositionRequest;
 import com.basis.api.features.investment.position.dto.PortfolioPositionDTO;
 import com.basis.api.features.investment.position.dto.SellPositionRequest;
+import com.basis.api.features.investment.position.PositionStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -66,35 +68,41 @@ class PortfolioPositionControllerTest {
         mockPosition.setId(positionId);
         mockPosition.setUuid(positionUuid);
         mockPosition.setPortfolioId(portfolioId);
-        mockPosition.setUserId(userId);
-        mockPosition.setStockSymbol("AAPL");
-        mockPosition.setCompanyName("Apple Inc.");
-        mockPosition.setQuantity(10);
+        
+        // Create mock stock
+        com.basis.api.features.stock.master.dto.StockMasterDTO stockDTO = new com.basis.api.features.stock.master.dto.StockMasterDTO();
+        stockDTO.setId(1L);
+        stockDTO.setSymbol("AAPL");
+        stockDTO.setCompanyName("Apple Inc.");
+        mockPosition.setStock(stockDTO);
+        
+        mockPosition.setQuantity(new BigDecimal("10"));
         mockPosition.setAverageCostBasis(new BigDecimal("150.00"));
-        mockPosition.setTotalInvestment(new BigDecimal("1500.00"));
-        mockPosition.setCurrentPrice(new BigDecimal("180.00"));
+        mockPosition.setTotalCost(new BigDecimal("1500.00"));
         mockPosition.setCurrentValue(new BigDecimal("1800.00"));
         mockPosition.setUnrealizedGainLoss(new BigDecimal("300.00"));
         mockPosition.setUnrealizedGainLossPercentage(new BigDecimal("20.00"));
-        mockPosition.setPositionStatus("ACTIVE");
+        mockPosition.setStatus(PositionStatus.ACTIVE);
+        mockPosition.setFirstPurchaseDate(LocalDate.now());
+        mockPosition.setLastTransactionDate(LocalDate.now());
+        mockPosition.setCreatedAt(ZonedDateTime.now());
+        mockPosition.setUpdatedAt(ZonedDateTime.now());
 
         // Setup buy request
         buyRequest = new BuyPositionRequest();
         buyRequest.setStockSymbol("AAPL");
         buyRequest.setCompanyName("Apple Inc.");
-        buyRequest.setQuantity(10);
+        buyRequest.setQuantity(new BigDecimal("10"));
         buyRequest.setPricePerShare(new BigDecimal("150.00"));
-        buyRequest.setFees(new BigDecimal("10.00"));
-        buyRequest.setTransactionDate(LocalDate.now().toString());
+        buyRequest.setTransactionDate(LocalDate.now());
         buyRequest.setNotes("Test buy");
 
         // Setup sell request
         sellRequest = new SellPositionRequest();
         sellRequest.setPositionId(positionId);
-        sellRequest.setQuantity(5);
+        sellRequest.setQuantity(new BigDecimal("5"));
         sellRequest.setPricePerShare(new BigDecimal("180.00"));
-        sellRequest.setFees(new BigDecimal("5.00"));
-        sellRequest.setTransactionDate(LocalDate.now().toString());
+        sellRequest.setTransactionDate(LocalDate.now());
         sellRequest.setNotes("Test sell");
 
         // Setup mock portfolio
@@ -119,9 +127,9 @@ class PortfolioPositionControllerTest {
                         .content(objectMapper.writeValueAsString(buyRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(positionId))
-                .andExpect(jsonPath("$.stockSymbol").value("AAPL"))
+                .andExpect(jsonPath("$.stock.symbol").value("AAPL"))
                 .andExpect(jsonPath("$.quantity").value(10))
-                .andExpect(jsonPath("$.totalInvestment").value(1500.00));
+                .andExpect(jsonPath("$.totalCost").value(1500.00));
 
         verify(positionService).buyStock(eq(portfolioId), eq(userId), any(BuyPositionRequest.class));
     }
@@ -138,7 +146,7 @@ class PortfolioPositionControllerTest {
                         .content(objectMapper.writeValueAsString(sellRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(positionId))
-                .andExpect(jsonPath("$.stockSymbol").value("AAPL"));
+                .andExpect(jsonPath("$.stock.symbol").value("AAPL"));
 
         verify(positionService).sellStock(eq(userId), any(SellPositionRequest.class));
     }
@@ -154,7 +162,7 @@ class PortfolioPositionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id").value(positionId))
-                .andExpect(jsonPath("$[0].stockSymbol").value("AAPL"));
+                .andExpect(jsonPath("$[0].stock.symbol").value("AAPL"));
 
         verify(positionService).getPortfolioPositions(portfolioId, userId);
     }
@@ -169,7 +177,7 @@ class PortfolioPositionControllerTest {
                         .with(jwt().jwt(jwt -> jwt.subject(userId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].positionStatus").value("ACTIVE"));
+                .andExpect(jsonPath("$[0].status").value("ACTIVE"));
 
         verify(positionService).getActivePortfolioPositions(portfolioId, userId);
     }
@@ -183,7 +191,7 @@ class PortfolioPositionControllerTest {
                         .with(jwt().jwt(jwt -> jwt.subject(userId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(positionId))
-                .andExpect(jsonPath("$.stockSymbol").value("AAPL"));
+                .andExpect(jsonPath("$.stock.symbol").value("AAPL"));
 
         verify(positionService).getPosition(positionId, userId);
     }
@@ -197,7 +205,7 @@ class PortfolioPositionControllerTest {
                         .with(jwt().jwt(jwt -> jwt.subject(userId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(positionUuid.toString()))
-                .andExpect(jsonPath("$.stockSymbol").value("AAPL"));
+                .andExpect(jsonPath("$.stock.symbol").value("AAPL"));
 
         verify(positionService).getPositionByUuid(positionUuid, userId);
     }
@@ -272,7 +280,7 @@ class PortfolioPositionControllerTest {
                         .content(objectMapper.writeValueAsString(buyRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(positionId))
-                .andExpect(jsonPath("$.stockSymbol").value("AAPL"));
+                .andExpect(jsonPath("$.stock.symbol").value("AAPL"));
 
         verify(portfolioService).getPortfolioByUuid(portfolioUuid, userId);
         verify(positionService).buyStock(eq(portfolioId), eq(userId), any(BuyPositionRequest.class));
@@ -335,7 +343,7 @@ class PortfolioPositionControllerTest {
                         .with(jwt().jwt(jwt -> jwt.subject(userId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].positionStatus").value("ACTIVE"));
+                .andExpect(jsonPath("$[0].status").value("ACTIVE"));
 
         verify(positionService).getActiveUserPositions(userId);
     }
