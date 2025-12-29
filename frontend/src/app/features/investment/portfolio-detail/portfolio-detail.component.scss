@@ -1,0 +1,2676 @@
+// Portfolio Detail Component Styles
+// Following application's dark theme design system
+
+// ============================
+// MIXINS & VARIABLES
+// ============================
+
+@mixin card-hover-effect {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    border-color: var(--surface-300) !important;
+  }
+}
+
+@mixin performance-color($color, $glow-color) {
+  color: $color;
+  text-shadow: 0 0 10px $glow-color;
+}
+
+@mixin glass-effect {
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--surface-border);
+}
+
+// ============================
+// LAYOUT & CONTAINER
+// ============================
+
+.portfolio-detail {
+  padding: 1.5rem;
+  background: var(--surface-ground);
+  min-height: 100vh;
+  color: var(--text-color);
+  max-width: 1400px;
+  margin: 0 auto;
+
+  // Fade-in animation for content
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+// ============================
+// HEADER SECTION
+// ============================
+
+.portfolio-header {
+  border-bottom: 1px solid var(--surface-border);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+
+  .back-button-container {
+    .back-nav-button {
+      transition: all 0.3s ease;
+      background: var(--surface-card) !important;
+      border: 1px solid var(--surface-border) !important;
+      color: var(--text-color) !important;
+
+      &:hover {
+        background: var(--surface-hover) !important;
+        transform: translateX(-2px);
+      }
+    }
+  }
+
+  .portfolio-title {
+    h2 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+      margin: 0.5rem 0 0 0;
+      font-size: 1rem;
+    }
+  }
+
+  .buy-stock-button {
+    background: linear-gradient(135deg, var(--primary-color), var(--blue-500)) !important;
+    border: none !important;
+    color: white !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+
+    &:hover:not([disabled]) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+// ============================
+// PORTFOLIO OVERVIEW CARDS
+// ============================
+
+.portfolio-overview {
+  margin-bottom: 2.5rem;
+
+  .main-performance-card {
+    margin-bottom: 2rem;
+
+    ::ng-deep .performance-highlight-card {
+      @include glass-effect;
+      border-radius: 16px !important;
+      border-left: 4px solid var(--primary-color) !important;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(59, 130, 246, 0.02)) !important;
+      box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1) !important;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15) !important;
+      }
+
+      .p-card-content {
+        padding: 2rem !important;
+      }
+    }
+
+    .main-performance-content {
+      .performance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+
+        .current-value-section, .investment-section {
+          text-align: center;
+          flex: 1;
+        }
+
+        .current-value {
+          font-size: 2.5rem;
+          font-weight: 800;
+          font-family: 'Segoe UI', monospace;
+          color: var(--text-color);
+          margin-bottom: 0.5rem;
+          letter-spacing: -0.02em;
+        }
+
+        .investment-value {
+          font-size: 1.5rem;
+          font-weight: 600;
+          font-family: 'Segoe UI', monospace;
+          color: var(--text-color-secondary);
+          margin-bottom: 0.5rem;
+        }
+
+        .value-label, .investment-label {
+          color: var(--text-color-secondary);
+          font-size: 0.875rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .investment-section {
+          border-left: 1px solid var(--surface-border);
+          padding-left: 2rem;
+        }
+      }
+
+      .performance-metrics {
+        .gain-loss-section {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          .gain-loss-main {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            .gain-loss-icon {
+              width: 48px;
+              height: 48px;
+              border-radius: 12px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.3s ease;
+
+              &.pi-trending-up {
+                background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+                color: var(--green-500);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+              }
+
+              &.pi-trending-down {
+                background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+                color: var(--red-500);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+              }
+
+              &.pi-minus {
+                background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.2));
+                color: var(--text-color-secondary);
+                box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
+              }
+
+              .pi {
+                font-size: 1.25rem;
+                font-weight: 700;
+              }
+            }
+
+            .gain-loss-values {
+              .gain-loss-amount {
+                font-size: 1.75rem;
+                font-weight: 700;
+                font-family: 'Segoe UI', monospace;
+                margin-bottom: 0.25rem;
+                line-height: 1.2;
+
+                &.gain {
+                  color: var(--green-500);
+                  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+                }
+
+                &.loss {
+                  color: var(--red-500);
+                  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+                }
+
+                &.neutral {
+                  color: var(--text-color-secondary);
+                }
+              }
+
+              .gain-loss-percentage {
+                font-size: 1rem;
+                font-weight: 600;
+                font-family: 'Segoe UI', monospace;
+
+                &.gain {
+                  color: var(--green-500);
+                }
+
+                &.loss {
+                  color: var(--red-500);
+                }
+
+                &.neutral {
+                  color: var(--text-color-secondary);
+                }
+              }
+            }
+          }
+
+          .performance-status {
+            .status-badge {
+              padding: 0.5rem 1rem;
+              border-radius: 20px;
+              font-size: 0.875rem;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+
+              &.status-gain {
+                background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+                color: var(--green-500);
+                border: 1px solid rgba(16, 185, 129, 0.3);
+              }
+
+              &.status-loss {
+                background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+                color: var(--red-500);
+                border: 1px solid rgba(239, 68, 68, 0.3);
+              }
+
+              &.status-neutral {
+                background: rgba(148, 163, 184, 0.1);
+                color: var(--text-color-secondary);
+                border: 1px solid rgba(148, 163, 184, 0.3);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .quick-stats-grid {
+    ::ng-deep .quick-stat-card {
+      @include glass-effect;
+      @include card-hover-effect;
+      border-radius: 12px !important;
+      height: 100%;
+      border: 1px solid var(--surface-border) !important;
+
+      .p-card-content {
+        padding: 1.5rem !important;
+      }
+    }
+
+    .quick-stat {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+
+        &.positions-icon {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+          color: var(--green-500);
+        }
+
+        &.transactions-icon {
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.2));
+          color: var(--blue-500);
+        }
+
+        &.diversity-icon {
+          background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(147, 51, 234, 0.2));
+          color: var(--purple-500);
+        }
+
+        .pi {
+          font-size: 1rem;
+        }
+      }
+
+      .stat-content {
+        flex: 1;
+
+        .stat-value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--text-color);
+          margin-bottom: 0.25rem;
+          line-height: 1.2;
+        }
+
+        .stat-label {
+          color: var(--text-color);
+          font-size: 0.875rem;
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+        }
+
+        .stat-detail {
+          color: var(--text-color-secondary);
+          font-size: 0.75rem;
+          line-height: 1.3;
+        }
+      }
+    }
+  }
+}
+
+// ============================
+// LOADING & EMPTY STATES
+// ============================
+
+.loading-state {
+  text-align: center;
+  padding: 4rem 2rem;
+
+  ::ng-deep .p-progress-spinner {
+    .p-progress-spinner-circle {
+      stroke: var(--primary-color);
+    }
+  }
+
+  .loading-text {
+    color: var(--text-color-secondary);
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--surface-card);
+  border-radius: 16px;
+  border: 1px solid var(--surface-border);
+
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--surface-400);
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+
+  h3 {
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: var(--text-color-secondary);
+    margin-bottom: 2rem;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+}
+
+// ============================
+// STOCK GROUPS CONTAINER
+// ============================
+
+.stock-groups-container {
+  .section-header {
+    margin-bottom: 2rem;
+
+    .header-title-section {
+      margin-bottom: 1.5rem;
+
+      h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      .holdings-summary {
+        font-size: 0.875rem;
+        color: var(--text-color-secondary);
+        font-weight: 500;
+      }
+    }
+
+    .search-and-filters {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      .search-container {
+        position: relative;
+        
+        .search-input {
+          background: var(--surface-card) !important;
+          border: 1px solid var(--surface-border) !important;
+          border-radius: 12px;
+          color: var(--text-color) !important;
+          padding: 0.875rem 1rem 0.875rem 2.75rem !important;
+          font-size: 0.925rem;
+          transition: all 0.3s ease;
+          width: 100%;
+
+          &:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+          }
+
+          &::placeholder {
+            color: var(--text-color-secondary);
+          }
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-color-secondary);
+          font-size: 1rem;
+        }
+
+        .clear-search-btn {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: var(--text-color-secondary);
+          cursor: pointer;
+          padding: 0.5rem;
+          border-radius: 6px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            color: var(--text-color);
+            background: var(--surface-hover);
+          }
+
+          .pi {
+            font-size: 0.875rem;
+          }
+        }
+      }
+
+      .filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        .filter-chip {
+          display: flex;
+          align-items: center;
+          gap: 0.375rem;
+          padding: 0.5rem 1rem;
+          border: 1px solid var(--surface-border);
+          border-radius: 20px;
+          background: var(--surface-card);
+          color: var(--text-color-secondary);
+          font-size: 0.8rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          min-height: 44px;
+
+          &:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+          }
+
+          &.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          }
+
+          &.gain-chip {
+            &:hover, &.active {
+              background: var(--green-500);
+              border-color: var(--green-500);
+              color: white;
+              box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+          }
+
+          &.loss-chip {
+            &:hover, &.active {
+              background: var(--red-500);
+              border-color: var(--red-500);
+              color: white;
+              box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            }
+          }
+
+          &.recent-chip {
+            &:hover, &.active {
+              background: var(--blue-500);
+              border-color: var(--blue-500);
+              color: white;
+              box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+          }
+
+          .pi {
+            font-size: 0.75rem;
+          }
+        }
+      }
+
+      .sort-container {
+        .sort-button {
+          background: var(--surface-card) !important;
+          border: 1px solid var(--surface-border) !important;
+          color: var(--text-color) !important;
+          border-radius: 12px !important;
+          padding: 0.75rem 1rem !important;
+          transition: all 0.3s ease;
+          min-height: 44px;
+
+          &:hover {
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          }
+
+          .p-button-icon {
+            font-size: 1rem;
+          }
+        }
+      }
+    }
+  }
+
+  .no-results-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--surface-card);
+    border-radius: 16px;
+    border: 1px solid var(--surface-border);
+    margin-bottom: 2rem;
+
+    .empty-icon {
+      font-size: 3rem;
+      color: var(--surface-400);
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+
+    h3 {
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+    }
+  }
+}
+
+// ============================
+// SIMPLIFIED STOCK GROUP CARDS
+// ============================
+
+.stock-groups {
+  .stock-group {
+    margin-bottom: 1.5rem;
+
+    .stock-group-card {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+      &:hover {
+        border-color: var(--surface-300);
+        box-shadow: 0 8px 36px rgba(0, 0, 0, 0.12);
+        transform: translateY(-3px);
+      }
+
+      // ============================
+      // SIMPLIFIED CARD LAYOUT
+      // ============================
+
+      .simplified-stock-card {
+        position: relative;
+
+        .performance-indicator-stripe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 5px;
+          border-radius: 20px 20px 0 0;
+
+          &.performance-gain {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.3), var(--green-500), rgba(16, 185, 129, 0.3));
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+          }
+
+          &.performance-loss {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.3), var(--red-500), rgba(239, 68, 68, 0.3));
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+          }
+
+          &.performance-neutral {
+            background: linear-gradient(90deg, rgba(148, 163, 184, 0.3), var(--text-color-secondary), rgba(148, 163, 184, 0.3));
+          }
+        }
+
+        .card-content {
+          padding: 2rem;
+          padding-top: 2.5rem;
+
+          // ============================
+          // HEADER SECTION
+          // ============================
+
+          .stock-header {
+            margin-bottom: 1.5rem;
+
+            .company-info {
+              display: flex;
+              align-items: flex-start;
+              justify-content: space-between;
+
+              .symbol-and-icon {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+
+                .company-icon {
+                  width: 60px;
+                  height: 60px;
+                  border-radius: 16px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  transition: all 0.3s ease;
+                  border: 2px solid transparent;
+
+                  &.performance-gain {
+                    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+                    color: var(--green-500);
+                    border-color: rgba(16, 185, 129, 0.3);
+                    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+                  }
+
+                  &.performance-loss {
+                    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+                    color: var(--red-500);
+                    border-color: rgba(239, 68, 68, 0.3);
+                    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+                  }
+
+                  &.performance-neutral {
+                    background: linear-gradient(135deg, var(--surface-200), var(--surface-300));
+                    color: var(--text-color-secondary);
+                    border-color: var(--surface-border);
+                  }
+
+                  .pi {
+                    font-size: 1.75rem;
+                  }
+                }
+
+                .symbol-info {
+                  .stock-symbol {
+                    font-size: 1.75rem;
+                    font-weight: 800;
+                    color: var(--text-color);
+                    margin: 0 0 0.25rem 0;
+                    letter-spacing: -0.02em;
+                    line-height: 1.2;
+                  }
+
+                  .company-name {
+                    font-size: 1rem;
+                    color: var(--text-color-secondary);
+                    margin: 0;
+                    font-weight: 500;
+                    line-height: 1.3;
+                  }
+                }
+              }
+
+              .shares-owned {
+                text-align: right;
+                
+                .shares-count {
+                  display: block;
+                  font-size: 1.5rem;
+                  font-weight: 700;
+                  color: var(--text-color);
+                  font-family: 'Segoe UI', monospace;
+                  line-height: 1.2;
+                }
+
+                .shares-label {
+                  display: block;
+                  font-size: 0.875rem;
+                  color: var(--text-color-secondary);
+                  font-weight: 500;
+                  text-transform: lowercase;
+                  margin-top: 0.25rem;
+                }
+              }
+            }
+          }
+
+          // ============================
+          // VALUE & PERFORMANCE ROW
+          // ============================
+
+          .value-performance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: var(--surface-hover);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+
+            .current-value-section {
+              .current-value {
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--text-color);
+                font-family: 'Segoe UI', monospace;
+                line-height: 1.2;
+                margin-bottom: 0.25rem;
+              }
+
+              .value-label {
+                font-size: 0.875rem;
+                color: var(--text-color-secondary);
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+              }
+            }
+
+            .performance-section {
+              text-align: right;
+
+              .performance-amount {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 0.5rem;
+                font-size: 1.5rem;
+                font-weight: 700;
+                font-family: 'Segoe UI', monospace;
+                margin-bottom: 0.25rem;
+                line-height: 1.2;
+
+                .performance-icon {
+                  font-size: 1.25rem;
+                }
+
+                &.gain {
+                  color: var(--green-500);
+                  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+                }
+
+                &.loss {
+                  color: var(--red-500);
+                  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+                }
+
+                &.neutral {
+                  color: var(--text-color-secondary);
+                }
+              }
+
+              .performance-percentage {
+                font-size: 1rem;
+                font-weight: 600;
+                font-family: 'Segoe UI', monospace;
+
+                &.gain {
+                  color: var(--green-500);
+                }
+
+                &.loss {
+                  color: var(--red-500);
+                }
+
+                &.neutral {
+                  color: var(--text-color-secondary);
+                }
+              }
+            }
+          }
+
+          // ============================
+          // PRICE INFORMATION ROW
+          // ============================
+
+          .price-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--surface-border);
+
+            .current-price-info, .avg-cost-info {
+              display: flex;
+              align-items: baseline;
+              gap: 0.5rem;
+
+              .current-price, .avg-cost {
+                font-size: 1.125rem;
+                font-weight: 600;
+                color: var(--text-color);
+                font-family: 'Segoe UI', monospace;
+              }
+
+              .price-label, .cost-label {
+                font-size: 0.875rem;
+                color: var(--text-color-secondary);
+                font-weight: 500;
+              }
+            }
+          }
+
+          // ============================
+          // ACTION BUTTONS
+          // ============================
+
+          .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+
+            .buy-button, .sell-button {
+              flex: 1;
+              border-radius: 12px !important;
+              padding: 1rem 1.5rem !important;
+              font-size: 1rem !important;
+              font-weight: 600 !important;
+              transition: all 0.3s ease;
+              min-height: 56px;
+
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+              }
+
+              .p-button-icon {
+                font-size: 1rem !important;
+                margin-right: 0.5rem !important;
+              }
+
+              .p-button-label {
+                font-weight: 600 !important;
+              }
+            }
+
+            .buy-button {
+              background: var(--primary-color) !important;
+              border-color: var(--primary-color) !important;
+              color: white !important;
+
+              &:hover {
+                background: var(--blue-600) !important;
+                border-color: var(--blue-600) !important;
+                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+              }
+            }
+
+            .sell-button {
+              background: var(--green-500) !important;
+              border-color: var(--green-500) !important;
+              color: white !important;
+
+              &:hover {
+                background: var(--green-600) !important;
+                border-color: var(--green-600) !important;
+                box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+              }
+
+              &:disabled {
+                opacity: 0.5 !important;
+                transform: none !important;
+                cursor: not-allowed !important;
+              }
+            }
+          }
+
+          // ============================
+          // TRANSACTION HISTORY TOGGLE
+          // ============================
+
+          .history-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+
+            &:hover {
+              background: var(--surface-hover);
+              padding-left: 1rem;
+              padding-right: 1rem;
+            }
+
+            &:focus {
+              outline: 2px solid var(--primary-color);
+              outline-offset: 2px;
+            }
+
+            .history-info {
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+
+              .pi-history {
+                font-size: 1rem;
+                color: var(--text-color-secondary);
+              }
+
+              .history-text {
+                font-size: 0.95rem;
+                color: var(--text-color-secondary);
+                font-weight: 500;
+              }
+            }
+
+            .toggle-icon {
+              color: var(--text-color-secondary);
+              transition: all 0.3s ease;
+
+              &.expanded {
+                transform: rotate(180deg);
+                color: var(--primary-color);
+              }
+
+              .pi {
+                font-size: 1rem;
+              }
+            }
+          }
+        }
+      }
+
+      // ============================
+      // MOBILE RESPONSIVE STYLES
+      // ============================
+
+      // ============================
+      // TRANSACTION TIMELINE
+      // ============================
+
+      .transaction-timeline {
+        background: var(--surface-card);
+        border-top: 1px solid var(--surface-border);
+
+        .timeline-header {
+          background: var(--surface-hover);
+          padding: 1.5rem;
+          border-bottom: 1px solid var(--surface-border);
+
+          .timeline-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-color);
+
+            .pi-history {
+              font-size: 1rem;
+              color: var(--primary-color);
+            }
+          }
+
+          .timeline-summary {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-color-secondary);
+
+            .total-transactions {
+              font-weight: 600;
+            }
+
+            .separator {
+              opacity: 0.5;
+            }
+
+            .holding-period {
+              font-weight: 500;
+            }
+          }
+        }
+
+        .timeline-content {
+          padding: 2rem;
+
+          .timeline-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            position: relative;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            &.current-position {
+              .timeline-details {
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(102, 126, 234, 0.02));
+                border: 1px solid rgba(102, 126, 234, 0.2);
+                border-radius: 12px;
+                padding: 1.5rem;
+              }
+            }
+
+            .timeline-marker {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              position: relative;
+
+              .timeline-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 3px solid transparent;
+                background: var(--surface-card);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                z-index: 2;
+
+                &.buy {
+                  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+                  border-color: var(--green-500);
+                  color: var(--green-500);
+                }
+
+                &.sell {
+                  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+                  border-color: var(--red-500);
+                  color: var(--red-500);
+                }
+
+                &.current {
+                  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(102, 126, 234, 0.2));
+                  border-color: var(--primary-color);
+                  color: var(--primary-color);
+                }
+
+                .pi {
+                  font-size: 1rem;
+                  font-weight: 600;
+                }
+              }
+
+              .timeline-line {
+                position: absolute;
+                top: 40px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 2px;
+                height: 60px;
+                background: linear-gradient(180deg, var(--surface-border), transparent);
+                z-index: 1;
+              }
+            }
+
+            .timeline-details {
+              flex: 1;
+              min-width: 0;
+
+              .transaction-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 0.75rem;
+
+                .transaction-type-label {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.75rem;
+
+                  .type-text {
+                    font-size: 0.875rem;
+                    font-weight: 700;
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 6px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+
+                    &.buy {
+                      background: rgba(16, 185, 129, 0.1);
+                      color: var(--green-600);
+                      border: 1px solid rgba(16, 185, 129, 0.3);
+                    }
+
+                    &.sell {
+                      background: rgba(239, 68, 68, 0.1);
+                      color: var(--red-600);
+                      border: 1px solid rgba(239, 68, 68, 0.3);
+                    }
+                  }
+
+                  .transaction-date {
+                    font-size: 0.875rem;
+                    color: var(--text-color-secondary);
+                    font-weight: 500;
+                  }
+                }
+
+                .transaction-amount {
+                  font-size: 1.125rem;
+                  font-weight: 700;
+                  font-family: 'Segoe UI', monospace;
+
+                  &.buy {
+                    color: var(--green-500);
+                  }
+
+                  &.sell {
+                    color: var(--red-500);
+                  }
+                }
+              }
+
+              .transaction-info {
+                .quantity-price {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                  margin-bottom: 0.75rem;
+
+                  .quantity {
+                    font-weight: 600;
+                    color: var(--text-color);
+                  }
+
+                  .separator {
+                    color: var(--text-color-secondary);
+                    opacity: 0.7;
+                  }
+
+                  .price {
+                    font-family: 'Segoe UI', monospace;
+                    font-weight: 600;
+                    color: var(--text-color);
+                  }
+                }
+
+                .transaction-details-extra {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 0.5rem;
+
+                  .profit-loss {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    font-family: 'Segoe UI', monospace;
+
+                    &.profit {
+                      color: var(--green-500);
+                    }
+
+                    &.loss {
+                      color: var(--red-500);
+                    }
+
+                    &.neutral {
+                      color: var(--text-color-secondary);
+                    }
+
+                    .pi {
+                      font-size: 0.8rem;
+                    }
+                  }
+
+                  .holding-period {
+                    font-size: 0.8rem;
+                    color: var(--text-color-secondary);
+                    font-weight: 500;
+                  }
+                }
+              }
+
+              .remaining-position {
+                margin-top: 0.75rem;
+                padding: 0.75rem;
+                background: rgba(59, 130, 246, 0.05);
+                border-left: 3px solid var(--blue-500);
+                border-radius: 6px;
+
+                .remaining-info {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                  color: var(--blue-600);
+                  font-size: 0.8rem;
+                  font-weight: 500;
+
+                  .pi {
+                    font-size: 0.75rem;
+                  }
+                }
+              }
+
+              .current-position-summary {
+                .current-header {
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin-bottom: 0.75rem;
+
+                  .current-label {
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: var(--text-color);
+                  }
+
+                  .current-value {
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    font-family: 'Segoe UI', monospace;
+                    color: var(--primary-color);
+                  }
+                }
+
+                .current-info {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+
+                  .current-shares {
+                    font-weight: 600;
+                    color: var(--text-color);
+                  }
+
+                  .separator {
+                    color: var(--text-color-secondary);
+                    opacity: 0.7;
+                  }
+
+                  .unrealized-pnl {
+                    font-family: 'Segoe UI', monospace;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+
+                    &.gain {
+                      color: var(--green-500);
+                    }
+
+                    &.loss {
+                      color: var(--red-500);
+                    }
+
+                    &.neutral {
+                      color: var(--text-color-secondary);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// ============================
+// FORM STYLING
+// ============================
+
+.field {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.925rem;
+  }
+
+  // Textarea styling
+  textarea[pTextarea] {
+    width: 100%;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-family: var(--font-family);
+    font-size: 0.925rem;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    resize: vertical;
+    min-height: 80px;
+
+    &:hover {
+      border-color: var(--surface-hover);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.2);
+    }
+
+    &::placeholder {
+      color: var(--text-color-secondary);
+      opacity: 0.7;
+    }
+  }
+
+  // Character counter styling
+  small.text-500 {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    display: block;
+    text-align: right;
+    margin-top: 0.25rem;
+  }
+}
+
+// ============================
+// DIALOG OVERRIDES
+// ============================
+
+::ng-deep .p-dialog {
+  .p-dialog-header {
+    background: var(--surface-card) !important;
+    border-bottom: 1px solid var(--surface-border) !important;
+    padding: 1.5rem !important;
+
+    .p-dialog-title {
+      color: var(--text-color) !important;
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+  }
+
+  .p-dialog-content {
+    background: var(--surface-card) !important;
+    padding: 2rem !important;
+    color: var(--text-color) !important;
+  }
+
+  .p-dialog-footer {
+    background: var(--surface-card) !important;
+    border-top: 1px solid var(--surface-border) !important;
+    padding: 1.5rem !important;
+    
+    .p-button {
+      margin-left: 0.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+  }
+}
+
+// ============================
+// FORM INPUTS & DATEPICKER FIXES
+// ============================
+
+// Fix for date picker appearing behind dialogs
+::ng-deep {
+  // PrimeNG dialog has z-index of 1100 by default
+  // Date picker overlay must be higher
+  .p-datepicker-panel {
+    z-index: 9999 !important; // Ensure it's above everything
+    position: fixed !important;
+  }
+  
+  // Calendar overlay container
+  .p-datepicker {
+    z-index: 9999 !important;
+  }
+  
+  // Ensure the overlay mask doesn't block the date picker
+  .p-component-overlay {
+    z-index: 1100 !important;
+  }
+  
+  // Make sure dialog doesn't create a stacking context that traps the date picker
+  .p-dialog {
+    .p-dialog-content {
+      overflow: visible !important;
+    }
+  }
+  
+  // Specific fix for date picker trigger in dialogs
+  .p-dialog {
+    .p-datepicker-wrapper {
+      position: relative;
+      
+      .p-datepicker-trigger {
+        z-index: auto !important;
+      }
+    }
+  }
+}
+
+// Enhanced datepicker styling for dark theme
+::ng-deep .p-datepicker {
+  background: var(--surface-card) !important;
+  border: 1px solid var(--surface-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+
+  .p-datepicker-header {
+    background: var(--surface-hover) !important;
+    border-bottom: 1px solid var(--surface-border) !important;
+    color: var(--text-color) !important;
+    padding: 0.75rem !important;
+
+    .p-datepicker-title {
+      color: var(--text-color) !important;
+      font-weight: 600;
+    }
+
+    .p-datepicker-prev,
+    .p-datepicker-next {
+      color: var(--text-color) !important;
+      
+      &:hover {
+        background: var(--surface-card) !important;
+        color: var(--primary-color) !important;
+      }
+    }
+  }
+
+  .p-datepicker-calendar {
+    background: var(--surface-card) !important;
+
+    td {
+      border: 1px solid transparent;
+
+      &.p-datepicker-today {
+        background: rgba(102, 126, 234, 0.2) !important;
+        border-color: var(--primary-color) !important;
+
+        .p-datepicker-day {
+          color: var(--primary-color) !important;
+          font-weight: 600;
+        }
+      }
+
+      .p-datepicker-day {
+        color: var(--text-color) !important;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--surface-hover) !important;
+          color: var(--primary-color) !important;
+        }
+
+        &.p-datepicker-day-selected {
+          background: var(--primary-color) !important;
+          color: var(--primary-color-text) !important;
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+      }
+
+      &.p-datepicker-other-month {
+        .p-datepicker-day {
+          color: var(--text-color-secondary) !important;
+          opacity: 0.5;
+        }
+      }
+    }
+
+    th {
+      background: var(--surface-hover) !important;
+      color: var(--text-color-secondary) !important;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  .p-datepicker-buttonbar {
+    background: var(--surface-hover) !important;
+    border-top: 1px solid var(--surface-border) !important;
+    padding: 0.75rem !important;
+
+    .p-button {
+      background: var(--primary-color) !important;
+      border-color: var(--primary-color) !important;
+      color: var(--primary-color-text) !important;
+      border-radius: 6px;
+      font-size: 0.875rem;
+
+      &:hover {
+        background: var(--primary-color) !important;
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+// Input styling enhancements for dark theme
+::ng-deep .p-inputtext,
+::ng-deep .p-inputnumber-input {
+  background: var(--surface-card) !important;
+  border: 1px solid var(--surface-border) !important;
+  color: var(--text-color) !important;
+  border-radius: 6px;
+  padding: 0.75rem !important;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+    outline: none !important;
+  }
+
+  &::placeholder {
+    color: var(--text-color-secondary) !important;
+    opacity: 0.7;
+  }
+}
+
+// InputNumber specific styling
+::ng-deep .p-inputnumber {
+  .p-inputtext {
+    text-align: right;
+    font-family: 'Segoe UI', monospace;
+    font-weight: 500;
+  }
+
+  .p-inputnumber-button-group {
+    .p-button {
+      background: var(--surface-hover) !important;
+      border-color: var(--surface-border) !important;
+      color: var(--text-color) !important;
+
+      &:hover {
+        background: var(--primary-color) !important;
+        color: var(--primary-color-text) !important;
+      }
+    }
+  }
+}
+
+// Datepicker with icon styling
+::ng-deep .p-datepicker-wrapper {
+  .p-datepicker-trigger {
+    background: var(--surface-hover) !important;
+    border: 1px solid var(--surface-border) !important;
+    color: var(--text-color) !important;
+    border-radius: 0 6px 6px 0 !important;
+    border-left: none !important;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: var(--primary-color) !important;
+      border-color: var(--primary-color) !important;
+      color: var(--primary-color-text) !important;
+    }
+
+    .p-datepicker-trigger-icon {
+      color: inherit !important;
+    }
+  }
+
+  .p-datepicker-input-wrapper {
+    .p-inputtext {
+      border-radius: 6px 0 0 6px !important;
+      border-right: none !important;
+    }
+  }
+}
+
+// ============================
+// ANIMATIONS
+// ============================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 1000px;
+    opacity: 1;
+  }
+}
+
+.stock-group-content {
+  animation: slideDown 0.3s ease-in-out;
+}
+
+// ============================
+// RESPONSIVE DESIGN
+// ============================
+
+@media (max-width: 1024px) {
+  .portfolio-detail {
+    padding: 1rem;
+  }
+  
+  // Adjust stock logo size for tablets
+  .stock-logo-wrapper {
+    .stock-logo,
+    .stock-logo-fallback {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  .portfolio-overview {
+    .stats-card .stats-value {
+      font-size: 1.75rem;
+    }
+  }
+
+  .stock-groups-container {
+    .section-header {
+      .search-and-filters {
+        .filter-chips {
+          .filter-chip {
+            flex: 1;
+            justify-content: center;
+            min-width: calc(50% - 0.25rem);
+
+            &:nth-child(odd):last-child {
+              flex: none;
+              min-width: 100%;
+            }
+          }
+        }
+
+        .sort-container {
+          .sort-button {
+            width: 100%;
+            justify-content: center !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .portfolio-detail {
+    padding: 0.75rem;
+  }
+  
+  // Further adjust stock logo size for mobile
+  .stock-logo-wrapper {
+    .stock-logo,
+    .stock-logo-fallback {
+      width: 32px;
+      height: 32px;
+      font-size: 1rem;
+    }
+  }
+
+  .portfolio-header {
+    .portfolio-title h2 {
+      font-size: 1.75rem;
+    }
+
+    .buy-stock-button {
+      padding: 0.625rem 1.25rem !important;
+      font-size: 0.875rem;
+    }
+  }
+
+  .portfolio-overview {
+    .main-performance-card {
+      .main-performance-content {
+        .performance-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 1.5rem;
+
+          .investment-section {
+            border-left: none;
+            border-top: 1px solid var(--surface-border);
+            padding-left: 0;
+            padding-top: 1.5rem;
+          }
+
+          .current-value {
+            font-size: 2rem;
+          }
+
+          .investment-value {
+            font-size: 1.25rem;
+          }
+        }
+
+        .performance-metrics {
+          .gain-loss-section {
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            text-align: center;
+
+            .gain-loss-main {
+              flex-direction: column;
+              align-items: center;
+              gap: 0.75rem;
+            }
+          }
+        }
+      }
+    }
+
+    .quick-stats-grid {
+      .quick-stat {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+
+        .stat-content {
+          .stat-value {
+            font-size: 1.25rem;
+          }
+        }
+      }
+    }
+  }
+
+  .stock-group-card {
+    .simplified-stock-card {
+      .card-content {
+        padding: 1.5rem !important;
+        padding-top: 2rem !important;
+
+        .stock-header {
+          margin-bottom: 1.25rem;
+
+          .company-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+
+            .symbol-and-icon {
+              width: 100%;
+              justify-content: space-between;
+
+              .company-icon {
+                width: 52px;
+                height: 52px;
+
+                .pi {
+                  font-size: 1.5rem;
+                }
+              }
+
+              .symbol-info {
+                flex: 1;
+                margin-left: 1rem;
+
+                .stock-symbol {
+                  font-size: 1.5rem;
+                }
+
+                .company-name {
+                  font-size: 0.9rem;
+                }
+              }
+            }
+
+            .shares-owned {
+              align-self: flex-end;
+              text-align: right;
+
+              .shares-count {
+                font-size: 1.25rem;
+              }
+            }
+          }
+        }
+
+        .value-performance-row {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 1rem;
+          padding: 1.25rem;
+
+          .current-value-section {
+            .current-value {
+              font-size: 1.75rem;
+            }
+          }
+
+          .performance-section {
+            text-align: left;
+
+            .performance-amount {
+              justify-content: flex-start;
+              font-size: 1.25rem;
+            }
+          }
+        }
+
+        .price-info-row {
+          flex-direction: column;
+          gap: 0.75rem;
+          padding: 0.75rem 0;
+
+          .current-price-info, .avg-cost-info {
+            justify-content: space-between;
+            width: 100%;
+
+            .current-price, .avg-cost {
+              font-size: 1rem;
+            }
+          }
+        }
+
+        .action-buttons {
+          flex-direction: column;
+          gap: 0.75rem;
+
+          .buy-button, .sell-button {
+            width: 100%;
+            justify-content: center !important;
+            padding: 1rem !important;
+            font-size: 1rem !important;
+          }
+        }
+
+        .history-toggle {
+          padding: 1rem 0.75rem;
+          justify-content: center;
+          text-align: center;
+
+          .history-info {
+            .history-text {
+              font-size: 0.9rem;
+            }
+          }
+        }
+      }
+    }
+
+    .position-row {
+      padding: 0.75rem 1rem !important;
+
+      .position-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+
+        .position-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .portfolio-detail {
+    padding: 0.5rem;
+  }
+
+  .portfolio-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
+
+    .buy-stock-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .stock-group-card {
+    .company-icon {
+      width: 40px !important;
+      height: 40px !important;
+
+      .pi {
+        font-size: 1rem !important;
+      }
+    }
+
+    .stock-symbol {
+      font-size: 1.125rem !important;
+    }
+
+    .position-details {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.5rem;
+    }
+  }
+
+  .portfolio-overview {
+    .stats-card {
+      .stats-value {
+        font-size: 1.375rem;
+      }
+
+      .stats-label {
+        font-size: 0.8125rem;
+      }
+    }
+  }
+}
+
+// ============================
+// UTILITY CLASSES
+// ============================
+
+.text-gain {
+  color: var(--green-500) !important;
+}
+
+.text-loss {
+  color: var(--red-500) !important;
+}
+
+.text-neutral {
+  color: var(--text-color-secondary) !important;
+}
+
+.bg-gain-soft {
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+
+.bg-loss-soft {
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.border-gain {
+  border-color: var(--green-500) !important;
+}
+
+.border-loss {
+  border-color: var(--red-500) !important;
+}
+
+// ============================
+// ENHANCED VISUAL EFFECTS
+// ============================
+
+// Gradient overlays for premium feel
+.portfolio-detail::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  z-index: 1000;
+  opacity: 0.6;
+}
+
+// Subtle pulse animation for active indicators
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.status-indicator {
+  animation: pulse 2s infinite;
+}
+
+// Enhanced focus states for better accessibility
+.search-input:focus,
+::ng-deep .p-inputtext:focus,
+::ng-deep .p-inputnumber-input:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: var(--primary-color) !important;
+}
+
+// Custom scrollbar for webkit browsers
+.stock-group-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.stock-group-content::-webkit-scrollbar-track {
+  background: var(--surface-100);
+}
+
+.stock-group-content::-webkit-scrollbar-thumb {
+  background: var(--surface-400);
+  border-radius: 2px;
+}
+
+.stock-group-content::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-500);
+}
+
+// Smooth reveal animation for stock groups
+.stock-group {
+  animation: fadeInUp 0.4s ease-out;
+  
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Enhanced hover states with spring animations
+.stock-group-card {
+  will-change: transform, box-shadow;
+  
+  &:hover {
+    .company-icon {
+      transform: scale(1.1);
+      background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+      
+      .pi {
+        color: white;
+      }
+    }
+    
+    .stock-symbol {
+      background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+}
+
+// Premium tooltip styling - Fixed for visibility
+::ng-deep .p-tooltip {
+  z-index: 9999 !important;
+  
+  .p-tooltip-text {
+    // Force dark background and white text for visibility
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    padding: 0.5rem 0.75rem !important;
+    white-space: nowrap !important;
+    
+    // Force visibility
+    opacity: 1 !important;
+    display: block !important;
+    visibility: visible !important;
+    
+    // Ensure text contrast
+    * {
+      color: #ffffff !important;
+    }
+  }
+  
+  &.p-tooltip-top {
+    .p-tooltip-arrow {
+      border-top-color: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+  
+  &.p-tooltip-bottom {
+    .p-tooltip-arrow {
+      border-bottom-color: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+  
+  &.p-tooltip-left {
+    .p-tooltip-arrow {
+      border-left-color: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+  
+  &.p-tooltip-right {
+    .p-tooltip-arrow {
+      border-right-color: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+}
+
+// Action-specific tooltip styling with custom classes
+::ng-deep .action-tooltip {
+  &.tooltip-info {
+    .p-tooltip-text {
+      background-color: #3b82f6 !important;
+      color: #ffffff !important;
+      border-color: #2563eb !important;
+      font-weight: 600 !important;
+    }
+    
+    &.p-tooltip-top .p-tooltip-arrow {
+      border-top-color: #3b82f6 !important;
+    }
+  }
+  
+  &.tooltip-danger {
+    .p-tooltip-text {
+      background-color: #ef4444 !important;
+      color: #ffffff !important;
+      border-color: #dc2626 !important;
+      font-weight: 600 !important;
+    }
+    
+    &.p-tooltip-top .p-tooltip-arrow {
+      border-top-color: #ef4444 !important;
+    }
+  }
+  
+  &.tooltip-delete {
+    .p-tooltip-text {
+      background-color: #dc2626 !important;
+      color: #ffffff !important;
+      border-color: #b91c1c !important;
+      font-weight: 600 !important;
+    }
+    
+    &.p-tooltip-top .p-tooltip-arrow {
+      border-top-color: #dc2626 !important;
+    }
+  }
+}
+
+// Loading shimmer effect
+.loading-shimmer {
+  background: linear-gradient(90deg, var(--surface-100) 25%, var(--surface-200) 50%, var(--surface-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Performance indicators with subtle glow effects
+.performance.gain,
+.performance-value.gain {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.performance.loss,
+.performance-value.loss {
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+// Enhanced button hover states
+.sell-button {
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+  }
+  
+  &:hover::before {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Mobile touch improvements
+@media (hover: none) and (pointer: coarse) {
+  .stock-group-header {
+    padding: 1.25rem !important;
+  }
+  
+  .position-row {
+    padding: 1rem !important;
+  }
+  
+  .sell-button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .portfolio-detail {
+    --surface-border: #ffffff;
+    --surface-hover: #333333;
+  }
+  
+  .stock-group-card {
+    border-width: 2px !important;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .status-indicator {
+    animation: none;
+  }
+}
+
+// Dark mode enhancements for better contrast
+@media (prefers-color-scheme: dark) {
+  .portfolio-detail {
+    background: var(--surface-ground);
+  }
+  
+  .stats-value {
+    &.gain,
+    &.count {
+      text-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+    
+    &.loss {
+      text-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+    
+    &.investment,
+    &.neutral {
+      text-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+  }
+}
+
+// ============================
+// PARTIAL SALES STYLING
+// ============================
+
+.position-quantity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  
+  .position-amount {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-color);
+  }
+  
+  .sold-portion,
+  .remaining-portion {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    font-style: italic;
+    margin-left: 0.5rem;
+  }
+  
+  .sold-portion {
+    color: var(--red-400);
+  }
+  
+  .remaining-portion {
+    color: var(--green-400);
+  }
+  
+  .position-total {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    margin-left: 0.25rem;
+  }
+}
+
+.sold-amount {
+  color: var(--red-500) !important;
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.investment-row,
+.remaining-investment {
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.remaining-investment {
+  color: var(--green-500);
+  font-weight: 600;
+}
+
+// Stock quantity info for sell dialog
+.stock-quantity-info {
+  background: var(--surface-100);
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 4px solid var(--primary-color);
+  
+  p {
+    margin: 0.25rem 0;
+    font-size: 0.95rem;
+    
+    strong {
+      color: var(--text-color);
+      font-weight: 600;
+    }
+  }
+}
+
+// Quantity input container for sell dialog
+.quantity-input-container {
+  .quantity-actions {
+    display: flex;
+    gap: 0.5rem;
+    
+    .p-button {
+      padding: 0.375rem 0.75rem !important;
+      font-size: 0.8rem !important;
+      border-radius: 4px;
+      
+      &:hover {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+      }
+    }
+  }
+  
+  .form-text {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--surface-100);
+    border-radius: 4px;
+    border-left: 3px solid var(--blue-500);
+  }
+}
+
+// Enhanced sell button states for partial positions
+.sell-button {
+  &:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    
+    &:hover {
+      transform: none !important;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+    }
+  }
+}
+
+// Header-specific styling for stock groups
+.header-actions {
+  margin-right: 1rem;
+  
+  .header-sell-button {
+    background: var(--green-600) !important;
+    border-color: var(--green-600) !important;
+    padding: 0.625rem !important;
+    border-radius: 6px;
+    
+    &:hover {
+      background: var(--green-700) !important;
+      border-color: var(--green-700) !important;
+      transform: scale(1.05);
+    }
+    
+    .p-button-icon {
+      font-size: 1rem;
+    }
+  }
+}
+
+.holdings-date {
+  margin-top: 0.25rem;
+  
+  small {
+    color: var(--text-color-secondary);
+    font-size: 0.75rem;
+    font-style: italic;
+  }
+}
+
+.sold-info {
+  color: var(--red-400);
+  font-style: italic;
+  margin-left: 0.5rem;
+}
+
+// ============================
+// STOCK LOGO STYLING
+// ============================
+
+.stock-logo-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  
+  .stock-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-card);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+      border-color: var(--primary-color);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+  }
+  
+  .stock-logo-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border: 2px solid var(--surface-border);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    }
+  }
+}
+
+// Adjust table row hover to work nicely with logos
+.custom-positions-table {
+  tbody tr {
+    // Remove any default browser tooltips from table rows
+    &[title] {
+      title: none !important;
+    }
+    
+    &:hover {
+      background-color: var(--surface-hover);
+      
+      .stock-logo-wrapper {
+        .stock-logo,
+        .stock-logo-fallback {
+          transform: scale(1.1);
+          border-color: var(--primary-color);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+      }
+    }
+  }
+  
+  // Ensure tooltips only show on buttons with explicit tooltip content
+  td {
+    // Disable any automatic tooltips on table cells
+    overflow: visible !important;
+    text-overflow: clip !important;
+    
+    // Action buttons cell specific styling
+    &:last-child {
+      .p-button {
+        transition: all 0.2s ease;
+        
+        // Ensure tooltips appear above buttons
+        &[ptooltip] {
+          position: relative;
+          z-index: auto;
+        }
+      }
+    }
+  }
+}
+
+// ============================
+// CLICKABLE ROWS STYLING
+// ============================
+
+::ng-deep .p-datatable {
+  .clickable-row {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: var(--surface-hover) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      
+      td {
+        border-color: var(--surface-300) !important;
+      }
+      
+      .font-semibold {
+        color: var(--primary-color) !important;
+      }
+    }
+    
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// Transaction icon button styling
+::ng-deep .p-datatable {
+  .p-button {
+    &[pTooltip="View Transactions"] {
+      color: var(--blue-500) !important;
+      
+      &:hover {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+        color: var(--blue-600) !important;
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+// Enhanced tooltip for better UX  
+// (Styles moved to main tooltip section above)
+
+// Row hover indicator
+::ng-deep .p-datatable {
+  .clickable-row {
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: linear-gradient(135deg, var(--primary-color), var(--blue-500));
+      transition: width 0.2s ease;
+      z-index: 1;
+    }
+    
+    &:hover::before {
+      width: 4px;
+    }
+    
+    td:first-child {
+      position: relative;
+      z-index: 2;
+    }
+  }
+}

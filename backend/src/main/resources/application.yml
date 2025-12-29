@@ -21,6 +21,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        default_schema: basis
         jdbc:
           time_zone: UTC
     show-sql: false
@@ -32,6 +33,8 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     validate-on-migrate: true
+    schemas: basis
+    default-schema: basis
   
   jackson:
     date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'

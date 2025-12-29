@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // This file is used for runtime configuration replacement in production builds
 // It gets replaced with actual values during Docker container startup
 
-(function(window) {
+(function(window: any) {
   window['env'] = window['env'] || {};
 
   // Environment variables
