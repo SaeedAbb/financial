@@ -78,10 +78,14 @@ describe('PortfolioDashboardComponent', () => {
 
     // Create mock confirmation service with the subscription that ConfirmDialog expects
     const mockConfirmationService = {
+      requireConfirmation$: of({}),
       requireConfirmationSource$: of({}),
       accept: jasmine.createSpy('accept'),
       reject: jasmine.createSpy('reject'),
-      confirm: jasmine.createSpy('confirm')
+      confirm: jasmine.createSpy('confirm'),
+      onAccept: jasmine.createSpy('onAccept'),
+      onReject: jasmine.createSpy('onReject'),
+      close: jasmine.createSpy('close')
     };
 
     const mockMessageService = jasmine.createSpyObj('MessageService', ['add']);
