@@ -4,6 +4,7 @@ import { of, BehaviorSubject } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormBuilder } from '@angular/forms';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { PortfolioDetailComponent } from './portfolio-detail.component';
 import { PortfolioDetailFacade } from './state/portfolio-detail.facade';
@@ -113,7 +114,7 @@ describe('PortfolioDetailComponent', () => {
       'searchStocks', 'onPositionRowClick', 'hasBuyFormError', 'getBuyFormErrorMessage',
       'hasSellFormError', 'getSellFormErrorMessage', 'formatAmount', 'formatPercentage',
       'formatDate', 'getGainLossColorClass', 'trackByPositionUuid', 'trackByIndex',
-      'deletePosition', 'setSelectedStock', 'getStockDisplayName'
+      'deletePosition', 'setSelectedStock', 'getStockDisplayName', 'formatQuantity'
     ], {
       portfolio$: portfolioSubject.asObservable(),
       positions$: positionsSubject.asObservable(),
@@ -152,6 +153,7 @@ describe('PortfolioDetailComponent', () => {
     mockFacade.trackByPositionUuid.and.returnValue('test-uuid');
     mockFacade.trackByIndex.and.returnValue(0);
     mockFacade.getStockDisplayName.and.returnValue('AAPL - Apple Inc.');
+    mockFacade.formatQuantity.and.returnValue('10');
 
     // Mock ActivatedRoute
     const mockParamMap = jasmine.createSpyObj('ParamMap', ['get', 'has']);
@@ -178,13 +180,17 @@ describe('PortfolioDetailComponent', () => {
       close: jasmine.createSpy('close')
     };
 
-    const mockMessageService = jasmine.createSpyObj('MessageService', ['add']);
+    const mockMessageService = jasmine.createSpyObj('MessageService', ['add'], {
+      messageObserver: of({}),
+      clearObserver: of({})
+    });
     const mockStateService = jasmine.createSpyObj('PortfolioDetailStateService', ['init']);
     const mockPositionFormService = jasmine.createSpyObj('PositionFormService', ['createBuyForm', 'createSellForm']);
     const mockStockSearchService = jasmine.createSpyObj('StockSearchService', ['searchStocks']);
 
     await TestBed.configureTestingModule({
       imports: [PortfolioDetailComponent, HttpClientTestingModule],
+      providers: [provideNoopAnimations()],
       schemas: [NO_ERRORS_SCHEMA]
     })
     .overrideComponent(PortfolioDetailComponent, {
