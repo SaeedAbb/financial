@@ -126,8 +126,14 @@ cd backend && ./mvnw test
 # Run all frontend tests
 cd frontend && npm run test:ci
 
+# Run frontend linting
+cd frontend && npm run lint
+
 # Run integration tests
 cd backend && ./mvnw verify
+
+# IMPORTANT: Always run these before committing:
+cd frontend && npm run lint && npm run test:ci
 ```
 
 ## Architecture Notes
@@ -274,6 +280,14 @@ When adding new functionality (e.g., budgets, investments), follow this pattern:
 - Frontend build: Check console for errors
 
 ## Best Practices
+
+### Development Workflow Requirements
+When implementing any feature or fix:
+- **ALWAYS run lint before committing**: `npm run lint` for frontend
+- **ALWAYS run tests before committing**: `npm run test:ci` for frontend
+- Fix any lint errors immediately - no ESLint warnings or errors should be committed
+- Ensure all tests pass - no failing tests should be committed
+- When writing tests, avoid using `any` type - use proper type definitions or bracket notation
 
 ### Code Quality
 - Follow established coding conventions
