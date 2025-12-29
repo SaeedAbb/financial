@@ -1,0 +1,320 @@
+<div class="portfolio-dashboard">
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2>Investment Portfolios</h2>
+    <p-button 
+      label="Create Portfolio" 
+      icon="pi pi-plus" 
+      (click)="facade.showCreateDialog()"
+      [loading]="anyLoading$ | async">
+    </p-button>
+  </div>
+
+  <!-- Portfolio Summary Cards -->
+  <div class="grid mb-4">
+    <!-- Overall Performance Summary -->
+    <div class="col-12 lg:col-3">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-1">
+            <div class="text-500 font-medium mb-1">Total Portfolios</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-2xl">{{ totalPortfolios$ | async }}</div>
+            <p-skeleton *ngIf="loadingSummary$ | async" height="2rem"></p-skeleton>
+          </div>
+          <div class="bg-blue-100 text-blue-600 p-3 border-round">
+            <i class="pi pi-briefcase text-xl"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-3">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-1">
+            <div class="text-500 font-medium mb-1">Total Investment</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-2xl">{{ facade.formatCurrencyCompact((totalInvestment$ | async) || 0) }}</div>
+            <p-skeleton *ngIf="loadingSummary$ | async" height="2rem"></p-skeleton>
+          </div>
+          <div class="bg-green-100 text-green-600 p-3 border-round">
+            <i class="pi pi-dollar text-xl"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-3">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-1">
+            <div class="text-500 font-medium mb-1">Total Current Value</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-2xl">{{ facade.formatCurrencyCompact((totalCurrentValue$ | async) || 0) }}</div>
+            <p-skeleton *ngIf="loadingSummary$ | async" height="2rem"></p-skeleton>
+          </div>
+          <div class="bg-purple-100 text-purple-600 p-3 border-round">
+            <i class="pi pi-chart-line text-xl"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-3">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-1">
+            <div class="text-500 font-medium mb-1">Total Gain/Loss</div>
+            <div *ngIf="(loadingSummary$ | async) === false" [class]="facade.getGainLossColorClass((totalGainLoss$ | async) || 0)" class="font-bold text-2xl">
+              {{ facade.formatCurrencyCompact((totalGainLoss$ | async) || 0) }}
+              <span class="text-sm ml-1">({{ facade.formatPercentage((totalGainLossPercentage$ | async) || 0) }})</span>
+            </div>
+            <p-skeleton *ngIf="loadingSummary$ | async" height="2rem"></p-skeleton>
+          </div>
+          <div [class]="((totalGainLoss$ | async) || 0) >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'" class="p-3 border-round">
+            <i [class]="((totalGainLoss$ | async) || 0) >= 0 ? 'pi pi-arrow-up' : 'pi pi-arrow-down'" class="text-xl"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Additional Metrics Row -->
+    <div class="col-12 lg:col-4">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-1">
+            <div class="text-500 font-medium mb-1">Active Positions</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-xl">{{ totalActivePositions$ | async }}</div>
+            <p-skeleton *ngIf="loadingSummary$ | async" height="1.5rem"></p-skeleton>
+          </div>
+          <div class="bg-blue-100 text-blue-600 p-3 border-round">
+            <i class="pi pi-chart-bar text-lg"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-4">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-1">
+            <div class="text-500 font-medium mb-1">Distinct Stocks</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-xl">{{ totalDistinctStocks$ | async }}</div>
+            <p-skeleton *ngIf="loadingSummary$ | async" height="1.5rem"></p-skeleton>
+          </div>
+          <div class="bg-orange-100 text-orange-600 p-3 border-round">
+            <i class="pi pi-list text-lg"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-4">
+      <p-card styleClass="h-full">
+        <div class="flex align-items-center">
+          <div class="flex-1">
+            <div class="text-500 font-medium mb-1">Average Per Portfolio</div>
+            <div *ngIf="(loadingSummary$ | async) === false" class="text-900 font-bold text-xl">
+              {{ ((totalPortfolios$ | async) || 0) > 0 ? facade.formatCurrencyCompact(((totalInvestment$ | async) || 0) / ((totalPortfolios$ | async) || 1)) : '€0' }}
+            </div>
+            <p-skeleton *ngIf="loadingSummary$ | async" height="1.5rem"></p-skeleton>
+          </div>
+          <div class="bg-teal-100 text-teal-600 p-3 border-round">
+            <i class="pi pi-calculator text-lg"></i>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading$ | async" class="grid">
+    <div class="col-12" *ngFor="let item of [1,2,3]; trackBy: trackByIndex">
+      <p-card>
+        <p-skeleton height="4rem"></p-skeleton>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="(loading$ | async) === false && (hasPortfolios$ | async) === false" class="text-center py-8">
+    <i class="pi pi-briefcase text-6xl text-300 mb-3"></i>
+    <h3 class="text-900 font-bold mb-2">No Portfolios Yet</h3>
+    <p class="text-600 mb-4">Create your first portfolio to start tracking your investments</p>
+    <p-button 
+      label="Create Portfolio" 
+      icon="pi pi-plus" 
+      (click)="facade.showCreateDialog()">
+    </p-button>
+  </div>
+
+  <!-- Portfolios Grid -->
+  <div class="grid" *ngIf="(loading$ | async) === false && (hasPortfolios$ | async)">
+    <div class="col-12 md:col-6 lg:col-4" *ngFor="let portfolio of portfolios$ | async; trackBy: trackByPortfolioUuid">
+      <p-card 
+        styleClass="h-full cursor-pointer hover:shadow-lg transition-all transition-duration-200 portfolio-card"
+        (click)="viewPortfolio(portfolio)">
+        
+        <!-- Portfolio Header -->
+        <ng-template pTemplate="header">
+          <div class="flex justify-content-between align-items-center p-3 border-bottom-1 border-300">
+            <div class="flex-1">
+              <h3 class="m-0 text-900 font-semibold">{{ portfolio.name }}</h3>
+              <small class="text-500">Created {{ facade.getRelativeDateString(portfolio.createdAt) }}</small>
+            </div>
+            <div class="flex align-items-center">
+              <p-tag 
+                *ngIf="(getPortfolioStatistics$(portfolio.uuid) | async)?.totalGainLoss !== 0"
+                [severity]="facade.getPerformanceSeverity((getPortfolioStatistics$(portfolio.uuid) | async)?.totalGainLoss || 0)"
+                [value]="((getPortfolioStatistics$(portfolio.uuid) | async)?.totalGainLoss || 0) > 0 ? 'GAIN' : 'LOSS'"
+                [icon]="((getPortfolioStatistics$(portfolio.uuid) | async)?.totalGainLoss || 0) > 0 ? 'pi pi-arrow-up' : 'pi pi-arrow-down'"
+                styleClass="text-xs">
+              </p-tag>
+            </div>
+          </div>
+        </ng-template>
+        
+        <div class="portfolio-metrics">
+          <!-- Performance Overview -->
+          <div class="grid mb-3" *ngIf="(loadingStatistics$ | async) === false">
+            <div class="col-6">
+              <div class="text-center">
+                <div class="text-500 text-xs mb-1">Investment</div>
+                <div class="text-900 font-bold">{{ facade.formatCurrencyCompact((getPortfolioStatistics$(portfolio.uuid) | async)?.totalInvestment || 0) }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-center">
+                <div class="text-500 text-xs mb-1">Current Value</div>
+                <div class="text-900 font-bold">{{ facade.formatCurrencyCompact((getPortfolioStatistics$(portfolio.uuid) | async)?.totalCurrentValue || 0) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gain/Loss -->
+          <div class="text-center mb-3" *ngIf="(loadingStatistics$ | async) === false">
+            <div class="text-500 text-xs mb-1">Gain/Loss</div>
+            <div [class]="facade.getGainLossColorClass((getPortfolioStatistics$(portfolio.uuid) | async)?.totalGainLoss || 0)" class="font-bold">
+              {{ facade.formatCurrency((getPortfolioStatistics$(portfolio.uuid) | async)?.totalGainLoss || 0) }}
+              <span class="text-sm ml-1">({{ facade.formatPercentage((getPortfolioStatistics$(portfolio.uuid) | async)?.gainLossPercentage || 0) }})</span>
+            </div>
+          </div>
+
+          <!-- Stock Summary -->
+          <div class="flex justify-content-between align-items-center mb-2" *ngIf="(loadingStatistics$ | async) === false">
+            <div class="text-center flex-1">
+              <div class="text-500 text-xs mb-1">Active Positions</div>
+              <div class="text-900 font-semibold">{{ (getPortfolioStatistics$(portfolio.uuid) | async)?.activePositionsCount || 0 }}</div>
+            </div>
+            <div class="text-center flex-1">
+              <div class="text-500 text-xs mb-1">Distinct Stocks</div>
+              <div class="text-900 font-semibold">{{ (getPortfolioStatistics$(portfolio.uuid) | async)?.distinctStocksCount || 0 }}</div>
+            </div>
+          </div>
+
+          <!-- Loading State for Statistics -->
+          <div *ngIf="loadingStatistics$ | async" class="text-center py-4">
+            <p-skeleton height="4rem"></p-skeleton>
+          </div>
+
+          <!-- Description -->
+          <div *ngIf="portfolio.description" class="text-500 text-sm mt-3 p-2 bg-blue-50 border-round">
+            {{ portfolio.description }}
+          </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+          <div class="flex justify-content-between gap-2">
+            <p-button 
+              icon="pi pi-eye" 
+              severity="info" 
+              size="small"
+              pTooltip="View Portfolio"
+              class="flex-1"
+              (click)="viewPortfolio(portfolio); $event.stopPropagation()">
+            </p-button>
+            <p-button 
+              icon="pi pi-pencil" 
+              severity="secondary" 
+              size="small"
+              pTooltip="Edit Portfolio"
+              (click)="facade.showEditDialog(portfolio); $event.stopPropagation()">
+            </p-button>
+            <p-button 
+              icon="pi pi-trash" 
+              severity="danger" 
+              size="small"
+              pTooltip="Delete Portfolio"
+              (click)="facade.deletePortfolio(portfolio); $event.stopPropagation()">
+            </p-button>
+          </div>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Create/Edit Portfolio Dialog -->
+  <p-dialog 
+    [header]="facade.formTitle"
+    [visible]="(formState$ | async)?.visible || false"
+    (visibleChange)="$event ? null : facade.hideDialog()"
+    [modal]="true"
+    [closable]="false"
+    [style]="{width: '450px'}">
+    
+    <form [formGroup]="form" (ngSubmit)="facade.submitForm()">
+      <div class="field">
+        <label for="name">Portfolio Name *</label>
+        <input 
+          type="text" 
+          id="name"
+          formControlName="name"
+          pInputText 
+          class="w-full"
+          [class.ng-invalid]="facade.hasFormError('name')"
+          placeholder="Enter portfolio name">
+        <small 
+          class="p-error" 
+          *ngIf="facade.hasFormError('name')">
+          {{ facade.getFormErrorMessage('name') }}
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea 
+          id="description"
+          formControlName="description"
+          pTextarea 
+          rows="3" 
+          class="w-full"
+          [class.ng-invalid]="facade.hasFormError('description')"
+          placeholder="Enter portfolio description (optional)">
+        </textarea>
+        <small 
+          class="p-error" 
+          *ngIf="facade.hasFormError('description')">
+          {{ facade.getFormErrorMessage('description') }}
+        </small>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <p-button 
+        label="Cancel" 
+        severity="secondary" 
+        (click)="facade.hideDialog()"
+        [disabled]="facade.isFormSubmitting">
+      </p-button>
+      <p-button 
+        [label]="facade.submitLabel"
+        (click)="facade.submitForm()"
+        [loading]="facade.isFormSubmitting"
+        [disabled]="form.invalid">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Toast Messages -->
+  <p-toast></p-toast>
+  
+  <!-- Confirm Dialog -->
+  <p-confirmDialog></p-confirmDialog>
+</div>

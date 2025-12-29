@@ -39,7 +39,7 @@ export const routes: Routes = [
       },
       {
         path: 'investment',
-        loadComponent: () => import('./features/investment/investment.component').then(m => m.InvestmentComponent)
+        loadChildren: () => import('./features/investment/investment.routes').then(r => r.investmentRoutes)
       },
       {
         path: 'income',

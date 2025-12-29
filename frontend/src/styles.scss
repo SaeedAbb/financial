@@ -44,6 +44,16 @@ body {
   box-sizing: border-box;
 }
 
+/* Global tooltip fix for dark theme */
+::ng-deep .p-tooltip .p-tooltip-text {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border: 1px solid #333333 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
 /* Dark theme overrides for PrimeNG components */
 ::ng-deep .p-component {
   color: var(--text-color);
