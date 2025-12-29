@@ -306,11 +306,15 @@ describe('PortfolioPositionService', () => {
 
   describe('refreshPositions', () => {
     it('should trigger position update notification', (done) => {
-      let notificationReceived = false;
+      let callCount = 0;
 
       const subscription = service.positionsUpdated.subscribe(() => {
-        notificationReceived = true;
-        expect(notificationReceived).toBeTruthy();
+        callCount++;
+        if (callCount === 1) {
+          // Skip the initial emission from BehaviorSubject
+          return;
+        }
+        expect(callCount).toBeGreaterThan(1);
         subscription.unsubscribe();
         done();
       });

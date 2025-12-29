@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { of, BehaviorSubject } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { FormBuilder } from '@angular/forms';
 
 import { PortfolioDetailComponent } from './portfolio-detail.component';
 import { PortfolioDetailFacade } from './state/portfolio-detail.facade';
@@ -18,12 +19,7 @@ describe('PortfolioDetailComponent', () => {
   let component: PortfolioDetailComponent;
   let fixture: ComponentFixture<PortfolioDetailComponent>;
   let mockFacade: jasmine.SpyObj<PortfolioDetailFacade>;
-  let mockActivatedRoute: {
-    params: ReturnType<typeof of>;
-    snapshot: {
-      params: { uuid: string };
-    };
-  };
+  let mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
 
   const mockPortfolio: Portfolio = {
     id: 1,
@@ -92,11 +88,32 @@ describe('PortfolioDetailComponent', () => {
     const buyFormStateSubject = new BehaviorSubject({ mode: 'buy' as const, position: null, submitting: false, visible: false });
     const sellFormStateSubject = new BehaviorSubject({ mode: 'sell' as const, position: null, submitting: false, visible: false });
 
+    // Create real FormGroup instances
+    const formBuilder = new FormBuilder();
+    const buyFormGroup = formBuilder.group({
+      stock: [''],
+      stockSymbol: [''],
+      companyName: [''],
+      quantity: [0],
+      pricePerShare: [0],
+      transactionDate: [''],
+      notes: ['']
+    });
+    const sellFormGroup = formBuilder.group({
+      quantity: [0],
+      pricePerShare: [0],
+      transactionDate: [''],
+      notes: ['']
+    });
+
     // Create mock facade
     mockFacade = jasmine.createSpyObj('PortfolioDetailFacade', [
       'init', 'refresh', 'goBack', 'showBuyPositionDialog', 'hideBuyDialog',
       'showSellPositionDialog', 'hideSellDialog', 'submitBuyForm', 'submitSellForm',
-      'searchStocks', 'onPositionRowClick'
+      'searchStocks', 'onPositionRowClick', 'hasBuyFormError', 'getBuyFormErrorMessage',
+      'hasSellFormError', 'getSellFormErrorMessage', 'formatAmount', 'formatPercentage',
+      'formatDate', 'getGainLossColorClass', 'trackByPositionUuid', 'trackByIndex',
+      'deletePosition', 'setSelectedStock', 'getStockDisplayName'
     ], {
       portfolio$: portfolioSubject.asObservable(),
       positions$: positionsSubject.asObservable(),
@@ -112,18 +129,42 @@ describe('PortfolioDetailComponent', () => {
       portfolioStats$: portfolioStatsSubject.asObservable(),
       buyFormState$: buyFormStateSubject.asObservable(),
       sellFormState$: sellFormStateSubject.asObservable(),
-      buyForm: jasmine.createSpyObj('FormGroup', ['reset', 'patchValue']),
-      sellForm: jasmine.createSpyObj('FormGroup', ['reset', 'patchValue']),
-      today: '2024-01-01'
+      buyForm: buyFormGroup,
+      sellForm: sellFormGroup,
+      today: '2024-01-01',
+      isBuyFormSubmitting: false,
+      isSellFormSubmitting: false,
+      selectedStock: null,
+      selectedPosition: null,
+      stockSuggestions$: of([]),
+      searchingStocks$: of(false)
     });
 
+    // Setup default return values for spy methods
+    mockFacade.hasBuyFormError.and.returnValue(false);
+    mockFacade.getBuyFormErrorMessage.and.returnValue('');
+    mockFacade.hasSellFormError.and.returnValue(false);
+    mockFacade.getSellFormErrorMessage.and.returnValue('');
+    mockFacade.formatAmount.and.returnValue('$0.00');
+    mockFacade.formatPercentage.and.returnValue('0.00%');
+    mockFacade.formatDate.and.returnValue('Jan 1, 2024');
+    mockFacade.getGainLossColorClass.and.returnValue('text-green-500');
+    mockFacade.trackByPositionUuid.and.returnValue('test-uuid');
+    mockFacade.trackByIndex.and.returnValue(0);
+    mockFacade.getStockDisplayName.and.returnValue('AAPL - Apple Inc.');
+
     // Mock ActivatedRoute
-    mockActivatedRoute = {
+    const mockParamMap = jasmine.createSpyObj('ParamMap', ['get', 'has']);
+    mockParamMap.get.and.returnValue(mockPortfolio.uuid);
+    mockParamMap.has.and.returnValue(true);
+
+    mockActivatedRoute = jasmine.createSpyObj('ActivatedRoute', [], {
       params: of({ uuid: mockPortfolio.uuid }),
       snapshot: {
-        params: { uuid: mockPortfolio.uuid }
+        params: { uuid: mockPortfolio.uuid },
+        paramMap: mockParamMap
       }
-    };
+    });
 
     // Create mock confirmation service with proper observables
     const mockConfirmationService = {
