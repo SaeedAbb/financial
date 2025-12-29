@@ -40,7 +40,8 @@
       "Bash(cp:*)",
       "Bash(sed:*)",
       "Bash(npm start)",
-      "Bash(ng build:*)"
+      "Bash(ng build:*)",
+      "Bash(git restore:*)"
     ],
     "deny": []
   }
