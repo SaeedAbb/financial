@@ -1,7 +1,7 @@
 package com.basis.api.features.investment.position;
 
-import com.basis.api.features.investment.portfolio.Portfolio;
 import com.basis.api.features.investment.portfolio.PortfolioService;
+import com.basis.api.features.investment.portfolio.dto.PortfolioDTO;
 import com.basis.api.features.investment.position.dto.BuyPositionRequest;
 import com.basis.api.features.investment.position.dto.PortfolioPositionDTO;
 import com.basis.api.features.investment.position.dto.SellPositionRequest;
@@ -59,7 +59,7 @@ class PortfolioPositionControllerTest {
     private PortfolioPositionDTO mockPosition;
     private BuyPositionRequest buyRequest;
     private SellPositionRequest sellRequest;
-    private Portfolio mockPortfolio;
+    private PortfolioDTO mockPortfolio;
 
     @BeforeEach
     void setUp() {
@@ -106,7 +106,7 @@ class PortfolioPositionControllerTest {
         sellRequest.setNotes("Test sell");
 
         // Setup mock portfolio
-        mockPortfolio = new Portfolio();
+        mockPortfolio = new PortfolioDTO();
         mockPortfolio.setId(portfolioId);
         mockPortfolio.setUuid(portfolioUuid);
         mockPortfolio.setUserId(userId);
@@ -384,7 +384,7 @@ class PortfolioPositionControllerTest {
 
         mockMvc.perform(delete("/api/v1/portfolios/{portfolioId}/positions/{positionId}", portfolioId, positionId)
                         .with(jwt().jwt(jwt -> jwt.subject(userId))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

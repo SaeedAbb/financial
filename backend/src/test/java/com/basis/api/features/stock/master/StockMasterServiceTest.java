@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -42,8 +42,8 @@ class StockMasterServiceTest {
         mockStock.setMarketCapCategory(MarketCapCategory.LARGE);
         mockStock.setIsin("US0378331005");
         mockStock.setStockType("COMMON");
-        mockStock.setCreatedAt(LocalDateTime.now());
-        mockStock.setUpdatedAt(LocalDateTime.now());
+        mockStock.setCreatedAt(ZonedDateTime.now());
+        mockStock.setUpdatedAt(ZonedDateTime.now());
 
         createRequest = new CreateStockMasterRequest();
         createRequest.setSymbol("AAPL");
@@ -234,7 +234,6 @@ class StockMasterServiceTest {
         updateRequest.setMarketCapCategory("MEGA");
 
         when(stockMasterRepository.findById(1L)).thenReturn(Optional.of(mockStock));
-        when(stockMasterRepository.existsBySymbol("AAPL")).thenReturn(true); // Same symbol
         when(stockMasterRepository.save(any(StockMaster.class))).thenReturn(mockStock);
 
         StockMasterDTO result = stockMasterService.updateStock(1L, updateRequest);

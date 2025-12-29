@@ -16,7 +16,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,13 +49,13 @@ class TransactionServiceTest {
         mockTransaction.setReferenceId(100L);
         mockTransaction.setReferenceType("PORTFOLIO_POSITION");
         mockTransaction.setSymbol("AAPL");
-        mockTransaction.setQuantity(10);
+        mockTransaction.setQuantity(new BigDecimal("10"));
         mockTransaction.setPricePerUnit(new BigDecimal("150.00"));
         mockTransaction.setTotalAmount(new BigDecimal("1500.00"));
         mockTransaction.setFees(new BigDecimal("10.00"));
         mockTransaction.setTransactionDate(LocalDate.now());
         mockTransaction.setNotes("Test transaction");
-        mockTransaction.setCreatedAt(LocalDateTime.now());
+        mockTransaction.setCreatedAt(ZonedDateTime.now());
     }
 
     @Test
@@ -67,7 +67,7 @@ class TransactionServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(transactionId);
         assertThat(result.getSymbol()).isEqualTo("AAPL");
-        assertThat(result.getQuantity()).isEqualTo(10);
+        assertThat(result.getQuantity()).isEqualTo(new BigDecimal("10"));
 
         verify(transactionRepository).findById(transactionId);
     }
@@ -259,10 +259,10 @@ class TransactionServiceTest {
                 .thenReturn(new BigDecimal("12000.00"));
         when(transactionRepository.calculateTotalFeesByUserAndDateRange(userId, startDate, endDate))
                 .thenReturn(new BigDecimal("100.00"));
-        when(transactionRepository.countByUserIdAndCategory(userId, TransactionCategory.STOCK))
-                .thenReturn(5L);
-        when(transactionRepository.countByUserIdAndCategory(userId, TransactionCategory.ETF))
-                .thenReturn(3L);
+        // Mock counts for all transaction categories - use doReturn to avoid stubbing conflicts
+        doReturn(0L).when(transactionRepository).countByUserIdAndCategory(eq(userId), any(TransactionCategory.class));
+        doReturn(5L).when(transactionRepository).countByUserIdAndCategory(userId, TransactionCategory.STOCK);
+        doReturn(3L).when(transactionRepository).countByUserIdAndCategory(userId, TransactionCategory.ETF);
 
         TransactionSummaryDTO result = transactionService.getUserTransactionSummary(userId, startDate, endDate);
 
@@ -272,8 +272,8 @@ class TransactionServiceTest {
         assertThat(result.getTotalSellAmount()).isEqualByComparingTo("12000.00");
         assertThat(result.getTotalFees()).isEqualByComparingTo("100.00");
         assertThat(result.getNetGainLoss()).isEqualByComparingTo("1900.00"); // 12000 - 10000 - 100
-        assertThat(result.getCategoryCount(TransactionCategory.STOCK)).isEqualTo(5L);
-        assertThat(result.getCategoryCount(TransactionCategory.ETF)).isEqualTo(3L);
+        assertThat(result.getTransactionCountByCategory().get(TransactionCategory.STOCK)).isEqualTo(5L);
+        assertThat(result.getTransactionCountByCategory().get(TransactionCategory.ETF)).isEqualTo(3L);
 
         verify(transactionRepository).calculateTotalAmountByUserAndType(userId, TransactionType.BUY);
         verify(transactionRepository).calculateTotalAmountByUserAndType(userId, TransactionType.SELL);
@@ -352,6 +352,8 @@ class TransactionServiceTest {
     void testToDTO_CalculatesNetAmount() {
         mockTransaction.setFees(new BigDecimal("10.00"));
         mockTransaction.setTotalAmount(new BigDecimal("1500.00"));
+        
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(mockTransaction));
 
         TransactionDTO result = transactionService.getTransaction(transactionId, userId);
 
