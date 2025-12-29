@@ -68,8 +68,10 @@ describe('PortfolioDashboardComponent', () => {
     
     // Create component and manually inject dependencies
     component = Object.create(PortfolioDashboardComponent.prototype);
-    (component as any).facade = mockFacade;
-    (component as any).router = jasmine.createSpyObj('Router', ['navigate']);
+    
+    // Use bracket notation to bypass TypeScript's property access checks
+    component['facade'] = mockFacade;
+    component['router'] = jasmine.createSpyObj('Router', ['navigate']);
   });
 
   it('should create', () => {
