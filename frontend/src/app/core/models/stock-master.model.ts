@@ -8,6 +8,7 @@ export interface StockMaster {
   marketCapCategory?: MarketCapCategory;
   isin?: string;
   stockType?: string;
+  currentPrice?: number;
   createdAt: string; // ISO datetime string
   updatedAt: string; // ISO datetime string
 }
