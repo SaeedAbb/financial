@@ -131,7 +131,7 @@ describe('PortfolioDetailComponent', () => {
       sellFormState$: sellFormStateSubject.asObservable(),
       buyForm: buyFormGroup,
       sellForm: sellFormGroup,
-      today: '2024-01-01',
+      today: new Date(),
       isBuyFormSubmitting: false,
       isSellFormSubmitting: false,
       selectedStock: null,
