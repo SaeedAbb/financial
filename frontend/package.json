@@ -13,7 +13,9 @@
     "e2e": "cypress run",
     "e2e:open": "cypress open",
     "lint": "ng lint",
-    "analyze": "ng build --stats-json && npx webpack-bundle-analyzer dist/financial-frontend/stats.json"
+    "analyze": "ng build --stats-json && npx webpack-bundle-analyzer dist/financial-frontend/stats.json",
+    "prepare": "cd .. && husky frontend/.husky || true",
+    "pre-commit": "npm run lint && npm run test:ci"
   },
   "private": true,
   "dependencies": {
@@ -51,6 +53,14 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.8.0",
-    "typescript-eslint": "8.46.2"
+    "typescript-eslint": "8.46.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "lint-staged": {
+    "*.{ts,html}": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }

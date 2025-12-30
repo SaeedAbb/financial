@@ -8,7 +8,8 @@ import { ParserFactoryService } from '../../services/parser-factory.service';
 import { StatementImportService } from '../../services/statement-import.service';
 import { PortfolioService } from '../../../../../core/services/portfolio.service';
 import { StatementProvider } from '../../models/provider.enum';
-import { ImportResult, ImportStatus } from '../../models/parsed-transaction.model';
+import { ImportResult, ImportStatus, ParsedTransaction } from '../../models/parsed-transaction.model';
+import { Portfolio } from '../../../../../core/models/portfolio.model';
 
 describe('StatementImportComponent', () => {
   let component: StatementImportComponent;
@@ -27,9 +28,9 @@ describe('StatementImportComponent', () => {
     // Default mock implementations
     mockParserFactory.isProviderSupported.and.returnValue(true);
     mockPortfolioService.getAllPortfolios.and.returnValue(of([
-      { id: 1, name: 'Test Portfolio 1', createdAt: new Date(), updatedAt: new Date() },
-      { id: 2, name: 'Test Portfolio 2', createdAt: new Date(), updatedAt: new Date() }
-    ]));
+      { id: 1, uuid: 'uuid-1', userId: 'user-1', name: 'Test Portfolio 1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+      { id: 2, uuid: 'uuid-2', userId: 'user-1', name: 'Test Portfolio 2', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+    ] as Portfolio[]));
 
     await TestBed.configureTestingModule({
       imports: [StatementImportComponent, NoopAnimationsModule],
@@ -67,7 +68,7 @@ describe('StatementImportComponent', () => {
 
   it('should reset file selection when provider changes', () => {
     component.selectedFile = new File([''], 'test.pdf');
-    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY', currency: 'EUR' }];
+    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY' as const, currency: 'EUR' }] as ParsedTransaction[];
     
     component.onProviderChange();
     
@@ -170,7 +171,7 @@ describe('StatementImportComponent', () => {
     
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
     component.selectedPortfolioId = 1;
-    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY', currency: 'EUR' }];
+    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY' as const, currency: 'EUR' }] as ParsedTransaction[];
     component.selectedFile = new File([''], 'test.pdf');
     
     component.confirmImport();
@@ -209,7 +210,7 @@ describe('StatementImportComponent', () => {
   });
 
   it('should cancel import', () => {
-    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY', currency: 'EUR' }];
+    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY' as const, currency: 'EUR' }] as ParsedTransaction[];
     component.currentStep = 5;
     
     component.cancelImport();

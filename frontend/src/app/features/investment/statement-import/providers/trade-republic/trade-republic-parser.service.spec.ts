@@ -132,10 +132,10 @@ describe('TradeRepublicParserService', () => {
       const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
       const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
-      expect(result.transaction.date).toBe('2025-11-01');
-      expect(result.transaction.description).toContain('Interest payment');
-      expect(result.transaction.totalAmount).toBe(13.40);
-      expect(result.linesConsumed).toBe(3);
+      expect(result!.transaction.date).toBe('2025-11-01');
+      expect(result!.transaction.description).toContain('Interest payment');
+      expect(result!.transaction.totalAmount).toBe(13.40);
+      expect(result!.linesConsumed).toBe(3);
     });
 
     it('should parse META stock buy transaction correctly', () => {
@@ -148,12 +148,12 @@ describe('TradeRepublicParserService', () => {
       const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
       const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
-      expect(result.transaction.date).toBe('2025-11-03');
-      expect(result.transaction.type).toBe('BUY');
-      expect(result.transaction.description).toContain('META PLATF');
-      expect(result.transaction.quantity).toBeCloseTo(0.180342);
-      expect(result.transaction.totalAmount).toBe(101.00);
-      expect(result.linesConsumed).toBe(3);
+      expect(result!.transaction.date).toBe('2025-11-03');
+      expect(result!.transaction.type).toBe('BUY');
+      expect(result!.transaction.description).toContain('META PLATF');
+      expect(result!.transaction.quantity).toBeCloseTo(0.180342);
+      expect(result!.transaction.totalAmount).toBe(101.00);
+      expect(result!.linesConsumed).toBe(3);
     });
 
     it('should parse crypto inline transaction correctly', () => {
@@ -166,11 +166,11 @@ describe('TradeRepublicParserService', () => {
       const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
       const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
-      expect(result.transaction.date).toBe('2025-11-04');
-      expect(result.transaction.type).toBe('BUY');
-      expect(result.transaction.description).toBe('Bitcoin');
-      expect(result.transaction.quantity).toBeCloseTo(0.001134);
-      expect(result.transaction.totalAmount).toBeCloseTo(100.91);
+      expect(result!.transaction.date).toBe('2025-11-04');
+      expect(result!.transaction.type).toBe('BUY');
+      expect(result!.transaction.description).toBe('Bitcoin');
+      expect(result!.transaction.quantity).toBeCloseTo(0.001134);
+      expect(result!.transaction.totalAmount).toBeCloseTo(100.91);
     });
 
     it('should parse dividend transaction correctly', () => {
@@ -183,9 +183,9 @@ describe('TradeRepublicParserService', () => {
       const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
       const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
-      expect(result.transaction.date).toBe('2025-11-06');
-      expect(result.transaction.description).toContain('Cash Dividend');
-      expect(result.transaction.totalAmount).toBe(1.32);
+      expect(result!.transaction.date).toBe('2025-11-06');
+      expect(result!.transaction.description).toContain('Cash Dividend');
+      expect(result!.transaction.totalAmount).toBe(1.32);
     });
 
     it('should parse sell transaction correctly', () => {
@@ -198,9 +198,9 @@ describe('TradeRepublicParserService', () => {
       const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
       const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
-      expect(result.transaction.type).toBe('SELL');
-      expect(result.transaction.quantity).toBe(42.0);
-      expect(result.transaction.totalAmount).toBeCloseTo(160.27);
+      expect(result!.transaction.type).toBe('SELL');
+      expect(result!.transaction.quantity).toBe(42.0);
+      expect(result!.transaction.totalAmount).toBeCloseTo(160.27);
     });
 
     it('should parse complete PDF correctly', async () => {
