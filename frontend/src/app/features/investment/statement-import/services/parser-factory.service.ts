@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { StatementProvider } from '../models/provider.enum';
 import { BaseParser } from '../providers/base-parser';
 import { TradeRepublicParserService } from '../providers/trade-republic/trade-republic-parser.service';
@@ -8,9 +8,7 @@ import { TradeRepublicParserService } from '../providers/trade-republic/trade-re
 })
 export class ParserFactoryService {
   
-  constructor(
-    private tradeRepublicParser: TradeRepublicParserService
-  ) {}
+  private readonly tradeRepublicParser = inject(TradeRepublicParserService);
   
   getParser(provider: StatementProvider): BaseParser {
     switch (provider) {

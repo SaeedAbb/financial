@@ -33,10 +33,15 @@ export abstract class BaseParser {
       const textContent = await page.getTextContent();
       
       // Group text items by their y-position to reconstruct lines
-      const items = textContent.items as any[];
-      const lineMap = new Map<number, any[]>();
+      interface TextItem {
+        str: string;
+        transform: number[];
+      }
       
-      items.forEach((item: any) => {
+      const items = textContent.items as TextItem[];
+      const lineMap = new Map<number, TextItem[]>();
+      
+      items.forEach((item: TextItem) => {
         const y = Math.round(item.transform[5]); // Round y-position
         if (!lineMap.has(y)) {
           lineMap.set(y, []);
@@ -49,7 +54,7 @@ export abstract class BaseParser {
         .sort((a, b) => b[0] - a[0]);
       
       // Reconstruct text preserving line structure
-      sortedLines.forEach(([y, items]) => {
+      sortedLines.forEach(([, items]) => {
         const lineText = items
           .sort((a, b) => a.transform[4] - b.transform[4]) // Sort by x-position
           .map(item => item.str)
@@ -86,7 +91,7 @@ export abstract class BaseParser {
    * @param format Expected format (e.g., 'DD.MM.YYYY')
    * @returns ISO date string (YYYY-MM-DD)
    */
-  protected parseDate(dateString: string, format: string = 'DD.MM.YYYY'): string {
+  protected parseDate(dateString: string, format = 'DD.MM.YYYY'): string {
     // Simple parser for common German date format
     if (format === 'DD.MM.YYYY') {
       const parts = dateString.split('.');
@@ -135,7 +140,7 @@ export abstract class BaseParser {
    * @param text Full PDF text
    * @returns Sections of the PDF
    */
-  protected extractSections(text: string): Record<string, string> {
+  protected extractSections(_text: string): Record<string, string> { // eslint-disable-line @typescript-eslint/no-unused-vars
     // To be implemented by specific parsers
     return {};
   }

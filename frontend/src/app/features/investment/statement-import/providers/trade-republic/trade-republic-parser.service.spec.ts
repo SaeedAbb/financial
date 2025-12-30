@@ -1,5 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { TradeRepublicParserService } from './trade-republic-parser.service';
+import { ParsedTransaction } from '../../models/parsed-transaction.model';
+
+type ParseKontoauszugTransactionResult = {
+  transaction: ParsedTransaction;
+  linesConsumed: number;
+} | null;
 
 describe('TradeRepublicParserService', () => {
   let service: TradeRepublicParserService;
@@ -123,7 +129,8 @@ describe('TradeRepublicParserService', () => {
         '2025'
       ];
       
-      const result = (service as any).parseKontoauszugTransaction(lines, 0);
+      const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
+      const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
       expect(result.transaction.date).toBe('2025-11-01');
       expect(result.transaction.description).toContain('Interest payment');
@@ -138,7 +145,8 @@ describe('TradeRepublicParserService', () => {
         '2025   quantity: 0.180342'
       ];
       
-      const result = (service as any).parseKontoauszugTransaction(lines, 0);
+      const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
+      const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
       expect(result.transaction.date).toBe('2025-11-03');
       expect(result.transaction.type).toBe('BUY');
@@ -155,7 +163,8 @@ describe('TradeRepublicParserService', () => {
         '2025'
       ];
       
-      const result = (service as any).parseKontoauszugTransaction(lines, 0);
+      const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
+      const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
       expect(result.transaction.date).toBe('2025-11-04');
       expect(result.transaction.type).toBe('BUY');
@@ -171,7 +180,8 @@ describe('TradeRepublicParserService', () => {
         '2025'
       ];
       
-      const result = (service as any).parseKontoauszugTransaction(lines, 0);
+      const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
+      const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
       expect(result.transaction.date).toBe('2025-11-06');
       expect(result.transaction.description).toContain('Cash Dividend');
@@ -185,7 +195,8 @@ describe('TradeRepublicParserService', () => {
         '2025   quantity: 42.0'
       ];
       
-      const result = (service as any).parseKontoauszugTransaction(lines, 0);
+      const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
+      const result = parseMethod(lines, 0);
       expect(result).toBeTruthy();
       expect(result.transaction.type).toBe('SELL');
       expect(result.transaction.quantity).toBe(42.0);
@@ -197,7 +208,7 @@ describe('TradeRepublicParserService', () => {
       const mockFile = new File([mockPdfText], 'kontoauszug.pdf', { type: 'application/pdf' });
       
       // Mock the PDF extraction
-      spyOn(service as any, 'extractPdfText').and.returnValue(Promise.resolve(mockPdfText));
+      spyOn(service as TradeRepublicParserService & { extractPdfText: (file: File) => Promise<string> }, 'extractPdfText').and.returnValue(Promise.resolve(mockPdfText));
       
       const transactions = await service.parse(mockFile);
       
@@ -313,7 +324,8 @@ describe('TradeRepublicParserService', () => {
       // None of these lines should parse as valid transactions
       let parsedCount = 0;
       for (let i = 0; i < wrongExtractedLines.length; i++) {
-        const result = (service as any).parseKontoauszugTransaction(wrongExtractedLines, i);
+        const parseMethod = service['parseKontoauszugTransaction'] as (lines: string[], startIndex: number) => ParseKontoauszugTransactionResult;
+        const result = parseMethod(wrongExtractedLines, i);
         if (result) {
           parsedCount++;
           console.log('Unexpectedly parsed:', wrongExtractedLines[i], 'as', result.transaction);

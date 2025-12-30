@@ -18,7 +18,7 @@ export interface ImportRequest {
   portfolioId: number;
   transactions: ParsedTransaction[];
   fileName?: string;
-  providerMetadata?: Record<string, any>;
+  providerMetadata?: Record<string, unknown>;
 }
 
 export interface EnhancedTransaction extends ParsedTransaction {

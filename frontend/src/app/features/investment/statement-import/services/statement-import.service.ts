@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
@@ -10,8 +10,7 @@ import { StatementProvider } from '../models/provider.enum';
 })
 export class StatementImportService {
   private readonly apiUrl = `${environment.apiUrl}/v1/statement-import`;
-  
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
   
   /**
    * Import parsed transactions to the backend
@@ -62,6 +61,11 @@ export class StatementImportService {
     successRate: number;
     lastImportDate?: string;
   }> {
-    return this.http.get<any>(`${this.apiUrl}/statistics/${provider}`);
+    return this.http.get<{
+      totalImports: number;
+      totalTransactions: number;
+      successRate: number;
+      lastImportDate?: string;
+    }>(`${this.apiUrl}/statistics/${provider}`);
   }
 }
