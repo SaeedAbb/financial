@@ -13,6 +13,12 @@ export const investmentRoutes: Routes = [
     title: 'Investment Portfolios'
   },
   {
+    path: 'portfolios/import',
+    loadComponent: () => import('./statement-import/components/statement-import')
+      .then(c => c.StatementImportComponent),
+    title: 'Import Statement'
+  },
+  {
     path: 'portfolios/:uuid',
     loadComponent: () => import('./portfolio-detail/portfolio-detail.component')
       .then(c => c.PortfolioDetailComponent),

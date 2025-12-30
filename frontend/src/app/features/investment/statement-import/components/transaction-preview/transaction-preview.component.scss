@@ -1,0 +1,59 @@
+.transaction-preview {
+  width: 100%;
+}
+
+.preview-header {
+  margin-bottom: 1.5rem;
+
+  h4 {
+    margin: 0 0 0.5rem 0;
+  }
+}
+
+.description-text {
+  cursor: help;
+}
+
+.symbol-input {
+  width: 100%;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+
+.quantity-input {
+  width: 100%;
+}
+
+::ng-deep .quantity-input .p-inputtext {
+  text-align: right;
+}
+
+.summary-section {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-top: 2px solid #dee2e6;
+}
+
+.summary-stats {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  margin: 0.25rem 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.5rem;
+}
+
+::ng-deep .p-tag {
+  font-size: 0.75rem;
+}

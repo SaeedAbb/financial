@@ -1,0 +1,130 @@
+<div class="statement-import-container">
+  <p-card header="Import Bank Statement" [style]="{ width: '100%' }">
+    <!-- Step Indicator -->
+    <div class="step-indicator mb-4">
+      <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+        <span class="step-number">1</span>
+        <span class="step-label">Provider</span>
+      </div>
+      <div class="step-line" [class.active]="currentStep > 1"></div>
+      <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+        <span class="step-number">2</span>
+        <span class="step-label">Portfolio</span>
+      </div>
+      <div class="step-line" [class.active]="currentStep > 2"></div>
+      <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+        <span class="step-number">3</span>
+        <span class="step-label">Upload</span>
+      </div>
+      <div class="step-line" [class.active]="currentStep > 3"></div>
+      <div class="step" [class.active]="currentStep >= 4">
+        <span class="step-number">4</span>
+        <span class="step-label">Review</span>
+      </div>
+    </div>
+    
+    <div class="import-workflow">
+      <!-- Step 1: Select Provider -->
+      <div class="step-section" *ngIf="currentStep === 1">
+        <h3>Step 1: Select Your Bank/Broker</h3>
+        <p-select 
+          [(ngModel)]="selectedProvider"
+          [options]="providers"
+          optionLabel="displayName"
+          optionValue="id"
+          placeholder="Select a provider"
+          [style]="{ width: '100%' }"
+          (onChange)="onProviderChange()">
+          <ng-template let-provider pTemplate="item">
+            <div class="provider-item">
+              <i [class]="provider.icon"></i>
+              <span class="ml-2">{{ provider.displayName }}</span>
+            </div>
+          </ng-template>
+        </p-select>
+        
+        <div class="provider-info mt-3" *ngIf="selectedProvider">
+          <p-message severity="info" [text]="getProviderInstructions()"></p-message>
+        </div>
+      </div>
+
+      <!-- Step 2: Select Portfolio -->
+      <div class="step-section" *ngIf="currentStep === 2">
+        <h3>Step 2: Select Target Portfolio</h3>
+        <p-select 
+          [(ngModel)]="selectedPortfolioId"
+          [options]="portfolios"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select a portfolio"
+          [style]="{ width: '100%' }">
+        </p-select>
+      </div>
+
+      <!-- Step 3: Upload File -->
+      <div class="step-section" *ngIf="currentStep === 3">
+        <h3>Step 3: Upload Statement PDF</h3>
+        <p class="mb-3">Please select your bank statement PDF file. The file should be less than 10MB.</p>
+        
+        <div class="upload-container">
+          <p-fileUpload
+            name="statement"
+            mode="basic"
+            chooseLabel="Choose PDF File"
+            chooseIcon="pi pi-upload"
+            [accept]="'.pdf'"
+            [maxFileSize]="10000000"
+            (onSelect)="onFileSelect($event)"
+            [auto]="false"
+            styleClass="p-button-lg">
+          </p-fileUpload>
+        </div>
+        
+        <div class="upload-info mt-3" *ngIf="selectedFile">
+          <p-message severity="info" [text]="'Selected file: ' + selectedFile.name"></p-message>
+        </div>
+      </div>
+
+      <!-- Step 4: Processing -->
+      <div class="step-section" *ngIf="currentStep === 4">
+        <h3>Processing Statement...</h3>
+        <div class="processing-container">
+          <p-progressSpinner></p-progressSpinner>
+          <p class="mt-3">{{ processingMessage }}</p>
+        </div>
+      </div>
+
+      <!-- Step 5: Preview -->
+      <div class="step-section" *ngIf="currentStep === 5">
+        <h3>Step 4: Review Extracted Transactions</h3>
+        <app-transaction-preview
+          [transactions]="parsedTransactions"
+          (confirm)="confirmImport()"
+          (cancelled)="cancelImport()">
+        </app-transaction-preview>
+      </div>
+
+      <!-- Messages -->
+      <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage"></p-message>
+      <p-message *ngIf="successMessage" severity="success" [text]="successMessage"></p-message>
+
+      <!-- Navigation Buttons -->
+      <div class="navigation-buttons mt-4" *ngIf="currentStep < 4">
+        <p-button 
+          label="Back" 
+          icon="pi pi-arrow-left" 
+          [disabled]="currentStep === 1"
+          (onClick)="previousStep()"
+          styleClass="p-button-secondary">
+        </p-button>
+        <p-button 
+          label="Next" 
+          icon="pi pi-arrow-right" 
+          iconPos="right"
+          [disabled]="!canProceedToNextStep()"
+          (onClick)="nextStep()">
+        </p-button>
+      </div>
+    </div>
+  </p-card>
+</div>

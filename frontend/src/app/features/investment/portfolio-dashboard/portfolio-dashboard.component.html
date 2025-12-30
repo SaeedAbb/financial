@@ -1,12 +1,21 @@
 <div class="portfolio-dashboard">
   <div class="flex justify-content-between align-items-center mb-4">
     <h2>Investment Portfolios</h2>
-    <p-button 
-      label="Create Portfolio" 
-      icon="pi pi-plus" 
-      (click)="facade.showCreateDialog()"
-      [loading]="anyLoading$ | async">
-    </p-button>
+    <div class="button-group">
+      <p-button 
+        label="Import Statement" 
+        icon="pi pi-upload" 
+        (click)="navigateToImport()"
+        class="mr-2"
+        styleClass="p-button-outlined">
+      </p-button>
+      <p-button 
+        label="Create Portfolio" 
+        icon="pi pi-plus" 
+        (click)="facade.showCreateDialog()"
+        [loading]="anyLoading$ | async">
+      </p-button>
+    </div>
   </div>
 
   <!-- Portfolio Summary Cards -->
