@@ -28,6 +28,13 @@
   text-align: right;
 }
 
+.isin-text {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+  display: inline-block;
+}
+
 .summary-section {
   padding: 1rem;
   background-color: #f8f9fa;

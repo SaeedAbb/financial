@@ -10,6 +10,7 @@ export interface ParsedTransaction {
   fees: number;
   currency: string;
   rawSymbol?: string;  // Symbol as extracted from PDF
+  isin?: string;  // International Securities Identification Number
   providerReference?: string;  // Provider-specific reference
 }
 

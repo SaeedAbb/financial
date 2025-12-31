@@ -18,6 +18,7 @@
         <th style="width: 80px">Type</th>
         <th>Description</th>
         <th style="width: 100px">Symbol</th>
+        <th style="width: 140px">ISIN</th>
         <th style="width: 100px">Quantity</th>
         <th style="width: 120px">Price/Unit</th>
         <th style="width: 120px">Total</th>
@@ -48,6 +49,14 @@
             [(ngModel)]="transaction.rawSymbol"
             [pTooltip]="'Edit if ticker is incorrect'"
             class="symbol-input">
+        </td>
+        <td>
+          <span 
+            class="isin-text" 
+            [pTooltip]="transaction.isin || 'No ISIN available'"
+            tooltipPosition="top">
+            {{ transaction.isin || '-' }}
+          </span>
         </td>
         <td>
           <p-inputNumber 

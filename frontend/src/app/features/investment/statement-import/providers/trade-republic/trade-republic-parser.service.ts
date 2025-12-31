@@ -420,7 +420,7 @@ export class TradeRepublicParserService extends BaseParser {
         fees: 1.00,
         currency: 'EUR',
         rawSymbol: description.split(' ')[0],
-        providerReference: isin
+        isin: isin || undefined
       };
     } catch (error) {
       console.error('Error parsing Trade Republic transaction:', error);
@@ -485,7 +485,7 @@ export class TradeRepublicParserService extends BaseParser {
         fees,
         currency: 'EUR',
         rawSymbol: description.split(' ')[0], // First word is often the company name
-        providerReference: isin
+        isin: isin || undefined
       };
     } catch (error) {
       console.error('Error parsing transaction block:', error);
@@ -950,7 +950,7 @@ export class TradeRepublicParserService extends BaseParser {
         fees: 1.00, // Trade Republic standard fee
         currency: 'EUR',
         rawSymbol: description.split(' ')[0] || 'UNKNOWN',
-        providerReference: isin || undefined
+        isin: isin || undefined
       };
       
       return { transaction, linesConsumed: currentIndex };
@@ -1011,7 +1011,7 @@ export class TradeRepublicParserService extends BaseParser {
         fees: 1.00,
         currency: 'EUR',
         rawSymbol: description,
-        providerReference: isin
+        isin: isin || undefined
       };
     } catch (error) {
       console.error('Error parsing inline crypto format:', error);
