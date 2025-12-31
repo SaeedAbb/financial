@@ -1,5 +1,6 @@
 package com.basis.api.features.transaction;
 
+import com.basis.api.features.statement.providers.StatementProvider;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -71,6 +72,19 @@ public class Transaction {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+    
+    @Column(name = "import_provider", length = 50)
+    @Enumerated(EnumType.STRING)
+    private StatementProvider importProvider;
+    
+    @Column(name = "import_batch_id")
+    private UUID importBatchId;
+    
+    @Column(name = "original_description", columnDefinition = "TEXT")
+    private String originalDescription;
+    
+    @Column(name = "provider_reference")
+    private String providerReference;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -238,6 +252,38 @@ public class Transaction {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    public StatementProvider getImportProvider() {
+        return importProvider;
+    }
+    
+    public void setImportProvider(StatementProvider importProvider) {
+        this.importProvider = importProvider;
+    }
+    
+    public UUID getImportBatchId() {
+        return importBatchId;
+    }
+    
+    public void setImportBatchId(UUID importBatchId) {
+        this.importBatchId = importBatchId;
+    }
+    
+    public String getOriginalDescription() {
+        return originalDescription;
+    }
+    
+    public void setOriginalDescription(String originalDescription) {
+        this.originalDescription = originalDescription;
+    }
+    
+    public String getProviderReference() {
+        return providerReference;
+    }
+    
+    public void setProviderReference(String providerReference) {
+        this.providerReference = providerReference;
     }
 
     public ZonedDateTime getCreatedAt() {

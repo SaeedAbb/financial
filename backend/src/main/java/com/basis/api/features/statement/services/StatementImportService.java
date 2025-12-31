@@ -2,6 +2,8 @@ package com.basis.api.features.statement.services;
 
 import com.basis.api.features.investment.portfolio.Portfolio;
 import com.basis.api.features.investment.portfolio.PortfolioRepository;
+import com.basis.api.features.investment.position.PortfolioPosition;
+import com.basis.api.features.investment.position.PortfolioPositionRepository;
 import com.basis.api.features.statement.ImportBatch;
 import com.basis.api.features.statement.ImportBatchRepository;
 import com.basis.api.features.statement.ImportStatus;
@@ -9,6 +11,8 @@ import com.basis.api.features.statement.dto.ImportRequestDTO;
 import com.basis.api.features.statement.dto.ImportResultDTO;
 import com.basis.api.features.statement.dto.ImportTransactionDTO;
 import com.basis.api.features.statement.providers.StatementProvider;
+import com.basis.api.features.stock.master.StockMaster;
+import com.basis.api.features.stock.master.StockMasterService;
 import com.basis.api.features.transaction.Transaction;
 import com.basis.api.features.transaction.TransactionRepository;
 import com.basis.api.features.transaction.TransactionType;
@@ -30,15 +34,21 @@ public class StatementImportService {
     
     private final ImportBatchRepository importBatchRepository;
     private final PortfolioRepository portfolioRepository;
+    private final PortfolioPositionRepository portfolioPositionRepository;
     private final TransactionRepository transactionRepository;
+    private final StockMasterService stockMasterService;
     
     public StatementImportService(
             ImportBatchRepository importBatchRepository,
             PortfolioRepository portfolioRepository,
-            TransactionRepository transactionRepository) {
+            PortfolioPositionRepository portfolioPositionRepository,
+            TransactionRepository transactionRepository,
+            StockMasterService stockMasterService) {
         this.importBatchRepository = importBatchRepository;
         this.portfolioRepository = portfolioRepository;
+        this.portfolioPositionRepository = portfolioPositionRepository;
         this.transactionRepository = transactionRepository;
+        this.stockMasterService = stockMasterService;
     }
     
     @Transactional
@@ -123,15 +133,45 @@ public class StatementImportService {
             String userId,
             Portfolio portfolio) {
         
+        // First, find or create the stock master
+        String symbol = importTx.getRawSymbol() != null ? importTx.getRawSymbol() : importTx.getDescription();
+        
+        final StockMaster stockMaster;
+        if (importTx.getIsin() != null && !importTx.getIsin().isEmpty()) {
+            stockMaster = stockMasterService.findOrEnrichByIsin(importTx.getIsin());
+            symbol = stockMaster.getSymbol();
+            logger.info("Found/created stock {} for ISIN {}", symbol, importTx.getIsin());
+        } else {
+            // If no ISIN, find or create by symbol
+            stockMaster = stockMasterService.findOrCreateStock(symbol, importTx.getDescription());
+        }
+        
+        // Find or create portfolio position for this stock
+        PortfolioPosition position = portfolioPositionRepository
+                .findByPortfolioIdAndStockId(portfolio.getId(), stockMaster.getId())
+                .orElseGet(() -> {
+                    PortfolioPosition newPosition = new PortfolioPosition(portfolio, stockMaster);
+                    return portfolioPositionRepository.save(newPosition);
+                });
+        
+        // Update position based on transaction type
+        if ("BUY".equals(importTx.getType())) {
+            position.addShares(importTx.getQuantity(), importTx.getPricePerUnit(), importTx.getDate());
+        } else {
+            position.removeShares(importTx.getQuantity(), importTx.getDate());
+        }
+        portfolioPositionRepository.save(position);
+        
+        // Create transaction referencing the portfolio position
         Transaction transaction = new Transaction();
         transaction.setUserId(userId);
         transaction.setTransactionCategory(com.basis.api.features.transaction.TransactionCategory.STOCK);
         transaction.setTransactionType(
             "BUY".equals(importTx.getType()) ? TransactionType.BUY : TransactionType.SELL
         );
-        transaction.setReferenceId(portfolio.getId());
-        transaction.setReferenceType("PORTFOLIO");
-        transaction.setSymbol(importTx.getRawSymbol() != null ? importTx.getRawSymbol() : importTx.getDescription());
+        transaction.setReferenceId(position.getId());
+        transaction.setReferenceType("PORTFOLIO_POSITION");
+        transaction.setSymbol(symbol);
         transaction.setQuantity(importTx.getQuantity());
         transaction.setPricePerUnit(importTx.getPricePerUnit());
         transaction.setTotalAmount(importTx.getTotalAmount());
@@ -143,7 +183,7 @@ public class StatementImportService {
         transaction.setImportProvider(batch.getProvider());
         transaction.setImportBatchId(batch.getBatchId());
         transaction.setOriginalDescription(importTx.getDescription());
-        // Store ISIN in providerReference field for now
+        // Store ISIN in providerReference field
         transaction.setProviderReference(importTx.getIsin() != null ? importTx.getIsin() : importTx.getProviderReference());
         
         return transaction;

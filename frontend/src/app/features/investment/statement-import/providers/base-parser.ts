@@ -19,8 +19,8 @@ export abstract class BaseParser {
     // Dynamic import of PDF.js to reduce bundle size
     const pdfjsLib = await import('pdfjs-dist');
     
-    // Configure PDF.js worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    // Configure PDF.js worker to use local file instead of CDN
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdf.js/pdf.worker.min.mjs';
     
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;

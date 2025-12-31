@@ -22,11 +22,6 @@ export interface ImportRequest {
   providerMetadata?: Record<string, unknown>;
 }
 
-export interface EnhancedTransaction extends ParsedTransaction {
-  ticker?: string;  // LLM-enhanced ticker symbol
-  confidence?: number;  // LLM confidence score (0-1)
-  originalDescription?: string;
-}
 
 export interface TransactionImportResult {
   transactionId?: number;

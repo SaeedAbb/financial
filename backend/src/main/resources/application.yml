@@ -103,3 +103,9 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss} - %msg%n'
+
+# Finnhub Configuration for stock data enrichment
+finnhub:
+  api-key: ${FINNHUB_API_KEY:d57d1fpr01qrcrnapmjgd57d1fpr01qrcrnapmk0}
+  base-url: https://finnhub.io/api/v1
+

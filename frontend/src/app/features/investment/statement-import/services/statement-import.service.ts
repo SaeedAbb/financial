@@ -9,7 +9,7 @@ import { StatementProvider } from '../models/provider.enum';
   providedIn: 'root'
 })
 export class StatementImportService {
-  private readonly apiUrl = `${environment.apiUrl}/v1/statement-import`;
+  private readonly apiUrl = `${environment.apiUrl}/statement-import`;
   private readonly http = inject(HttpClient);
   
   /**

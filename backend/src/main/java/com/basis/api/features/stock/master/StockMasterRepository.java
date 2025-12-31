@@ -14,6 +14,8 @@ public interface StockMasterRepository extends JpaRepository<StockMaster, Long> 
     Optional<StockMaster> findBySymbol(String symbol);
 
     boolean existsBySymbol(String symbol);
+    
+    Optional<StockMaster> findByIsin(String isin);
 
     List<StockMaster> findByExchange(String exchange);
 
