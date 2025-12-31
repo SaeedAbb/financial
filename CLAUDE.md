@@ -289,6 +289,22 @@ When implementing any feature or fix:
 - Ensure all tests pass - no failing tests should be committed
 - When writing tests, avoid using `any` type - use proper type definitions or bracket notation
 
+### MANDATORY Pre-Commit Checklist for Claude
+Before EVERY commit and push to any branch:
+1. **Frontend Lint Check**: Run `cd frontend && npm run lint`
+   - Fix ALL lint errors and warnings
+   - No commit should be made with lint issues
+2. **Frontend Test Check**: Run `cd frontend && npm run test:ci`
+   - Ensure ALL tests pass
+   - Fix any failing tests before committing
+3. **Backend Test Check** (if backend changes): Run `cd backend && ./mvnw test`
+   - Ensure all unit tests pass
+4. **Verify Changes**: Review all changes with `git diff --staged`
+   - Ensure only intended changes are included
+   - No debugging code or console.logs should be committed
+
+**IMPORTANT**: These checks MUST be run BEFORE using `git commit` and `git push`. This is a mandatory requirement to prevent pipeline failures.
+
 ### Code Quality
 - Follow established coding conventions
 - Write comprehensive tests (aim for >80% coverage)
