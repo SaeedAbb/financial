@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -54,4 +55,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
            "FROM Transaction t WHERE t.userId = :userId AND t.transactionCategory = :category " +
            "GROUP BY t.transactionDate ORDER BY t.transactionDate")
     List<Object[]> getTransactionSummaryByUserAndCategory(@Param("userId") String userId, @Param("category") TransactionCategory category);
+    
+    // Duplicate checking methods
+    boolean existsByUserIdAndTransactionFingerprint(String userId, String transactionFingerprint);
+    
+    @Query("SELECT t.transactionFingerprint FROM Transaction t WHERE t.userId = :userId AND t.transactionFingerprint IN :fingerprints")
+    Set<String> findExistingFingerprints(@Param("userId") String userId, @Param("fingerprints") Set<String> fingerprints);
+    
+    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND t.transactionFingerprint IN :fingerprints")
+    List<Transaction> findByUserIdAndTransactionFingerprintIn(@Param("userId") String userId, @Param("fingerprints") Set<String> fingerprints);
 }

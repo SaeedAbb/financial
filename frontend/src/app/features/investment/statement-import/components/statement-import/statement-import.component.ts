@@ -49,6 +49,7 @@ export class StatementImportComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   processingMessage = 'Extracting transactions from PDF...';
+  importResult?: ImportResult;
   
   readonly providers = Object.values(PROVIDER_INFO).filter(p => 
     this.parserFactory.isProviderSupported(p.id)
@@ -160,16 +161,28 @@ export class StatementImportComponent implements OnInit {
   }
 
   handleImportResult(result: ImportResult): void {
+    this.importResult = result;
+    const duplicateCount = result.duplicateCount || 0;
+    
     if (result.status === ImportStatus.COMPLETED) {
-      this.showSuccess(`Successfully imported ${result.successCount} transactions`);
-      setTimeout(() => {
-        this.router.navigate(['/investment/portfolio', this.selectedPortfolioId]);
-      }, 2000);
-    } else if (result.status === ImportStatus.PARTIALLY_COMPLETED) {
-      this.showWarning(`Imported ${result.successCount} of ${result.totalTransactions} transactions`);
+      let message = `Successfully imported ${result.successCount} transactions`;
+      if (duplicateCount > 0) {
+        message += ` (${duplicateCount} duplicates skipped)`;
+      }
+      this.showSuccess(message);
       setTimeout(() => {
         this.router.navigate(['/investment/portfolio', this.selectedPortfolioId]);
       }, 3000);
+    } else if (result.status === ImportStatus.PARTIALLY_COMPLETED) {
+      let message = `Imported ${result.successCount} of ${result.totalTransactions} transactions`;
+      if (duplicateCount > 0) {
+        message += ` (${duplicateCount} duplicates skipped)`;
+      }
+      if (result.failureCount > 0) {
+        message += `, ${result.failureCount} failed`;
+      }
+      this.showWarning(message);
+      this.currentStep = 6; // Show results step
     } else {
       this.showError(`Import failed: ${result.errorMessage}`);
       this.currentStep = 5;
@@ -204,5 +217,9 @@ export class StatementImportComponent implements OnInit {
   private showWarning(message: string): void {
     this.errorMessage = message;
     this.successMessage = '';
+  }
+  
+  navigateToPortfolio(): void {
+    this.router.navigate(['/investment/portfolio', this.selectedPortfolioId]);
   }
 }

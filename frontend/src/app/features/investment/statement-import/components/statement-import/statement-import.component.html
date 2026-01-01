@@ -104,6 +104,80 @@
         </app-transaction-preview>
       </div>
 
+      <!-- Step 6: Import Results -->
+      <div class="step-section" *ngIf="currentStep === 6 && importResult">
+        <h3>Import Results</h3>
+        <div class="import-results">
+          <div class="result-summary">
+            <div class="result-stat success" *ngIf="importResult.successCount > 0">
+              <i class="pi pi-check-circle"></i>
+              <div class="stat-content">
+                <span class="stat-value">{{ importResult.successCount }}</span>
+                <span class="stat-label">Successfully Imported</span>
+              </div>
+            </div>
+            
+            <div class="result-stat warning" *ngIf="importResult.duplicateCount && importResult.duplicateCount > 0">
+              <i class="pi pi-info-circle"></i>
+              <div class="stat-content">
+                <span class="stat-value">{{ importResult.duplicateCount }}</span>
+                <span class="stat-label">Duplicates Skipped</span>
+              </div>
+            </div>
+            
+            <div class="result-stat error" *ngIf="importResult.failureCount > 0">
+              <i class="pi pi-times-circle"></i>
+              <div class="stat-content">
+                <span class="stat-value">{{ importResult.failureCount }}</span>
+                <span class="stat-label">Failed</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-details mt-4" *ngIf="importResult.results && importResult.results.length > 0">
+            <h4>Transaction Details:</h4>
+            <div class="transaction-result-list">
+              <div *ngFor="let result of importResult.results" 
+                   class="transaction-result-item"
+                   [ngClass]="{
+                     'success': result.success && !result.duplicate,
+                     'duplicate': result.duplicate,
+                     'error': !result.success && !result.duplicate
+                   }">
+                <i class="pi" 
+                   [ngClass]="{
+                     'pi-check': result.success && !result.duplicate,
+                     'pi-info-circle': result.duplicate,
+                     'pi-times': !result.success && !result.duplicate
+                   }"></i>
+                <span class="ticker">{{ result.ticker || 'Unknown' }}</span>
+                <span class="status">
+                  {{ result.duplicate ? 'Duplicate' : (result.success ? 'Imported' : 'Failed') }}
+                </span>
+                <span class="error-message" *ngIf="result.errorMessage && !result.duplicate">
+                  {{ result.errorMessage }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-buttons mt-4">
+            <p-button 
+              label="View Portfolio" 
+              icon="pi pi-eye" 
+              (onClick)="navigateToPortfolio()"
+              styleClass="p-button-success">
+            </p-button>
+            <p-button 
+              label="Import Another Statement" 
+              icon="pi pi-upload" 
+              (onClick)="currentStep = 1; importResult = undefined"
+              styleClass="p-button-secondary">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
       <!-- Messages -->
       <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage"></p-message>
       <p-message *ngIf="successMessage" severity="success" [text]="successMessage"></p-message>

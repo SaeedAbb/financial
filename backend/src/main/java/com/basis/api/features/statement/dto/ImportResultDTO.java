@@ -13,6 +13,7 @@ public class ImportResultDTO {
     private Integer totalTransactions;
     private Integer successCount;
     private Integer failureCount;
+    private Integer duplicateCount;
     private ZonedDateTime createdAt;
     private ZonedDateTime completedAt;
     private List<TransactionImportResultDTO> results;
@@ -30,6 +31,23 @@ public class ImportResultDTO {
         dto.totalTransactions = totalTransactions;
         dto.successCount = successCount;
         dto.failureCount = totalTransactions - successCount;
+        dto.duplicateCount = 0; // Will be set by the service
+        dto.results = results;
+        dto.createdAt = ZonedDateTime.now();
+        dto.completedAt = ZonedDateTime.now();
+        return dto;
+    }
+    
+    // Success constructor with duplicate count
+    public static ImportResultDTO success(UUID batchId, int totalTransactions, int successCount, 
+                                        int duplicateCount, List<TransactionImportResultDTO> results) {
+        ImportResultDTO dto = new ImportResultDTO();
+        dto.batchId = batchId;
+        dto.status = (successCount + duplicateCount) == totalTransactions ? ImportStatus.COMPLETED : ImportStatus.PARTIALLY_COMPLETED;
+        dto.totalTransactions = totalTransactions;
+        dto.successCount = successCount;
+        dto.failureCount = totalTransactions - successCount - duplicateCount;
+        dto.duplicateCount = duplicateCount;
         dto.results = results;
         dto.createdAt = ZonedDateTime.now();
         dto.completedAt = ZonedDateTime.now();
@@ -52,6 +70,7 @@ public class ImportResultDTO {
         private Long transactionId;
         private UUID transactionUuid;
         private boolean success;
+        private boolean duplicate;
         private String ticker;
         private String errorMessage;
         
@@ -68,6 +87,16 @@ public class ImportResultDTO {
         public TransactionImportResultDTO(String errorMessage) {
             this.success = false;
             this.errorMessage = errorMessage;
+        }
+        
+        // Constructor for duplicate transactions
+        public static TransactionImportResultDTO duplicate(String ticker) {
+            TransactionImportResultDTO dto = new TransactionImportResultDTO();
+            dto.success = false;
+            dto.duplicate = true;
+            dto.ticker = ticker;
+            dto.errorMessage = "Transaction already exists (duplicate)";
+            return dto;
         }
         
         // Getters and Setters
@@ -93,6 +122,14 @@ public class ImportResultDTO {
         
         public void setSuccess(boolean success) {
             this.success = success;
+        }
+        
+        public boolean isDuplicate() {
+            return duplicate;
+        }
+        
+        public void setDuplicate(boolean duplicate) {
+            this.duplicate = duplicate;
         }
         
         public String getTicker() {
@@ -151,6 +188,14 @@ public class ImportResultDTO {
     
     public void setFailureCount(Integer failureCount) {
         this.failureCount = failureCount;
+    }
+    
+    public Integer getDuplicateCount() {
+        return duplicateCount;
+    }
+    
+    public void setDuplicateCount(Integer duplicateCount) {
+        this.duplicateCount = duplicateCount;
     }
     
     public ZonedDateTime getCreatedAt() {

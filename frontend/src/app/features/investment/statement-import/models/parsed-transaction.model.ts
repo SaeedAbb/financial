@@ -27,6 +27,7 @@ export interface TransactionImportResult {
   transactionId?: number;
   transactionUuid?: string;
   success: boolean;
+  duplicate?: boolean;
   ticker?: string;
   errorMessage?: string;
 }
@@ -37,6 +38,7 @@ export interface ImportResult {
   totalTransactions: number;
   successCount: number;
   failureCount: number;
+  duplicateCount?: number;
   createdAt: string;
   completedAt?: string;
   results?: TransactionImportResult[];
@@ -61,6 +63,7 @@ export interface ImportBatch {
   transactionCount: number;
   successCount: number;
   failureCount: number;
+  duplicateCount?: number;
   status: ImportStatus;
   errorMessage?: string;
   createdAt: string;

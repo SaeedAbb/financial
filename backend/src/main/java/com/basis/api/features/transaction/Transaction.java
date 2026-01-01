@@ -85,6 +85,9 @@ public class Transaction {
     
     @Column(name = "provider_reference")
     private String providerReference;
+    
+    @Column(name = "transaction_fingerprint", length = 64)
+    private String transactionFingerprint;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -284,6 +287,14 @@ public class Transaction {
     
     public void setProviderReference(String providerReference) {
         this.providerReference = providerReference;
+    }
+    
+    public String getTransactionFingerprint() {
+        return transactionFingerprint;
+    }
+    
+    public void setTransactionFingerprint(String transactionFingerprint) {
+        this.transactionFingerprint = transactionFingerprint;
     }
 
     public ZonedDateTime getCreatedAt() {

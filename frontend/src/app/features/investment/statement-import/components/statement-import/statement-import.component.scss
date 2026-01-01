@@ -118,3 +118,159 @@
 .step-line.active {
   background-color: #4caf50;
 }
+
+// Import Results Styles
+.import-results {
+  padding: 1rem;
+}
+
+.result-summary {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.result-stat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  gap: 1rem;
+
+  i {
+    font-size: 2.5rem;
+  }
+
+  &.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    
+    i {
+      color: #4caf50;
+    }
+  }
+
+  &.warning {
+    background-color: #fff3e0;
+    color: #e65100;
+    
+    i {
+      color: #ff9800;
+    }
+  }
+
+  &.error {
+    background-color: #ffebee;
+    color: #c62828;
+    
+    i {
+      color: #f44336;
+    }
+  }
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  opacity: 0.8;
+}
+
+.result-details {
+  h4 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+}
+
+.transaction-result-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.transaction-result-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  gap: 0.75rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  i {
+    font-size: 1.2rem;
+  }
+
+  &.success {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+
+    i {
+      color: #4caf50;
+    }
+  }
+
+  &.duplicate {
+    background-color: #fff8e1;
+    color: #f57c00;
+
+    i {
+      color: #ff9800;
+    }
+  }
+
+  &.error {
+    background-color: #ffebee;
+    color: #c62828;
+
+    i {
+      color: #f44336;
+    }
+  }
+
+  .ticker {
+    font-weight: bold;
+    min-width: 80px;
+  }
+
+  .status {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .error-message {
+    flex: 1;
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-left: auto;
+    text-align: right;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}

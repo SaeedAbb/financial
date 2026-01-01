@@ -44,6 +44,9 @@ public class ImportBatch {
     @Column(name = "failure_count")
     private Integer failureCount = 0;
     
+    @Column(name = "duplicate_count")
+    private Integer duplicateCount = 0;
+    
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ImportStatus status = ImportStatus.PENDING;
@@ -84,6 +87,10 @@ public class ImportBatch {
     
     public void incrementFailure() {
         this.failureCount++;
+    }
+    
+    public void incrementDuplicate() {
+        this.duplicateCount++;
     }
     
     public void complete() {
@@ -172,6 +179,14 @@ public class ImportBatch {
     
     public void setFailureCount(Integer failureCount) {
         this.failureCount = failureCount;
+    }
+    
+    public Integer getDuplicateCount() {
+        return duplicateCount;
+    }
+    
+    public void setDuplicateCount(Integer duplicateCount) {
+        this.duplicateCount = duplicateCount;
     }
     
     public ImportStatus getStatus() {

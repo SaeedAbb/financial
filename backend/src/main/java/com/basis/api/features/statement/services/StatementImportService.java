@@ -16,6 +16,7 @@ import com.basis.api.features.stock.master.StockMasterService;
 import com.basis.api.features.transaction.Transaction;
 import com.basis.api.features.transaction.TransactionRepository;
 import com.basis.api.features.transaction.TransactionType;
+import com.basis.api.features.transaction.services.TransactionFingerprintService;
 import com.basis.api.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,18 +38,21 @@ public class StatementImportService {
     private final PortfolioPositionRepository portfolioPositionRepository;
     private final TransactionRepository transactionRepository;
     private final StockMasterService stockMasterService;
+    private final TransactionFingerprintService fingerprintService;
     
     public StatementImportService(
             ImportBatchRepository importBatchRepository,
             PortfolioRepository portfolioRepository,
             PortfolioPositionRepository portfolioPositionRepository,
             TransactionRepository transactionRepository,
-            StockMasterService stockMasterService) {
+            StockMasterService stockMasterService,
+            TransactionFingerprintService fingerprintService) {
         this.importBatchRepository = importBatchRepository;
         this.portfolioRepository = portfolioRepository;
         this.portfolioPositionRepository = portfolioPositionRepository;
         this.transactionRepository = transactionRepository;
         this.stockMasterService = stockMasterService;
+        this.fingerprintService = fingerprintService;
     }
     
     @Transactional
@@ -85,6 +89,7 @@ public class StatementImportService {
                 batch.getBatchId(),
                 batch.getTransactionCount(),
                 batch.getSuccessCount(),
+                batch.getDuplicateCount(),
                 results
             );
             
@@ -105,9 +110,36 @@ public class StatementImportService {
         
         List<ImportResultDTO.TransactionImportResultDTO> results = new ArrayList<>();
         
+        // Pre-generate fingerprints for all transactions
+        Map<ImportTransactionDTO, String> fingerprintMap = new HashMap<>();
+        Set<String> allFingerprints = new HashSet<>();
+        
         for (ImportTransactionDTO transaction : transactions) {
+            String fingerprint = fingerprintService.generateFingerprint(transaction, userId);
+            fingerprintMap.put(transaction, fingerprint);
+            allFingerprints.add(fingerprint);
+        }
+        
+        // Batch check for existing fingerprints
+        Set<String> existingFingerprints = transactionRepository.findExistingFingerprints(userId, allFingerprints);
+        logger.info("Found {} existing transactions out of {} total", existingFingerprints.size(), transactions.size());
+        
+        // Process each transaction
+        for (ImportTransactionDTO transaction : transactions) {
+            String fingerprint = fingerprintMap.get(transaction);
+            
+            // Check if this is a duplicate
+            if (existingFingerprints.contains(fingerprint)) {
+                batch.incrementDuplicate();
+                String symbol = transaction.getRawSymbol() != null ? transaction.getRawSymbol() : transaction.getDescription();
+                results.add(ImportResultDTO.TransactionImportResultDTO.duplicate(symbol));
+                logger.debug("Skipping duplicate transaction: {} on {}", symbol, transaction.getDate());
+                continue;
+            }
+            
             try {
                 Transaction transactionEntity = createTransaction(transaction, batch, userId, portfolio);
+                transactionEntity.setTransactionFingerprint(fingerprint);
                 transactionEntity = transactionRepository.save(transactionEntity);
                 
                 batch.incrementSuccess();
