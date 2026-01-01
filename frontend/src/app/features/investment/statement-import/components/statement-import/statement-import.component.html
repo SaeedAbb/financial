@@ -105,75 +105,208 @@
       </div>
 
       <!-- Step 6: Import Results -->
-      <div class="step-section" *ngIf="currentStep === 6 && importResult">
-        <h3>Import Results</h3>
+      <div class="step-section import-results-section" *ngIf="currentStep === 6 && importResult">
+        <div class="results-header">
+          <div class="header-content">
+            <h2 class="results-title">Import Complete</h2>
+            <p class="results-subtitle">
+              Your transactions have been processed. Here's what happened:
+            </p>
+          </div>
+          <div class="header-icon">
+            <i class="pi pi-check-circle animated-check"></i>
+          </div>
+        </div>
+
         <div class="import-results">
-          <div class="result-summary">
-            <div class="result-stat success" *ngIf="importResult.successCount > 0">
-              <i class="pi pi-check-circle"></i>
-              <div class="stat-content">
-                <span class="stat-value">{{ importResult.successCount }}</span>
-                <span class="stat-label">Successfully Imported</span>
+          <!-- Summary Cards -->
+          <div class="result-summary-cards">
+            <div class="summary-card success-card" *ngIf="importResult.successCount > 0" 
+                 [@cardAnimation]>
+              <div class="card-background"></div>
+              <div class="card-content">
+                <div class="card-icon">
+                  <i class="pi pi-check"></i>
+                </div>
+                <div class="card-info">
+                  <span class="card-value">{{ importResult.successCount }}</span>
+                  <span class="card-label">Imported</span>
+                </div>
+                <div class="card-percentage">
+                  {{ (importResult.successCount / importResult.totalTransactions * 100).toFixed(0) }}%
+                </div>
               </div>
             </div>
             
-            <div class="result-stat warning" *ngIf="importResult.duplicateCount && importResult.duplicateCount > 0">
+            <div class="summary-card warning-card" *ngIf="importResult.duplicateCount && importResult.duplicateCount > 0"
+                 [@cardAnimation]>
+              <div class="card-background"></div>
+              <div class="card-content">
+                <div class="card-icon">
+                  <i class="pi pi-copy"></i>
+                </div>
+                <div class="card-info">
+                  <span class="card-value">{{ importResult.duplicateCount }}</span>
+                  <span class="card-label">Duplicates</span>
+                </div>
+                <div class="card-percentage">
+                  {{ (importResult.duplicateCount / importResult.totalTransactions * 100).toFixed(0) }}%
+                </div>
+              </div>
+            </div>
+            
+            <div class="summary-card error-card" *ngIf="importResult.failureCount > 0"
+                 [@cardAnimation]>
+              <div class="card-background"></div>
+              <div class="card-content">
+                <div class="card-icon">
+                  <i class="pi pi-exclamation-triangle"></i>
+                </div>
+                <div class="card-info">
+                  <span class="card-value">{{ importResult.failureCount }}</span>
+                  <span class="card-label">Failed</span>
+                </div>
+                <div class="card-percentage">
+                  {{ (importResult.failureCount / importResult.totalTransactions * 100).toFixed(0) }}%
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Overview -->
+          <div class="progress-overview" [@fadeIn]>
+            <div class="progress-header">
+              <h4>Processing Overview</h4>
+              <span class="total-count">{{ importResult.totalTransactions }} total transactions</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-segment success-segment" 
+                   [style.width.%]="(importResult.successCount / importResult.totalTransactions * 100)"
+                   *ngIf="importResult.successCount > 0">
+              </div>
+              <div class="progress-segment warning-segment" 
+                   [style.width.%]="((importResult.duplicateCount || 0) / importResult.totalTransactions * 100)"
+                   *ngIf="importResult.duplicateCount && importResult.duplicateCount > 0">
+              </div>
+              <div class="progress-segment error-segment" 
+                   [style.width.%]="(importResult.failureCount / importResult.totalTransactions * 100)"
+                   *ngIf="importResult.failureCount > 0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Results Table -->
+          <div class="detailed-results" *ngIf="importResult.results && importResult.results.length > 0" [@fadeIn]>
+            <div class="results-table-header">
+              <h4>Transaction Details</h4>
+              <div class="filter-buttons">
+                <button class="filter-btn" 
+                        [class.active]="resultFilter === 'all'"
+                        (click)="resultFilter = 'all'">
+                  All ({{ importResult.results.length }})
+                </button>
+                <button class="filter-btn" 
+                        [class.active]="resultFilter === 'success'"
+                        (click)="resultFilter = 'success'"
+                        *ngIf="getFilteredResultsCount('success') > 0">
+                  <i class="pi pi-check"></i> Success ({{ getFilteredResultsCount('success') }})
+                </button>
+                <button class="filter-btn" 
+                        [class.active]="resultFilter === 'duplicate'"
+                        (click)="resultFilter = 'duplicate'"
+                        *ngIf="getFilteredResultsCount('duplicate') > 0">
+                  <i class="pi pi-copy"></i> Duplicates ({{ getFilteredResultsCount('duplicate') }})
+                </button>
+                <button class="filter-btn" 
+                        [class.active]="resultFilter === 'error'"
+                        (click)="resultFilter = 'error'"
+                        *ngIf="getFilteredResultsCount('error') > 0">
+                  <i class="pi pi-times"></i> Failed ({{ getFilteredResultsCount('error') }})
+                </button>
+              </div>
+            </div>
+
+            <div class="results-table">
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Symbol</th>
+                      <th>Result</th>
+                      <th>Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let result of getFilteredResults(); let i = index"
+                        [@tableRowAnimation]
+                        [style.animation-delay.ms]="i * 50">
+                      <td class="status-cell">
+                        <div class="status-indicator"
+                             [ngClass]="{
+                               'status-success': result.success && !result.duplicate,
+                               'status-duplicate': result.duplicate,
+                               'status-error': !result.success && !result.duplicate
+                             }">
+                          <i class="pi" 
+                             [ngClass]="{
+                               'pi-check': result.success && !result.duplicate,
+                               'pi-copy': result.duplicate,
+                               'pi-times': !result.success && !result.duplicate
+                             }"></i>
+                        </div>
+                      </td>
+                      <td class="symbol-cell">
+                        <span class="symbol">{{ result.ticker || 'Unknown' }}</span>
+                      </td>
+                      <td class="result-cell">
+                        <span class="result-badge"
+                              [ngClass]="{
+                                'badge-success': result.success && !result.duplicate,
+                                'badge-warning': result.duplicate,
+                                'badge-error': !result.success && !result.duplicate
+                              }">
+                          {{ result.duplicate ? 'Skipped - Duplicate' : (result.success ? 'Successfully Imported' : 'Import Failed') }}
+                        </span>
+                      </td>
+                      <td class="details-cell">
+                        <span class="details-text" *ngIf="result.errorMessage && !result.duplicate">
+                          {{ result.errorMessage }}
+                        </span>
+                        <span class="details-text" *ngIf="result.duplicate">
+                          Transaction already exists in your portfolio
+                        </span>
+                        <span class="details-text success" *ngIf="result.success && !result.duplicate">
+                          Added to portfolio
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons-container" [@fadeIn]>
+            <div class="action-buttons">
+              <p-button 
+                label="View Portfolio" 
+                icon="pi pi-chart-line" 
+                (onClick)="navigateToPortfolio()"
+                styleClass="primary-action-btn">
+              </p-button>
+              <p-button 
+                label="Import Another Statement" 
+                icon="pi pi-plus" 
+                (onClick)="resetImport()"
+                styleClass="secondary-action-btn">
+              </p-button>
+            </div>
+            <div class="help-text">
               <i class="pi pi-info-circle"></i>
-              <div class="stat-content">
-                <span class="stat-value">{{ importResult.duplicateCount }}</span>
-                <span class="stat-label">Duplicates Skipped</span>
-              </div>
+              <span>Duplicate transactions are automatically detected and skipped to maintain data integrity.</span>
             </div>
-            
-            <div class="result-stat error" *ngIf="importResult.failureCount > 0">
-              <i class="pi pi-times-circle"></i>
-              <div class="stat-content">
-                <span class="stat-value">{{ importResult.failureCount }}</span>
-                <span class="stat-label">Failed</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="result-details mt-4" *ngIf="importResult.results && importResult.results.length > 0">
-            <h4>Transaction Details:</h4>
-            <div class="transaction-result-list">
-              <div *ngFor="let result of importResult.results" 
-                   class="transaction-result-item"
-                   [ngClass]="{
-                     'success': result.success && !result.duplicate,
-                     'duplicate': result.duplicate,
-                     'error': !result.success && !result.duplicate
-                   }">
-                <i class="pi" 
-                   [ngClass]="{
-                     'pi-check': result.success && !result.duplicate,
-                     'pi-info-circle': result.duplicate,
-                     'pi-times': !result.success && !result.duplicate
-                   }"></i>
-                <span class="ticker">{{ result.ticker || 'Unknown' }}</span>
-                <span class="status">
-                  {{ result.duplicate ? 'Duplicate' : (result.success ? 'Imported' : 'Failed') }}
-                </span>
-                <span class="error-message" *ngIf="result.errorMessage && !result.duplicate">
-                  {{ result.errorMessage }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="action-buttons mt-4">
-            <p-button 
-              label="View Portfolio" 
-              icon="pi pi-eye" 
-              (onClick)="navigateToPortfolio()"
-              styleClass="p-button-success">
-            </p-button>
-            <p-button 
-              label="Import Another Statement" 
-              icon="pi pi-upload" 
-              (onClick)="currentStep = 1; importResult = undefined"
-              styleClass="p-button-secondary">
-            </p-button>
           </div>
         </div>
       </div>

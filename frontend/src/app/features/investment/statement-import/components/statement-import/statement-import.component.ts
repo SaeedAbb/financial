@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { trigger, state, style, transition, animate, keyframes } from '@angular/animations';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { SelectModule } from 'primeng/select';
@@ -10,7 +11,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 
 import { StatementProvider, PROVIDER_INFO } from '../../models/provider.enum';
-import { ParsedTransaction, ImportRequest, ImportResult, ImportStatus } from '../../models/parsed-transaction.model';
+import { ParsedTransaction, ImportRequest, ImportResult, ImportStatus, TransactionImportResult } from '../../models/parsed-transaction.model';
 import { ParserFactoryService } from '../../services/parser-factory.service';
 import { StatementImportService } from '../../services/statement-import.service';
 import { PortfolioService } from '../../../../../core/services/portfolio.service';
@@ -32,7 +33,27 @@ import { TransactionPreviewComponent } from '../transaction-preview/transaction-
     TransactionPreviewComponent
   ],
   templateUrl: './statement-import.component.html',
-  styleUrls: ['./statement-import.component.scss']
+  styleUrls: ['./statement-import.component.scss'],
+  animations: [
+    trigger('cardAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(20px)' }),
+        animate('0.5s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ])
+    ]),
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('0.6s ease-in', style({ opacity: 1 }))
+      ])
+    ]),
+    trigger('tableRowAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateX(-10px)' }),
+        animate('0.3s ease-out', style({ opacity: 1, transform: 'translateX(0)' }))
+      ])
+    ])
+  ]
 })
 export class StatementImportComponent implements OnInit {
   private readonly parserFactory = inject(ParserFactoryService);
@@ -50,6 +71,7 @@ export class StatementImportComponent implements OnInit {
   successMessage = '';
   processingMessage = 'Extracting transactions from PDF...';
   importResult?: ImportResult;
+  resultFilter: 'all' | 'success' | 'duplicate' | 'error' = 'all';
   
   readonly providers = Object.values(PROVIDER_INFO).filter(p => 
     this.parserFactory.isProviderSupported(p.id)
@@ -221,5 +243,45 @@ export class StatementImportComponent implements OnInit {
   
   navigateToPortfolio(): void {
     this.router.navigate(['/investment/portfolio', this.selectedPortfolioId]);
+  }
+  
+  resetImport(): void {
+    this.currentStep = 1;
+    this.importResult = undefined;
+    this.resultFilter = 'all';
+    this.selectedFile = undefined;
+    this.parsedTransactions = [];
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+  
+  getFilteredResults(): TransactionImportResult[] {
+    if (!this.importResult?.results) return [];
+    
+    switch (this.resultFilter) {
+      case 'success':
+        return this.importResult.results.filter(r => r.success && !r.duplicate);
+      case 'duplicate':
+        return this.importResult.results.filter(r => r.duplicate);
+      case 'error':
+        return this.importResult.results.filter(r => !r.success && !r.duplicate);
+      default:
+        return this.importResult.results;
+    }
+  }
+  
+  getFilteredResultsCount(type: 'success' | 'duplicate' | 'error'): number {
+    if (!this.importResult?.results) return 0;
+    
+    switch (type) {
+      case 'success':
+        return this.importResult.results.filter(r => r.success && !r.duplicate).length;
+      case 'duplicate':
+        return this.importResult.results.filter(r => r.duplicate).length;
+      case 'error':
+        return this.importResult.results.filter(r => !r.success && !r.duplicate).length;
+      default:
+        return 0;
+    }
   }
 }
