@@ -207,6 +207,7 @@ docker-compose build
 - `DB_USERNAME`: Database username (default: basis_user)
 - `DB_PASSWORD`: Database password (default: basis_password)
 - `SERVER_PORT`: Server port (default: 8080)
+- `FINNHUB_API_KEY`: Finnhub API key for stock data enrichment (required for stock features)
 
 #### Frontend
 - `API_URL`: Backend API URL (configured in environment files)
@@ -215,6 +216,26 @@ docker-compose build
 - `default`: Local development
 - `test`: Testing with H2 database
 - `docker`: Docker container environment
+
+### Finnhub API Configuration
+
+The application uses Finnhub API for stock data enrichment. To enable this feature:
+
+1. **Get a free API key** from [Finnhub](https://finnhub.io/)
+2. **Set the environment variable**:
+   ```bash
+   export FINNHUB_API_KEY=your-api-key-here
+   ```
+   Or add it to your IDE's run configuration.
+
+3. **Alternative**: Update `backend/src/main/resources/application.yml`:
+   ```yaml
+   finnhub:
+     api-key: ${FINNHUB_API_KEY:your-api-key-here}
+   ```
+   Replace `your-api-key-here` with your actual API key.
+
+**Note**: Never commit your actual API key to version control. Always use environment variables or a secure secrets management system.
 
 ## 🔒 Security
 

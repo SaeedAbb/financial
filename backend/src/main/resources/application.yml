@@ -106,6 +106,6 @@ logging:
 
 # Finnhub Configuration for stock data enrichment
 finnhub:
-  api-key: ${FINNHUB_API_KEY:d57d1fpr01qrcrnapmjgd57d1fpr01qrcrnapmk0}
+  api-key: ${FINNHUB_API_KEY:your-finnhub-api-key-here}
   base-url: https://finnhub.io/api/v1
 
