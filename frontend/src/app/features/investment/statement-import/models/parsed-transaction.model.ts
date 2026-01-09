@@ -69,3 +69,12 @@ export interface ImportBatch {
   createdAt: string;
   completedAt?: string;
 }
+
+export interface ParsePdfResponse {
+  success: boolean;
+  provider?: StatementProvider;
+  transactions?: ParsedTransaction[];
+  fileName?: string;
+  metadata?: Record<string, unknown>;
+  message?: string;
+}

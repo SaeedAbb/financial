@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { trigger, state, style, transition, animate, keyframes } from '@angular/animations';
+import { trigger, style, transition, animate } from '@angular/animations';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { SelectModule } from 'primeng/select';
@@ -11,7 +11,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 
 import { StatementProvider, PROVIDER_INFO } from '../../models/provider.enum';
-import { ParsedTransaction, ImportRequest, ImportResult, ImportStatus, TransactionImportResult } from '../../models/parsed-transaction.model';
+import { ParsedTransaction, ImportRequest, ImportResult, ImportStatus, TransactionImportResult, ParsePdfResponse } from '../../models/parsed-transaction.model';
 import { ParserFactoryService } from '../../services/parser-factory.service';
 import { StatementImportService } from '../../services/statement-import.service';
 import { PortfolioService } from '../../../../../core/services/portfolio.service';
@@ -137,17 +137,52 @@ export class StatementImportComponent implements OnInit {
     if (!this.selectedFile || !this.selectedProvider) return;
 
     this.currentStep = 4;
-    this.processingMessage = 'Extracting transactions from PDF...';
+    this.processingMessage = 'Extracting transactions from PDF using AI...';
 
     try {
-      const parser = this.parserFactory.getParser(this.selectedProvider);
-      this.parsedTransactions = await parser.parse(this.selectedFile);
+      // Use backend parsing with Gemini AI
+      this.importService.parsePdf(this.selectedFile, this.selectedProvider).subscribe({
+        next: (response) => {
+          if (response.success && response.transactions) {
+            this.parsedTransactions = response.transactions;
+            
+            if (this.parsedTransactions.length === 0) {
+              this.showError('No transactions found in the PDF');
+              this.currentStep = 3;
+            } else {
+              this.showSuccess(`Found ${this.parsedTransactions.length} transactions`);
+              this.currentStep = 5;
+            }
+          } else {
+            // Backend parsing failed with a message
+            const errorMsg = response.message || 'Backend parsing failed';
+            this.showError(errorMsg);
+            this.processingMessage = 'Backend parsing failed, trying local parser...';
+            this.fallbackToFrontendParser();
+          }
+        },
+        error: () => {
+          // Fallback to frontend parser if backend fails
+          this.processingMessage = 'Backend parsing failed, trying local parser...';
+          this.fallbackToFrontendParser();
+        }
+      });
+    } catch (error) {
+      this.showError('Failed to process PDF: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      this.currentStep = 3;
+    }
+  }
+  
+  private async fallbackToFrontendParser(): Promise<void> {
+    try {
+      const parser = this.parserFactory.getParser(this.selectedProvider!);
+      this.parsedTransactions = await parser.parse(this.selectedFile!);
       
       if (this.parsedTransactions.length === 0) {
         this.showError('No transactions found in the PDF');
         this.currentStep = 3;
       } else {
-        this.showSuccess(`Found ${this.parsedTransactions.length} transactions`);
+        this.showSuccess(`Found ${this.parsedTransactions.length} transactions (using fallback parser)`);
         this.currentStep = 5;
       }
     } catch (error) {

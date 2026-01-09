@@ -2,15 +2,20 @@ package com.basis.api.features.statement;
 
 import com.basis.api.features.statement.dto.ImportRequestDTO;
 import com.basis.api.features.statement.dto.ImportResultDTO;
+import com.basis.api.features.statement.dto.ParsePdfRequestDTO;
+import com.basis.api.features.statement.dto.ParsePdfResponseDTO;
 import com.basis.api.features.statement.providers.StatementProvider;
 import com.basis.api.features.statement.services.StatementImportService;
+import com.basis.api.features.statement.services.StatementParsingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -23,9 +28,12 @@ import java.util.UUID;
 public class StatementImportController {
     
     private final StatementImportService importService;
+    private final StatementParsingService parsingService;
     
-    public StatementImportController(StatementImportService importService) {
+    public StatementImportController(StatementImportService importService, 
+                                     StatementParsingService parsingService) {
         this.importService = importService;
+        this.parsingService = parsingService;
     }
     
     @PostMapping("/portfolio/{portfolioId}/import")
@@ -40,6 +48,32 @@ public class StatementImportController {
         
         ImportResultDTO result = importService.importTransactions(userId, importRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+    
+    @PostMapping(value = "/parse-pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Parse PDF statement using AI to extract transactions")
+    public ResponseEntity<ParsePdfResponseDTO> parsePdfStatement(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("provider") StatementProvider provider,
+            Authentication authentication) {
+        
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(new ParsePdfResponseDTO("File is empty"));
+        }
+        
+        if (!file.getContentType().equals("application/pdf")) {
+            return ResponseEntity.badRequest()
+                .body(new ParsePdfResponseDTO("File must be a PDF"));
+        }
+        
+        ParsePdfResponseDTO result = parsingService.parsePdfStatement(file, provider);
+        
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(result);
+        }
     }
     
     @GetMapping("/history")

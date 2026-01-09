@@ -47,6 +47,7 @@ spring:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/financial-realm}
           jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8180/realms/financial-realm/protocol/openid-connect/certs}
 
+
 keycloak:
   realm: ${KEYCLOAK_REALM:financial-realm}
   admin:
@@ -108,4 +109,10 @@ logging:
 finnhub:
   api-key: ${FINNHUB_API_KEY:your-finnhub-api-key-here}
   base-url: https://finnhub.io/api/v1
+
+# Gemini API Configuration
+gemini:
+  api:
+    key: ${GOOGLE_API_KEY:your-api-key}
+  model: ${GEMINI_MODEL:gemini-3-flash-preview}
 

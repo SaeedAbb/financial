@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { ImportRequest, ImportResult, ImportBatch } from '../models/parsed-transaction.model';
+import { ImportRequest, ImportResult, ImportBatch, ParsedTransaction, ParsePdfResponse } from '../models/parsed-transaction.model';
 import { StatementProvider } from '../models/provider.enum';
 
 @Injectable({
@@ -67,5 +67,22 @@ export class StatementImportService {
       successRate: number;
       lastImportDate?: string;
     }>(`${this.apiUrl}/statistics/${provider}`);
+  }
+  
+  /**
+   * Parse PDF file using backend AI service (Gemini)
+   * @param file The PDF file
+   * @param provider The statement provider
+   * @returns Observable with parse response containing transactions
+   */
+  parsePdf(file: File, provider: StatementProvider): Observable<ParsePdfResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('provider', provider);
+    
+    return this.http.post<ParsePdfResponse>(
+      `${this.apiUrl}/parse-pdf`,
+      formData
+    );
   }
 }

@@ -26,3 +26,9 @@ logging:
 
 # Disable OAuth2 security for tests
 spring.security.oauth2.resourceserver.jwt.enabled: false
+
+# Test configuration - use mock API for tests
+gemini:
+  api:
+    key: test-api-key
+  model: gemini-1.5-flash
