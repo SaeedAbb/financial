@@ -114,15 +114,32 @@ public class StatementImportService {
         Map<ImportTransactionDTO, String> fingerprintMap = new HashMap<>();
         Set<String> allFingerprints = new HashSet<>();
         
+        logger.info("Generating fingerprints for {} transactions to import into portfolio {}", 
+            transactions.size(), portfolio.getId());
+        
         for (ImportTransactionDTO transaction : transactions) {
             String fingerprint = fingerprintService.generateFingerprint(transaction, userId);
             fingerprintMap.put(transaction, fingerprint);
             allFingerprints.add(fingerprint);
+            logger.debug("Transaction: {} on {} -> fingerprint: {}", 
+                transaction.getRawSymbol() != null ? transaction.getRawSymbol() : transaction.getDescription(),
+                transaction.getDate(), fingerprint);
         }
         
-        // Batch check for existing fingerprints
-        Set<String> existingFingerprints = transactionRepository.findExistingFingerprints(userId, allFingerprints);
-        logger.info("Found {} existing transactions out of {} total", existingFingerprints.size(), transactions.size());
+        logger.info("Generated {} unique fingerprints from {} transactions", 
+            allFingerprints.size(), transactions.size());
+        
+        // Batch check for existing fingerprints within this portfolio
+        logger.info("Checking for existing fingerprints in portfolio {} for user {}", 
+            portfolio.getId(), userId);
+        Set<String> existingFingerprints = transactionRepository.findExistingFingerprints(userId, portfolio.getId(), allFingerprints);
+        
+        logger.info("Found {} existing fingerprints out of {} checked in portfolio {}", 
+            existingFingerprints.size(), allFingerprints.size(), portfolio.getId());
+        
+        if (!existingFingerprints.isEmpty()) {
+            logger.info("Existing fingerprints found: {}", existingFingerprints);
+        }
         
         // Process each transaction
         for (ImportTransactionDTO transaction : transactions) {
@@ -133,13 +150,19 @@ public class StatementImportService {
                 batch.incrementDuplicate();
                 String symbol = transaction.getRawSymbol() != null ? transaction.getRawSymbol() : transaction.getDescription();
                 results.add(ImportResultDTO.TransactionImportResultDTO.duplicate(symbol));
-                logger.debug("Skipping duplicate transaction: {} on {}", symbol, transaction.getDate());
+                logger.info("Skipping duplicate transaction: {} on {} with fingerprint: {} in portfolio: {}", 
+                    symbol, transaction.getDate(), fingerprint, portfolio.getId());
                 continue;
             }
             
             try {
                 Transaction transactionEntity = createTransaction(transaction, batch, userId, portfolio);
                 transactionEntity.setTransactionFingerprint(fingerprint);
+                
+                logger.debug("Saving transaction: {} on {} with fingerprint: {} to portfolio: {}", 
+                    transactionEntity.getSymbol(), transactionEntity.getTransactionDate(), 
+                    fingerprint, portfolio.getId());
+                
                 transactionEntity = transactionRepository.save(transactionEntity);
                 
                 batch.incrementSuccess();
@@ -149,10 +172,22 @@ public class StatementImportService {
                     transactionEntity.getSymbol()
                 ));
                 
+                logger.info("Successfully saved transaction: {} with ID: {} and fingerprint: {} to portfolio: {}", 
+                    transactionEntity.getSymbol(), transactionEntity.getId(), fingerprint, portfolio.getId());
+                
             } catch (Exception e) {
-                logger.error("Failed to process transaction: {}", transaction.getDescription(), e);
+                logger.error("Failed to process transaction: {} on {} with fingerprint: {}", 
+                    transaction.getDescription(), transaction.getDate(), fingerprint, e);
                 batch.incrementFailure();
                 results.add(new ImportResultDTO.TransactionImportResultDTO(e.getMessage()));
+                
+                // Check if it's a constraint violation
+                if (e.getMessage() != null && e.getMessage().contains("constraint")) {
+                    logger.error("CONSTRAINT VIOLATION: This indicates the fingerprint already exists in the database!");
+                    logger.error("Transaction details: symbol={}, date={}, quantity={}, price={}", 
+                        transaction.getRawSymbol(), transaction.getDate(), 
+                        transaction.getQuantity(), transaction.getPricePerUnit());
+                }
             }
         }
         
@@ -197,6 +232,10 @@ public class StatementImportService {
         // Create transaction referencing the portfolio position
         Transaction transaction = new Transaction();
         transaction.setUserId(userId);
+        transaction.setPortfolioId(portfolio.getId());
+        
+        logger.debug("Creating transaction for portfolio: {} with position: {}", portfolio.getId(), position.getId());
+        
         transaction.setTransactionCategory(com.basis.api.features.transaction.TransactionCategory.STOCK);
         transaction.setTransactionType(
             "BUY".equals(importTx.getType()) ? TransactionType.BUY : TransactionType.SELL

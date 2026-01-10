@@ -2,8 +2,12 @@ package com.basis.api.features.transaction.services;
 
 import com.basis.api.features.statement.dto.ImportTransactionDTO;
 import com.basis.api.features.transaction.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -16,24 +20,41 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class TransactionFingerprintService {
     
+    private static final Logger logger = LoggerFactory.getLogger(TransactionFingerprintService.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
+
+    // Precision for rounding values before fingerprint generation
+    // This prevents AI parsing variations from causing duplicate detection failures
+    // Using aggressive rounding (2 decimal places) because AI can extract slightly different
+    // values from the same document on different runs (e.g., 0.180249 vs 0.180342)
+    private static final int QUANTITY_PRECISION = 2;  // 2 decimal places for quantities
+    private static final int AMOUNT_PRECISION = 2;    // 2 decimal places for amounts
     
     /**
      * Generates a fingerprint for an import transaction DTO.
      * The fingerprint is based on:
+     * - User ID (to ensure fingerprints are user-specific)
      * - Transaction date
      * - Symbol (or ISIN if available)
      * - Transaction type (BUY/SELL)
-     * - Quantity
-     * - Price per unit
+     * - Quantity (rounded to 2 decimal places)
+     * - Total amount (rounded to 2 decimal places) - most stable value from statements
      * - Provider reference (if available)
-     * 
+     *
+     * Note: Price per unit is intentionally excluded because it's derived from
+     * quantity and total amount, and AI parsing can produce slightly different
+     * calculated values between runs.
+     *
      * @param transaction the import transaction DTO
      * @param userId the user ID (to ensure fingerprints are user-specific)
      * @return a SHA-256 hash string representing the transaction fingerprint
      */
     public String generateFingerprint(ImportTransactionDTO transaction, String userId) {
         StringBuilder fingerprintData = new StringBuilder();
+        
+        logger.debug("Generating fingerprint for transaction: date={}, symbol={}, type={}, quantity={}, price={}",
+            transaction.getDate(), transaction.getRawSymbol(), transaction.getType(),
+            transaction.getQuantity(), transaction.getPricePerUnit());
         
         // User ID ensures fingerprints are unique per user
         fingerprintData.append(userId).append("|");
@@ -54,21 +75,24 @@ public class TransactionFingerprintService {
         // Transaction type
         fingerprintData.append(transaction.getType()).append("|");
         
-        // Quantity with proper formatting to avoid floating point issues
-        fingerprintData.append(transaction.getQuantity().stripTrailingZeros().toPlainString()).append("|");
-        
-        // Price per unit
-        fingerprintData.append(transaction.getPricePerUnit().stripTrailingZeros().toPlainString()).append("|");
-        
-        // Total amount as additional verification
-        fingerprintData.append(transaction.getTotalAmount().stripTrailingZeros().toPlainString()).append("|");
+        // Quantity with aggressive rounding to avoid AI parsing precision variations
+        fingerprintData.append(roundForFingerprint(transaction.getQuantity(), QUANTITY_PRECISION)).append("|");
+
+        // Total amount - the most stable value from statements, rounded for consistency
+        // Price per unit is intentionally excluded as it's derived and prone to AI variations
+        fingerprintData.append(roundForFingerprint(transaction.getTotalAmount(), AMOUNT_PRECISION)).append("|");
         
         // Provider reference if available (helps distinguish similar transactions)
         if (transaction.getProviderReference() != null && !transaction.getProviderReference().isEmpty()) {
             fingerprintData.append("REF:").append(transaction.getProviderReference());
         }
         
-        return generateSHA256(fingerprintData.toString());
+        String fingerprintInput = fingerprintData.toString();
+        String hash = generateSHA256(fingerprintInput);
+        
+        logger.info("Generated fingerprint: {} from input: {}", hash, fingerprintInput);
+        
+        return hash;
     }
     
     /**
@@ -93,14 +117,11 @@ public class TransactionFingerprintService {
         // Transaction type
         fingerprintData.append(transaction.getTransactionType().name()).append("|");
         
-        // Quantity
-        fingerprintData.append(transaction.getQuantity().stripTrailingZeros().toPlainString()).append("|");
-        
-        // Price per unit
-        fingerprintData.append(transaction.getPricePerUnit().stripTrailingZeros().toPlainString()).append("|");
-        
-        // Total amount
-        fingerprintData.append(transaction.getTotalAmount().stripTrailingZeros().toPlainString()).append("|");
+        // Quantity - rounded for consistency with imported fingerprints
+        fingerprintData.append(roundForFingerprint(transaction.getQuantity(), QUANTITY_PRECISION)).append("|");
+
+        // Total amount - rounded for consistency (price per unit excluded)
+        fingerprintData.append(roundForFingerprint(transaction.getTotalAmount(), AMOUNT_PRECISION)).append("|");
         
         // Provider reference if available
         if (transaction.getProviderReference() != null && !transaction.getProviderReference().isEmpty()) {
@@ -128,7 +149,7 @@ public class TransactionFingerprintService {
     
     /**
      * Converts a byte array to hexadecimal string.
-     * 
+     *
      * @param bytes the byte array
      * @return the hexadecimal string
      */
@@ -138,5 +159,23 @@ public class TransactionFingerprintService {
             result.append(String.format("%02x", b));
         }
         return result.toString();
+    }
+
+    /**
+     * Rounds a BigDecimal to a specified precision for fingerprint generation.
+     * This helps prevent AI parsing variations (e.g., 531.259931 vs 531.259145)
+     * from causing different fingerprints for the same transaction.
+     *
+     * @param value the BigDecimal value to round
+     * @param precision the number of decimal places
+     * @return the rounded value as a plain string
+     */
+    private String roundForFingerprint(BigDecimal value, int precision) {
+        if (value == null) {
+            return "0";
+        }
+        return value.setScale(precision, RoundingMode.HALF_UP)
+                   .stripTrailingZeros()
+                   .toPlainString();
     }
 }

@@ -27,6 +27,14 @@ import java.util.*;
 /**
  * Statement parsing service using direct Google Gemini API.
  * This implementation uses the Google GenAI SDK for cleaner integration.
+ * 
+ * Currently supports: Stocks and ETFs only
+ * 
+ * TODO: Future features will include support for:
+ * - Cryptocurrency transactions (Bitcoin, Ethereum, etc.)
+ * - Dividend payments
+ * - Options trading
+ * - Bonds and other fixed-income securities
  */
 @Service
 public class StatementParsingService {
@@ -158,13 +166,17 @@ public class StatementParsingService {
             
             Important rules:
             1. Only include BUY and SELL transactions (no dividends, fees, deposits, withdrawals)
-            2. quantity must be positive decimal (minimum 0.000001)
-            3. pricePerUnit must be positive decimal (minimum 0.01)
-            4. totalAmount must equal quantity * pricePerUnit + fees
-            5. ISIN must be exactly 12 characters (2 letters + 9 alphanumeric + 1 digit) or null
-            6. Dates must be in YYYY-MM-DD format
-            7. Currency must be 3-letter ISO code
-            8. Return ONLY the JSON array, no other text
+            2. EXCLUDE any entries labeled as "Barmittelübersicht" or "Transaktionsübersicht" - these are summaries, not actual transactions
+            3. EXCLUDE cash movements, account balances, or overview sections
+            4. Only include actual stock/ETF purchase or sale transactions
+            5. EXCLUDE cryptocurrency transactions (Bitcoin, Ethereum, etc.) - these are not yet supported
+            6. quantity must be positive decimal (minimum 0.000001)
+            7. pricePerUnit must be positive decimal (minimum 0.01)
+            8. totalAmount must equal quantity * pricePerUnit + fees
+            9. ISIN must be exactly 12 characters (2 letters + 9 alphanumeric + 1 digit) or null
+            10. Dates must be in YYYY-MM-DD format
+            11. Currency must be 3-letter ISO code
+            12. Return ONLY the JSON array, no other text
             
             Statement text:
             %s
@@ -184,6 +196,9 @@ public class StatementParsingService {
                 - ISIN is usually shown after the stock name
                 - Symbol might be in format like "IE00B4L5Y983" (which is actually the ISIN)
                 - Fees are often shown as "Fremdkostenzuschlag" or similar
+                - IGNORE sections labeled "Barmittelübersicht" (cash overview) or "Transaktionsübersicht" (transaction summary)
+                - IGNORE entries that are just account balances or cash movements
+                - IGNORE cryptocurrency transactions (Bitcoin, BTC, Ethereum, ETH, etc.)
                 """;
                 
             case DEUTSCHE_BANK -> """
@@ -192,6 +207,7 @@ public class StatementParsingService {
                 - Transaction types: "Kauf" = BUY, "Verkauf" = SELL
                 - ISIN and WKN are usually listed separately
                 - Total amount includes "Kurswert" + "Provision" + other fees
+                - IGNORE overview sections like "Barmittelübersicht" or "Transaktionsübersicht"
                 """;
                 
             case ING_DIBA -> """
@@ -200,6 +216,7 @@ public class StatementParsingService {
                 - Clear separation between "Kauf" and "Verkauf"
                 - ISIN is prominently displayed
                 - Multiple fee items may need to be summed
+                - IGNORE summary sections and cash overviews
                 """;
                 
             case COMDIRECT -> """
@@ -208,6 +225,7 @@ public class StatementParsingService {
                 - Transaction details in structured tables
                 - ISIN/WKN clearly labeled
                 - Fees itemized separately
+                - IGNORE account overview and summary sections
                 """;
                 
             default -> "";

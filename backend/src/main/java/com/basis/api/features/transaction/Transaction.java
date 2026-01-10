@@ -43,6 +43,10 @@ public class Transaction {
     @NotBlank(message = "Reference type is required")
     private String referenceType;
 
+    @Column(name = "portfolio_id", nullable = false)
+    @NotNull(message = "Portfolio ID is required")
+    private Long portfolioId;
+
     @Column(nullable = false, length = 20)
     @NotBlank(message = "Symbol is required")
     private String symbol;
@@ -101,13 +105,14 @@ public class Transaction {
 
     // Constructor for stock transactions
     public static Transaction createStockTransaction(String userId, TransactionType type, Long positionId, 
-            String symbol, BigDecimal quantity, BigDecimal pricePerUnit, LocalDate transactionDate, String notes) {
+            Long portfolioId, String symbol, BigDecimal quantity, BigDecimal pricePerUnit, LocalDate transactionDate, String notes) {
         Transaction transaction = new Transaction();
         transaction.userId = userId;
         transaction.transactionCategory = TransactionCategory.STOCK;
         transaction.transactionType = type;
         transaction.referenceId = positionId;
         transaction.referenceType = "PORTFOLIO_POSITION";
+        transaction.portfolioId = portfolioId;
         transaction.symbol = symbol;
         transaction.quantity = quantity;
         transaction.pricePerUnit = pricePerUnit;
@@ -295,6 +300,14 @@ public class Transaction {
     
     public void setTransactionFingerprint(String transactionFingerprint) {
         this.transactionFingerprint = transactionFingerprint;
+    }
+
+    public Long getPortfolioId() {
+        return portfolioId;
+    }
+
+    public void setPortfolioId(Long portfolioId) {
+        this.portfolioId = portfolioId;
     }
 
     public ZonedDateTime getCreatedAt() {

@@ -38,6 +38,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT t FROM Transaction t WHERE t.referenceId = :referenceId AND t.referenceType = :referenceType AND t.transactionType = :type ORDER BY t.transactionDate DESC")
     List<Transaction> findByReferenceAndType(@Param("referenceId") Long referenceId, @Param("referenceType") String referenceType, @Param("type") TransactionType type);
 
+    List<Transaction> findByUserIdAndPortfolioId(String userId, Long portfolioId);
+
     @Query("SELECT SUM(t.totalAmount) FROM Transaction t WHERE t.userId = :userId AND t.transactionType = :type")
     BigDecimal calculateTotalAmountByUserAndType(@Param("userId") String userId, @Param("type") TransactionType type);
 
@@ -57,11 +59,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Object[]> getTransactionSummaryByUserAndCategory(@Param("userId") String userId, @Param("category") TransactionCategory category);
     
     // Duplicate checking methods
-    boolean existsByUserIdAndTransactionFingerprint(String userId, String transactionFingerprint);
+    boolean existsByUserIdAndPortfolioIdAndTransactionFingerprint(String userId, Long portfolioId, String transactionFingerprint);
     
-    @Query("SELECT t.transactionFingerprint FROM Transaction t WHERE t.userId = :userId AND t.transactionFingerprint IN :fingerprints")
-    Set<String> findExistingFingerprints(@Param("userId") String userId, @Param("fingerprints") Set<String> fingerprints);
+    @Query("SELECT t.transactionFingerprint FROM Transaction t WHERE t.userId = :userId AND t.portfolioId = :portfolioId AND t.transactionFingerprint IN :fingerprints")
+    Set<String> findExistingFingerprints(@Param("userId") String userId, @Param("portfolioId") Long portfolioId, @Param("fingerprints") Set<String> fingerprints);
     
-    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND t.transactionFingerprint IN :fingerprints")
-    List<Transaction> findByUserIdAndTransactionFingerprintIn(@Param("userId") String userId, @Param("fingerprints") Set<String> fingerprints);
+    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND t.portfolioId = :portfolioId AND t.transactionFingerprint IN :fingerprints")
+    List<Transaction> findByUserIdAndPortfolioIdAndTransactionFingerprintIn(@Param("userId") String userId, @Param("portfolioId") Long portfolioId, @Param("fingerprints") Set<String> fingerprints);
 }
