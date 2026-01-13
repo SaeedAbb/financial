@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { ImportRequest, ImportResult, ImportBatch, ParsedTransaction, ParsePdfResponse } from '../models/parsed-transaction.model';
+import { ImportRequest, ImportResult, ImportBatch, ParsePdfResponse } from '../models/parsed-transaction.model';
 import { StatementProvider } from '../models/provider.enum';
 
 @Injectable({

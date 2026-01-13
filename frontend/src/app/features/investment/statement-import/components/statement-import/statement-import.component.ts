@@ -11,8 +11,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 
 import { StatementProvider, PROVIDER_INFO } from '../../models/provider.enum';
-import { ParsedTransaction, ImportRequest, ImportResult, ImportStatus, TransactionImportResult, ParsePdfResponse } from '../../models/parsed-transaction.model';
-import { ParserFactoryService } from '../../services/parser-factory.service';
+import { ParsedTransaction, ImportRequest, ImportResult, ImportStatus, TransactionImportResult } from '../../models/parsed-transaction.model';
 import { StatementImportService } from '../../services/statement-import.service';
 import { PortfolioService } from '../../../../../core/services/portfolio.service';
 import { Portfolio } from '../../../../../core/models/portfolio.model';
@@ -56,7 +55,6 @@ import { TransactionPreviewComponent } from '../transaction-preview/transaction-
   ]
 })
 export class StatementImportComponent implements OnInit {
-  private readonly parserFactory = inject(ParserFactoryService);
   private readonly importService = inject(StatementImportService);
   private readonly portfolioService = inject(PortfolioService);
   private readonly router = inject(Router);
@@ -73,9 +71,7 @@ export class StatementImportComponent implements OnInit {
   importResult?: ImportResult;
   resultFilter: 'all' | 'success' | 'duplicate' | 'error' = 'all';
   
-  readonly providers = Object.values(PROVIDER_INFO).filter(p => 
-    this.parserFactory.isProviderSupported(p.id)
-  );
+  readonly providers = Object.values(PROVIDER_INFO);
 
   ngOnInit(): void {
     this.loadPortfolios();
@@ -133,62 +129,35 @@ export class StatementImportComponent implements OnInit {
     }
   }
 
-  async processFile(): Promise<void> {
+  processFile(): void {
     if (!this.selectedFile || !this.selectedProvider) return;
 
     this.currentStep = 4;
     this.processingMessage = 'Extracting transactions from PDF using AI...';
 
-    try {
-      // Use backend parsing with Gemini AI
-      this.importService.parsePdf(this.selectedFile, this.selectedProvider).subscribe({
-        next: (response) => {
-          if (response.success && response.transactions) {
-            this.parsedTransactions = response.transactions;
-            
-            if (this.parsedTransactions.length === 0) {
-              this.showError('No transactions found in the PDF');
-              this.currentStep = 3;
-            } else {
-              this.showSuccess(`Found ${this.parsedTransactions.length} transactions`);
-              this.currentStep = 5;
-            }
+    this.importService.parsePdf(this.selectedFile, this.selectedProvider).subscribe({
+      next: (response) => {
+        if (response.success && response.transactions) {
+          this.parsedTransactions = response.transactions;
+
+          if (this.parsedTransactions.length === 0) {
+            this.showError('No transactions found in the PDF');
+            this.currentStep = 3;
           } else {
-            // Backend parsing failed with a message
-            const errorMsg = response.message || 'Backend parsing failed';
-            this.showError(errorMsg);
-            this.processingMessage = 'Backend parsing failed, trying local parser...';
-            this.fallbackToFrontendParser();
+            this.showSuccess(`Found ${this.parsedTransactions.length} transactions`);
+            this.currentStep = 5;
           }
-        },
-        error: () => {
-          // Fallback to frontend parser if backend fails
-          this.processingMessage = 'Backend parsing failed, trying local parser...';
-          this.fallbackToFrontendParser();
+        } else {
+          const errorMsg = response.message || 'Failed to parse PDF';
+          this.showError(errorMsg);
+          this.currentStep = 3;
         }
-      });
-    } catch (error) {
-      this.showError('Failed to process PDF: ' + (error instanceof Error ? error.message : 'Unknown error'));
-      this.currentStep = 3;
-    }
-  }
-  
-  private async fallbackToFrontendParser(): Promise<void> {
-    try {
-      const parser = this.parserFactory.getParser(this.selectedProvider!);
-      this.parsedTransactions = await parser.parse(this.selectedFile!);
-      
-      if (this.parsedTransactions.length === 0) {
-        this.showError('No transactions found in the PDF');
+      },
+      error: (error) => {
+        this.showError('Failed to parse PDF: ' + (error.error?.message || 'Unknown error'));
         this.currentStep = 3;
-      } else {
-        this.showSuccess(`Found ${this.parsedTransactions.length} transactions (using fallback parser)`);
-        this.currentStep = 5;
       }
-    } catch (error) {
-      this.showError('Failed to process PDF: ' + (error instanceof Error ? error.message : 'Unknown error'));
-      this.currentStep = 3;
-    }
+    });
   }
 
   confirmImport(): void {
