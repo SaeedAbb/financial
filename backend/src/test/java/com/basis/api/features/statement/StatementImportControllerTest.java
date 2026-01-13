@@ -50,11 +50,12 @@ class StatementImportControllerTest {
             "PDF content".getBytes()
         );
         
-        ParsePdfResponseDTO mockResponse = new ParsePdfResponseDTO(
-            StatementProvider.TRADE_REPUBLIC, 
-            Arrays.asList(new ImportTransactionDTO())
-        );
-        mockResponse.setFileName("statement.pdf");
+        ParsePdfResponseDTO mockResponse = ParsePdfResponseDTO.builder()
+            .success(true)
+            .provider(StatementProvider.TRADE_REPUBLIC)
+            .transactions(Arrays.asList(new ImportTransactionDTO()))
+            .fileName("statement.pdf")
+            .build();
         
         when(parsingService.parsePdfStatement(any(), eq(StatementProvider.TRADE_REPUBLIC)))
             .thenReturn(mockResponse);
@@ -123,7 +124,7 @@ class StatementImportControllerTest {
             "PDF content".getBytes()
         );
         
-        ParsePdfResponseDTO errorResponse = new ParsePdfResponseDTO("Parsing failed");
+        ParsePdfResponseDTO errorResponse = ParsePdfResponseDTO.failure("Parsing failed");
         
         when(parsingService.parsePdfStatement(any(), eq(StatementProvider.DEUTSCHE_BANK)))
             .thenReturn(errorResponse);
@@ -149,10 +150,7 @@ class StatementImportControllerTest {
                 "PDF content".getBytes()
             );
             
-            ParsePdfResponseDTO mockResponse = new ParsePdfResponseDTO(
-                provider, 
-                Arrays.asList()
-            );
+            ParsePdfResponseDTO mockResponse = ParsePdfResponseDTO.success(provider, Arrays.asList());
             
             when(parsingService.parsePdfStatement(any(), eq(provider)))
                 .thenReturn(mockResponse);
@@ -178,11 +176,8 @@ class StatementImportControllerTest {
             "PDF content".getBytes()
         );
         
-        ParsePdfResponseDTO mockResponse = new ParsePdfResponseDTO(
-            StatementProvider.TRADE_REPUBLIC, 
-            Arrays.asList()
-        );
-        
+        ParsePdfResponseDTO mockResponse = ParsePdfResponseDTO.success(StatementProvider.TRADE_REPUBLIC, Arrays.asList());
+
         when(parsingService.parsePdfStatement(any(), any()))
             .thenReturn(mockResponse);
         

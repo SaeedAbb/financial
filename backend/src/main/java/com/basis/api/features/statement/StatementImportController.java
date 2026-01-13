@@ -59,12 +59,12 @@ public class StatementImportController {
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest()
-                .body(new ParsePdfResponseDTO("File is empty"));
+                .body(ParsePdfResponseDTO.failure("File is empty"));
         }
-        
+
         if (!file.getContentType().equals("application/pdf")) {
             return ResponseEntity.badRequest()
-                .body(new ParsePdfResponseDTO("File must be a PDF"));
+                .body(ParsePdfResponseDTO.failure("File must be a PDF"));
         }
         
         ParsePdfResponseDTO result = parsingService.parsePdfStatement(file, provider);

@@ -166,7 +166,7 @@ public class StatementImportService {
                 transactionEntity = transactionRepository.save(transactionEntity);
                 
                 batch.incrementSuccess();
-                results.add(new ImportResultDTO.TransactionImportResultDTO(
+                results.add(ImportResultDTO.TransactionImportResultDTO.success(
                     transactionEntity.getId(),
                     transactionEntity.getUuid(),
                     transactionEntity.getSymbol()
@@ -179,7 +179,7 @@ public class StatementImportService {
                 logger.error("Failed to process transaction: {} on {} with fingerprint: {}", 
                     transaction.getDescription(), transaction.getDate(), fingerprint, e);
                 batch.incrementFailure();
-                results.add(new ImportResultDTO.TransactionImportResultDTO(e.getMessage()));
+                results.add(ImportResultDTO.TransactionImportResultDTO.failure(e.getMessage()));
                 
                 // Check if it's a constraint violation
                 if (e.getMessage() != null && e.getMessage().contains("constraint")) {

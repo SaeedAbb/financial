@@ -1,13 +1,21 @@
 package com.basis.api.features.statement.dto;
 
 import com.basis.api.features.statement.ImportStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ImportResultDTO {
-    
+
     private UUID batchId;
     private ImportStatus status;
     private Integer totalTransactions;
@@ -18,54 +26,54 @@ public class ImportResultDTO {
     private ZonedDateTime completedAt;
     private List<TransactionImportResultDTO> results;
     private String errorMessage;
-    
-    // Default constructor
-    public ImportResultDTO() {}
-    
-    // Success constructor
-    public static ImportResultDTO success(UUID batchId, int totalTransactions, int successCount, 
-                                        List<TransactionImportResultDTO> results) {
-        ImportResultDTO dto = new ImportResultDTO();
-        dto.batchId = batchId;
-        dto.status = successCount == totalTransactions ? ImportStatus.COMPLETED : ImportStatus.PARTIALLY_COMPLETED;
-        dto.totalTransactions = totalTransactions;
-        dto.successCount = successCount;
-        dto.failureCount = totalTransactions - successCount;
-        dto.duplicateCount = 0; // Will be set by the service
-        dto.results = results;
-        dto.createdAt = ZonedDateTime.now();
-        dto.completedAt = ZonedDateTime.now();
-        return dto;
+
+    // Static factory for success
+    public static ImportResultDTO success(UUID batchId, int totalTransactions, int successCount,
+                                          List<TransactionImportResultDTO> results) {
+        return ImportResultDTO.builder()
+                .batchId(batchId)
+                .status(successCount == totalTransactions ? ImportStatus.COMPLETED : ImportStatus.PARTIALLY_COMPLETED)
+                .totalTransactions(totalTransactions)
+                .successCount(successCount)
+                .failureCount(totalTransactions - successCount)
+                .duplicateCount(0)
+                .results(results)
+                .createdAt(ZonedDateTime.now())
+                .completedAt(ZonedDateTime.now())
+                .build();
     }
-    
-    // Success constructor with duplicate count
-    public static ImportResultDTO success(UUID batchId, int totalTransactions, int successCount, 
-                                        int duplicateCount, List<TransactionImportResultDTO> results) {
-        ImportResultDTO dto = new ImportResultDTO();
-        dto.batchId = batchId;
-        dto.status = (successCount + duplicateCount) == totalTransactions ? ImportStatus.COMPLETED : ImportStatus.PARTIALLY_COMPLETED;
-        dto.totalTransactions = totalTransactions;
-        dto.successCount = successCount;
-        dto.failureCount = totalTransactions - successCount - duplicateCount;
-        dto.duplicateCount = duplicateCount;
-        dto.results = results;
-        dto.createdAt = ZonedDateTime.now();
-        dto.completedAt = ZonedDateTime.now();
-        return dto;
+
+    // Static factory for success with duplicate count
+    public static ImportResultDTO success(UUID batchId, int totalTransactions, int successCount,
+                                          int duplicateCount, List<TransactionImportResultDTO> results) {
+        return ImportResultDTO.builder()
+                .batchId(batchId)
+                .status((successCount + duplicateCount) == totalTransactions ? ImportStatus.COMPLETED : ImportStatus.PARTIALLY_COMPLETED)
+                .totalTransactions(totalTransactions)
+                .successCount(successCount)
+                .failureCount(totalTransactions - successCount - duplicateCount)
+                .duplicateCount(duplicateCount)
+                .results(results)
+                .createdAt(ZonedDateTime.now())
+                .completedAt(ZonedDateTime.now())
+                .build();
     }
-    
-    // Failure constructor
+
+    // Static factory for failure
     public static ImportResultDTO failure(UUID batchId, String errorMessage) {
-        ImportResultDTO dto = new ImportResultDTO();
-        dto.batchId = batchId;
-        dto.status = ImportStatus.FAILED;
-        dto.errorMessage = errorMessage;
-        dto.createdAt = ZonedDateTime.now();
-        dto.completedAt = ZonedDateTime.now();
-        return dto;
+        return ImportResultDTO.builder()
+                .batchId(batchId)
+                .status(ImportStatus.FAILED)
+                .errorMessage(errorMessage)
+                .createdAt(ZonedDateTime.now())
+                .completedAt(ZonedDateTime.now())
+                .build();
     }
-    
-    // Inner class for individual transaction results
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class TransactionImportResultDTO {
         private Long transactionId;
         private UUID transactionUuid;
@@ -73,160 +81,33 @@ public class ImportResultDTO {
         private boolean duplicate;
         private String ticker;
         private String errorMessage;
-        
-        // Constructors
-        public TransactionImportResultDTO() {}
-        
-        public TransactionImportResultDTO(Long transactionId, UUID transactionUuid, String ticker) {
-            this.transactionId = transactionId;
-            this.transactionUuid = transactionUuid;
-            this.ticker = ticker;
-            this.success = true;
+
+        // Static factory for success
+        public static TransactionImportResultDTO success(Long transactionId, UUID transactionUuid, String ticker) {
+            return TransactionImportResultDTO.builder()
+                    .transactionId(transactionId)
+                    .transactionUuid(transactionUuid)
+                    .ticker(ticker)
+                    .success(true)
+                    .build();
         }
-        
-        public TransactionImportResultDTO(String errorMessage) {
-            this.success = false;
-            this.errorMessage = errorMessage;
+
+        // Static factory for failure
+        public static TransactionImportResultDTO failure(String errorMessage) {
+            return TransactionImportResultDTO.builder()
+                    .success(false)
+                    .errorMessage(errorMessage)
+                    .build();
         }
-        
-        // Constructor for duplicate transactions
+
+        // Static factory for duplicate
         public static TransactionImportResultDTO duplicate(String ticker) {
-            TransactionImportResultDTO dto = new TransactionImportResultDTO();
-            dto.success = false;
-            dto.duplicate = true;
-            dto.ticker = ticker;
-            dto.errorMessage = "Transaction already exists (duplicate)";
-            return dto;
+            return TransactionImportResultDTO.builder()
+                    .success(false)
+                    .duplicate(true)
+                    .ticker(ticker)
+                    .errorMessage("Transaction already exists (duplicate)")
+                    .build();
         }
-        
-        // Getters and Setters
-        public Long getTransactionId() {
-            return transactionId;
-        }
-        
-        public void setTransactionId(Long transactionId) {
-            this.transactionId = transactionId;
-        }
-        
-        public UUID getTransactionUuid() {
-            return transactionUuid;
-        }
-        
-        public void setTransactionUuid(UUID transactionUuid) {
-            this.transactionUuid = transactionUuid;
-        }
-        
-        public boolean isSuccess() {
-            return success;
-        }
-        
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-        
-        public boolean isDuplicate() {
-            return duplicate;
-        }
-        
-        public void setDuplicate(boolean duplicate) {
-            this.duplicate = duplicate;
-        }
-        
-        public String getTicker() {
-            return ticker;
-        }
-        
-        public void setTicker(String ticker) {
-            this.ticker = ticker;
-        }
-        
-        public String getErrorMessage() {
-            return errorMessage;
-        }
-        
-        public void setErrorMessage(String errorMessage) {
-            this.errorMessage = errorMessage;
-        }
-    }
-    
-    // Getters and Setters
-    public UUID getBatchId() {
-        return batchId;
-    }
-    
-    public void setBatchId(UUID batchId) {
-        this.batchId = batchId;
-    }
-    
-    public ImportStatus getStatus() {
-        return status;
-    }
-    
-    public void setStatus(ImportStatus status) {
-        this.status = status;
-    }
-    
-    public Integer getTotalTransactions() {
-        return totalTransactions;
-    }
-    
-    public void setTotalTransactions(Integer totalTransactions) {
-        this.totalTransactions = totalTransactions;
-    }
-    
-    public Integer getSuccessCount() {
-        return successCount;
-    }
-    
-    public void setSuccessCount(Integer successCount) {
-        this.successCount = successCount;
-    }
-    
-    public Integer getFailureCount() {
-        return failureCount;
-    }
-    
-    public void setFailureCount(Integer failureCount) {
-        this.failureCount = failureCount;
-    }
-    
-    public Integer getDuplicateCount() {
-        return duplicateCount;
-    }
-    
-    public void setDuplicateCount(Integer duplicateCount) {
-        this.duplicateCount = duplicateCount;
-    }
-    
-    public ZonedDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(ZonedDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public ZonedDateTime getCompletedAt() {
-        return completedAt;
-    }
-    
-    public void setCompletedAt(ZonedDateTime completedAt) {
-        this.completedAt = completedAt;
-    }
-    
-    public List<TransactionImportResultDTO> getResults() {
-        return results;
-    }
-    
-    public void setResults(List<TransactionImportResultDTO> results) {
-        this.results = results;
-    }
-    
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-    
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
     }
 }

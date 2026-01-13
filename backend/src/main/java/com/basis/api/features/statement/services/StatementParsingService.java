@@ -64,20 +64,6 @@ public class StatementParsingService {
             this.geminiClient = new Client();
             logger.info("Gemini client initialized with environment variable");
         }
-        
-        // Try to list available models for debugging
-        try {
-            logger.info("Attempting to list available Gemini models...");
-            var modelsPager = geminiClient.models.list(null);
-            // Try to access the models through the pager
-            if (modelsPager != null) {
-                // The pager might have a different method or property
-                logger.info("Models pager type: {}", modelsPager.getClass().getName());
-                // For now, let's skip the detailed listing
-            }
-        } catch (Exception e) {
-            logger.warn("Could not list available models: {}", e.getMessage());
-        }
     }
     
     public ParsePdfResponseDTO parsePdfStatement(MultipartFile file, StatementProvider provider) {
@@ -95,23 +81,27 @@ public class StatementParsingService {
             List<ImportTransactionDTO> transactions = parseGeminiResponse(responseContent);
             
             // Create response
-            ParsePdfResponseDTO result = new ParsePdfResponseDTO(provider, transactions);
-            result.setFileName(file.getOriginalFilename());
-            
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("parsedAt", LocalDate.now());
             metadata.put("totalTransactions", transactions.size());
             metadata.put("model", modelName);
-            result.setMetadata(metadata);
-            
-            logger.info("Successfully parsed {} transactions from {} statement using {}", 
+
+            ParsePdfResponseDTO result = ParsePdfResponseDTO.builder()
+                    .success(true)
+                    .provider(provider)
+                    .transactions(transactions)
+                    .fileName(file.getOriginalFilename())
+                    .metadata(metadata)
+                    .build();
+
+            logger.info("Successfully parsed {} transactions from {} statement using {}",
                 transactions.size(), provider, modelName);
-            
+
             return result;
-            
+
         } catch (Exception e) {
             logger.error("Error parsing PDF statement: ", e);
-            return new ParsePdfResponseDTO("Failed to parse PDF: " + e.getMessage());
+            return ParsePdfResponseDTO.failure("Failed to parse PDF: " + e.getMessage());
         }
     }
     
