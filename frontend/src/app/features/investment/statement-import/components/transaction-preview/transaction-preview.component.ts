@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -25,7 +25,8 @@ import { ParsedTransaction } from '../../models/parsed-transaction.model';
     MessageModule
   ],
   templateUrl: './transaction-preview.component.html',
-  styleUrls: ['./transaction-preview.component.scss']
+  styleUrls: ['./transaction-preview.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionPreviewComponent implements OnChanges {
   @Input() transactions: ParsedTransaction[] = [];
