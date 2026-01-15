@@ -52,3 +52,17 @@ logs/
 
 # Docker
 .docker/
+
+# Sensitive documents
+*.pdf
+Kontoauszug*.pdf
+*statement*.pdf
+*invoice*.pdf
+
+# Temporary data files
+*.csv
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+!angular.json

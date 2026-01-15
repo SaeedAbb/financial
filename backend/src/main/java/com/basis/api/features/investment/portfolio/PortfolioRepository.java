@@ -56,6 +56,11 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
      * Check if a portfolio exists for a user
      */
     boolean existsByUuidAndUserId(UUID uuid, String userId);
+    
+    /**
+     * Find a specific portfolio by ID and user ID
+     */
+    Optional<Portfolio> findByIdAndUserId(Long id, String userId);
 
     /**
      * Check if a portfolio name exists for a user (for duplicate prevention)

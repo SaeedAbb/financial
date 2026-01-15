@@ -2,6 +2,8 @@ package com.basis.api.features.investment.portfolio;
 
 import com.basis.api.features.investment.portfolio.dto.CreatePortfolioRequest;
 import com.basis.api.features.investment.portfolio.dto.PortfolioDTO;
+import com.basis.api.features.statement.ImportBatchRepository;
+import com.basis.api.features.transaction.TransactionRepository;
 import com.basis.api.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.*;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +24,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +33,12 @@ class PortfolioServiceTest {
 
     @Mock
     private PortfolioRepository portfolioRepository;
+
+    @Mock
+    private ImportBatchRepository importBatchRepository;
+
+    @Mock
+    private TransactionRepository transactionRepository;
 
     @InjectMocks
     private PortfolioService portfolioService;
@@ -258,12 +269,16 @@ class PortfolioServiceTest {
     void deletePortfolio_WhenValid_ShouldDeletePortfolio() {
         // Arrange
         when(portfolioRepository.findById(1L)).thenReturn(Optional.of(testPortfolio));
+        when(transactionRepository.findByUserIdAndPortfolioId(userId, 1L)).thenReturn(Collections.emptyList());
+        when(importBatchRepository.findByUserIdAndPortfolioIdOrderByCreatedAtDesc(userId, 1L)).thenReturn(Collections.emptyList());
 
         // Act
         portfolioService.deletePortfolio(1L, userId);
 
         // Assert
         verify(portfolioRepository).findById(1L);
+        verify(transactionRepository).findByUserIdAndPortfolioId(userId, 1L);
+        verify(importBatchRepository).findByUserIdAndPortfolioIdOrderByCreatedAtDesc(userId, 1L);
         verify(portfolioRepository).delete(testPortfolio);
     }
 
@@ -276,7 +291,7 @@ class PortfolioServiceTest {
         assertThatThrownBy(() -> portfolioService.deletePortfolio(1L, userId))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Portfolio not found with id: 1");
-        
+
         verify(portfolioRepository, never()).delete(any(Portfolio.class));
     }
 
@@ -289,7 +304,7 @@ class PortfolioServiceTest {
         assertThatThrownBy(() -> portfolioService.deletePortfolio(1L, "another-user"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Portfolio does not belong to user");
-        
+
         verify(portfolioRepository, never()).delete(any(Portfolio.class));
     }
 

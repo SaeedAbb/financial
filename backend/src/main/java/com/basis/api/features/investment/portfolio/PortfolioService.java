@@ -2,6 +2,10 @@ package com.basis.api.features.investment.portfolio;
 
 import com.basis.api.features.investment.portfolio.dto.CreatePortfolioRequest;
 import com.basis.api.features.investment.portfolio.dto.PortfolioDTO;
+import com.basis.api.features.statement.ImportBatchRepository;
+import com.basis.api.features.statement.ImportBatch;
+import com.basis.api.features.transaction.TransactionRepository;
+import com.basis.api.features.transaction.Transaction;
 import com.basis.api.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +27,15 @@ public class PortfolioService {
     private static final Logger logger = LoggerFactory.getLogger(PortfolioService.class);
 
     private final PortfolioRepository portfolioRepository;
+    private final ImportBatchRepository importBatchRepository;
+    private final TransactionRepository transactionRepository;
 
-    public PortfolioService(PortfolioRepository portfolioRepository) {
+    public PortfolioService(PortfolioRepository portfolioRepository,
+                          ImportBatchRepository importBatchRepository,
+                          TransactionRepository transactionRepository) {
         this.portfolioRepository = portfolioRepository;
+        this.importBatchRepository = importBatchRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     public PortfolioDTO createPortfolio(CreatePortfolioRequest request, String userId) {
@@ -115,6 +125,20 @@ public class PortfolioService {
         
         if (!portfolio.getUserId().equals(userId)) {
             throw new IllegalArgumentException("Portfolio does not belong to user");
+        }
+        
+        // Delete all transactions associated with this portfolio
+        List<Transaction> transactions = transactionRepository.findByUserIdAndPortfolioId(userId, id);
+        if (!transactions.isEmpty()) {
+            logger.info("Deleting {} transactions for portfolio ID: {}", transactions.size(), id);
+            transactionRepository.deleteAll(transactions);
+        }
+        
+        // Delete all import batches associated with this portfolio
+        List<ImportBatch> importBatches = importBatchRepository.findByUserIdAndPortfolioIdOrderByCreatedAtDesc(userId, id);
+        if (!importBatches.isEmpty()) {
+            logger.info("Deleting {} import batches for portfolio ID: {}", importBatches.size(), id);
+            importBatchRepository.deleteAll(importBatches);
         }
         
         portfolioRepository.delete(portfolio);

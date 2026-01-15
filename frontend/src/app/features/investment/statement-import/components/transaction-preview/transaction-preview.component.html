@@ -1,0 +1,122 @@
+<div class="transaction-preview">
+  <div class="preview-header">
+    <h4>Review Transactions Before Import</h4>
+    <p class="text-secondary">Please review the extracted transactions. You can edit any incorrect values before importing.</p>
+  </div>
+
+  <p-table 
+    [value]="editableTransactions" 
+    [paginator]="true" 
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} transactions"
+    styleClass="p-datatable-gridlines">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 100px">Date</th>
+        <th style="width: 80px">Type</th>
+        <th>Description</th>
+        <th style="width: 100px">Symbol</th>
+        <th style="width: 140px">ISIN</th>
+        <th style="width: 100px">Quantity</th>
+        <th style="width: 120px">Price/Unit</th>
+        <th style="width: 120px">Total</th>
+        <th style="width: 80px">Fees</th>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="body" let-transaction let-rowIndex="rowIndex">
+      <tr>
+        <td>{{ transaction.date }}</td>
+        <td>
+          <p-tag 
+            [value]="transaction.type" 
+            [severity]="transaction.type === 'BUY' ? 'success' : 'danger'">
+          </p-tag>
+        </td>
+        <td>
+          <span 
+            class="description-text" 
+            [pTooltip]="transaction.description"
+            tooltipPosition="top">
+            {{ truncateText(transaction.description, 40) }}
+          </span>
+        </td>
+        <td>
+          <input 
+            pInputText 
+            [(ngModel)]="transaction.rawSymbol"
+            [pTooltip]="'Edit if ticker is incorrect'"
+            class="symbol-input">
+        </td>
+        <td>
+          <span 
+            class="isin-text" 
+            [pTooltip]="transaction.isin || 'No ISIN available'"
+            tooltipPosition="top">
+            {{ transaction.isin || '-' }}
+          </span>
+        </td>
+        <td>
+          <p-inputNumber 
+            [(ngModel)]="transaction.quantity"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="6"
+            class="quantity-input">
+          </p-inputNumber>
+        </td>
+        <td>
+          {{ transaction.pricePerUnit | currency:transaction.currency:'symbol':'1.2-2' }}
+        </td>
+        <td>
+          {{ transaction.totalAmount | currency:transaction.currency:'symbol':'1.2-2' }}
+        </td>
+        <td>
+          {{ transaction.fees | currency:transaction.currency:'symbol':'1.2-2' }}
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="summary">
+      <div class="summary-section">
+        <div class="summary-stats">
+          <span class="stat-item">
+            <strong>Total Transactions:</strong> {{ transactions.length }}
+          </span>
+          <span class="stat-item">
+            <strong>Buy Orders:</strong> {{ getBuyCount() }}
+          </span>
+          <span class="stat-item">
+            <strong>Sell Orders:</strong> {{ getSellCount() }}
+          </span>
+          <span class="stat-item">
+            <strong>Total Value:</strong> {{ getTotalValue() | currency:'EUR':'symbol':'1.2-2' }}
+          </span>
+        </div>
+      </div>
+    </ng-template>
+  </p-table>
+
+  <div class="action-buttons mt-4">
+    <p-button 
+      label="Cancel" 
+      icon="pi pi-times" 
+      (onClick)="cancelled.emit()"
+      styleClass="p-button-secondary">
+    </p-button>
+    <p-button 
+      label="Import Transactions" 
+      icon="pi pi-check" 
+      (onClick)="confirmImport()"
+      [disabled]="editableTransactions.length === 0">
+    </p-button>
+  </div>
+
+  <div class="info-message mt-3">
+    <p-message 
+      severity="info" 
+      text="Transactions will be enhanced with proper ticker symbols during import">
+    </p-message>
+  </div>
+</div>

@@ -101,6 +101,13 @@ export class PortfolioDashboardComponent implements OnInit {
   }
   
   /**
+   * Navigate to statement import page
+   */
+  navigateToImport(): void {
+    this.router.navigate(['/investment/portfolios/import']);
+  }
+  
+  /**
    * Get portfolio statistics as observable
    */
   getPortfolioStatistics$(portfolioUuid: string): Observable<PortfolioStatistics | null> {

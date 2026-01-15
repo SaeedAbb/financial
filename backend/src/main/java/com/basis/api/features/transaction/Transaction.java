@@ -1,7 +1,13 @@
 package com.basis.api.features.transaction;
 
+import com.basis.api.features.statement.providers.StatementProvider;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -11,6 +17,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "transactions", schema = "basis")
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString(exclude = {"notes", "originalDescription"})
+@EqualsAndHashCode(of = "uuid")
 public class Transaction {
 
     @Id
@@ -42,6 +53,10 @@ public class Transaction {
     @NotBlank(message = "Reference type is required")
     private String referenceType;
 
+    @Column(name = "portfolio_id", nullable = false)
+    @NotNull(message = "Portfolio ID is required")
+    private Long portfolioId;
+
     @Column(nullable = false, length = 20)
     @NotBlank(message = "Symbol is required")
     private String symbol;
@@ -72,6 +87,22 @@ public class Transaction {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "import_provider", length = 50)
+    @Enumerated(EnumType.STRING)
+    private StatementProvider importProvider;
+
+    @Column(name = "import_batch_id")
+    private UUID importBatchId;
+
+    @Column(name = "original_description", columnDefinition = "TEXT")
+    private String originalDescription;
+
+    @Column(name = "provider_reference")
+    private String providerReference;
+
+    @Column(name = "transaction_fingerprint", length = 64)
+    private String transactionFingerprint;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private ZonedDateTime createdAt;
@@ -79,18 +110,16 @@ public class Transaction {
     @Version
     private Long version;
 
-    // Default constructor
-    public Transaction() {}
-
-    // Constructor for stock transactions
-    public static Transaction createStockTransaction(String userId, TransactionType type, Long positionId, 
-            String symbol, BigDecimal quantity, BigDecimal pricePerUnit, LocalDate transactionDate, String notes) {
+    // Static factory for stock transactions
+    public static Transaction createStockTransaction(String userId, TransactionType type, Long positionId,
+            Long portfolioId, String symbol, BigDecimal quantity, BigDecimal pricePerUnit, LocalDate transactionDate, String notes) {
         Transaction transaction = new Transaction();
         transaction.userId = userId;
         transaction.transactionCategory = TransactionCategory.STOCK;
         transaction.transactionType = type;
         transaction.referenceId = positionId;
         transaction.referenceType = "PORTFOLIO_POSITION";
+        transaction.portfolioId = portfolioId;
         transaction.symbol = symbol;
         transaction.quantity = quantity;
         transaction.pricePerUnit = pricePerUnit;
@@ -125,164 +154,5 @@ public class Transaction {
         BigDecimal saleCost = quantity.multiply(costBasis);
         BigDecimal saleProceeds = totalAmount;
         return saleProceeds.subtract(saleCost).subtract(fees);
-    }
-
-    // Getters and setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public TransactionCategory getTransactionCategory() {
-        return transactionCategory;
-    }
-
-    public void setTransactionCategory(TransactionCategory transactionCategory) {
-        this.transactionCategory = transactionCategory;
-    }
-
-    public TransactionType getTransactionType() {
-        return transactionType;
-    }
-
-    public void setTransactionType(TransactionType transactionType) {
-        this.transactionType = transactionType;
-    }
-
-    public Long getReferenceId() {
-        return referenceId;
-    }
-
-    public void setReferenceId(Long referenceId) {
-        this.referenceId = referenceId;
-    }
-
-    public String getReferenceType() {
-        return referenceType;
-    }
-
-    public void setReferenceType(String referenceType) {
-        this.referenceType = referenceType;
-    }
-
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
-    }
-
-    public BigDecimal getPricePerUnit() {
-        return pricePerUnit;
-    }
-
-    public void setPricePerUnit(BigDecimal pricePerUnit) {
-        this.pricePerUnit = pricePerUnit;
-    }
-
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public BigDecimal getFees() {
-        return fees;
-    }
-
-    public void setFees(BigDecimal fees) {
-        this.fees = fees;
-    }
-
-    public LocalDate getTransactionDate() {
-        return transactionDate;
-    }
-
-    public void setTransactionDate(LocalDate transactionDate) {
-        this.transactionDate = transactionDate;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public ZonedDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(ZonedDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Transaction that = (Transaction) o;
-        return uuid != null && uuid.equals(that.uuid);
-    }
-
-    @Override
-    public int hashCode() {
-        return uuid != null ? uuid.hashCode() : 0;
-    }
-
-    @Override
-    public String toString() {
-        return "Transaction{" +
-                "id=" + id +
-                ", uuid=" + uuid +
-                ", userId='" + userId + '\'' +
-                ", transactionCategory=" + transactionCategory +
-                ", transactionType=" + transactionType +
-                ", referenceId=" + referenceId +
-                ", symbol='" + symbol + '\'' +
-                ", quantity=" + quantity +
-                ", pricePerUnit=" + pricePerUnit +
-                ", totalAmount=" + totalAmount +
-                ", transactionDate=" + transactionDate +
-                '}';
     }
 }
