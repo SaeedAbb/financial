@@ -53,12 +53,10 @@ describe('StatementImportComponent', () => {
 
   it('should handle portfolio loading error', () => {
     mockPortfolioService.getAllPortfolios.and.returnValue(throwError(() => new Error('Failed to load')));
-    spyOn(console, 'error');
-    
+
     component.loadPortfolios();
-    
+
     expect(component.errorMessage).toContain('Failed to load portfolios');
-    expect(console.error).toHaveBeenCalled();
   });
 
   it('should reset file selection when provider changes', () => {
@@ -89,7 +87,7 @@ describe('StatementImportComponent', () => {
     
     component.currentStep = 2;
     expect(component.canProceedToNextStep()).toBe(false);
-    component.selectedPortfolioId = 1;
+    component.selectedPortfolioUuid = 'uuid-1';
     expect(component.canProceedToNextStep()).toBe(true);
     
     component.currentStep = 3;
@@ -192,7 +190,7 @@ describe('StatementImportComponent', () => {
     mockImportService.importTransactions.and.returnValue(of(result));
 
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
-    component.selectedPortfolioId = 1;
+    component.selectedPortfolioUuid = 'uuid-1';
     component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY' as const, currency: 'EUR' }] as ParsedTransaction[];
     component.selectedFile = new File([''], 'test.pdf');
 

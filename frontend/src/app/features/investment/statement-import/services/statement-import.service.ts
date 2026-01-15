@@ -34,11 +34,11 @@ export class StatementImportService {
   
   /**
    * Get import history for a specific portfolio
-   * @param portfolioId The portfolio ID
+   * @param portfolioUuid The portfolio UUID
    * @returns Observable with list of import batches
    */
-  getPortfolioImportHistory(portfolioId: number): Observable<ImportBatch[]> {
-    return this.http.get<ImportBatch[]>(`${this.apiUrl}/portfolio/${portfolioId}/history`);
+  getPortfolioImportHistory(portfolioUuid: string): Observable<ImportBatch[]> {
+    return this.http.get<ImportBatch[]>(`${this.apiUrl}/portfolio/${portfolioUuid}/history`);
   }
   
   /**

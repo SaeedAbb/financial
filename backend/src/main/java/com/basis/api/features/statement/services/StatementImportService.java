@@ -59,9 +59,9 @@ public class StatementImportService {
     public ImportResultDTO importTransactions(String userId, ImportRequestDTO importRequest) {
         logger.info("Starting import for user {} with {} transactions from {}",
                 userId, importRequest.getTransactions().size(), importRequest.getProvider());
-        
-        // Validate portfolio ownership
-        Portfolio portfolio = portfolioRepository.findByIdAndUserId(
+
+        // Validate portfolio ownership using UUID
+        Portfolio portfolio = portfolioRepository.findByUuidAndUserId(
                 importRequest.getPortfolioId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Portfolio not found or access denied"));
@@ -264,12 +264,12 @@ public class StatementImportService {
         return importBatchRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
     
-    public List<ImportBatch> getPortfolioImportHistory(String userId, Long portfolioId) {
-        // Verify portfolio ownership
-        portfolioRepository.findByIdAndUserId(portfolioId, userId)
+    public List<ImportBatch> getPortfolioImportHistory(String userId, UUID portfolioUuid) {
+        // Verify portfolio ownership using UUID
+        Portfolio portfolio = portfolioRepository.findByUuidAndUserId(portfolioUuid, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found or access denied"));
-        
-        return importBatchRepository.findByUserIdAndPortfolioIdOrderByCreatedAtDesc(userId, portfolioId);
+
+        return importBatchRepository.findByUserIdAndPortfolioIdOrderByCreatedAtDesc(userId, portfolio.getId());
     }
     
     public ImportBatch getImportBatchDetails(String userId, UUID batchId) {

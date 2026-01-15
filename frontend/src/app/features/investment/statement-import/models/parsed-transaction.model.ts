@@ -11,15 +11,13 @@ export interface ParsedTransaction {
   currency: string;
   rawSymbol?: string;  // Symbol as extracted from PDF
   isin?: string;  // International Securities Identification Number
-  providerReference?: string;  // Provider-specific reference
 }
 
 export interface ImportRequest {
   provider: StatementProvider;
-  portfolioId: number;
+  portfolioId: string;  // Portfolio UUID
   transactions: ParsedTransaction[];
   fileName?: string;
-  providerMetadata?: Record<string, unknown>;
 }
 
 

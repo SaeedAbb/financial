@@ -1,8 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { trigger, style, transition, animate } from '@angular/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { SelectModule } from 'primeng/select';
@@ -33,6 +34,7 @@ import { TransactionPreviewComponent } from '../transaction-preview/transaction-
   ],
   templateUrl: './statement-import.component.html',
   styleUrls: ['./statement-import.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('cardAnimation', [
       transition(':enter', [
@@ -58,10 +60,15 @@ export class StatementImportComponent implements OnInit {
   private readonly importService = inject(StatementImportService);
   private readonly portfolioService = inject(PortfolioService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  private readonly REDIRECT_DELAY_MS = 3000;
+  private readonly SUCCESS_MESSAGE_DURATION_MS = 5000;
 
   currentStep = 1;
   selectedProvider?: StatementProvider;
-  selectedPortfolioId?: number;
+  selectedPortfolioUuid?: string;
   selectedFile?: File;
   parsedTransactions: ParsedTransaction[] = [];
   portfolios: Portfolio[] = [];
@@ -78,15 +85,18 @@ export class StatementImportComponent implements OnInit {
   }
 
   loadPortfolios(): void {
-    this.portfolioService.getAllPortfolios().subscribe({
-      next: (portfolios) => {
-        this.portfolios = portfolios;
-      },
-      error: (error) => {
-        this.showError('Failed to load portfolios');
-        console.error('Error loading portfolios:', error);
-      }
-    });
+    this.portfolioService.getAllPortfolios()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (portfolios) => {
+          this.portfolios = portfolios;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.showError('Failed to load portfolios');
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   onProviderChange(): void {
@@ -107,7 +117,7 @@ export class StatementImportComponent implements OnInit {
       case 1:
         return !!this.selectedProvider;
       case 2:
-        return !!this.selectedPortfolioId;
+        return !!this.selectedPortfolioUuid;
       case 3:
         return !!this.selectedFile;
       default:
@@ -135,33 +145,37 @@ export class StatementImportComponent implements OnInit {
     this.currentStep = 4;
     this.processingMessage = 'Extracting transactions from PDF using AI...';
 
-    this.importService.parsePdf(this.selectedFile, this.selectedProvider).subscribe({
-      next: (response) => {
-        if (response.success && response.transactions) {
-          this.parsedTransactions = response.transactions;
+    this.importService.parsePdf(this.selectedFile, this.selectedProvider)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.transactions) {
+            this.parsedTransactions = response.transactions;
 
-          if (this.parsedTransactions.length === 0) {
-            this.showError('No transactions found in the PDF');
-            this.currentStep = 3;
+            if (this.parsedTransactions.length === 0) {
+              this.showError('No transactions found in the PDF');
+              this.currentStep = 3;
+            } else {
+              this.showSuccess(`Found ${this.parsedTransactions.length} transactions`);
+              this.currentStep = 5;
+            }
           } else {
-            this.showSuccess(`Found ${this.parsedTransactions.length} transactions`);
-            this.currentStep = 5;
+            const errorMsg = response.message || 'Failed to parse PDF';
+            this.showError(errorMsg);
+            this.currentStep = 3;
           }
-        } else {
-          const errorMsg = response.message || 'Failed to parse PDF';
-          this.showError(errorMsg);
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.showError('Failed to parse PDF: ' + (error.error?.message || 'Unknown error'));
           this.currentStep = 3;
+          this.cdr.markForCheck();
         }
-      },
-      error: (error) => {
-        this.showError('Failed to parse PDF: ' + (error.error?.message || 'Unknown error'));
-        this.currentStep = 3;
-      }
-    });
+      });
   }
 
   confirmImport(): void {
-    if (!this.selectedProvider || !this.selectedPortfolioId || this.parsedTransactions.length === 0) {
+    if (!this.selectedProvider || !this.selectedPortfolioUuid || this.parsedTransactions.length === 0) {
       return;
     }
 
@@ -170,20 +184,24 @@ export class StatementImportComponent implements OnInit {
 
     const importRequest: ImportRequest = {
       provider: this.selectedProvider,
-      portfolioId: this.selectedPortfolioId,
+      portfolioId: this.selectedPortfolioUuid,
       transactions: this.parsedTransactions,
       fileName: this.selectedFile?.name
     };
 
-    this.importService.importTransactions(importRequest).subscribe({
-      next: (result) => {
-        this.handleImportResult(result);
-      },
-      error: (error) => {
-        this.showError('Import failed: ' + (error.error?.message || 'Unknown error'));
-        this.currentStep = 5;
-      }
-    });
+    this.importService.importTransactions(importRequest)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.handleImportResult(result);
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.showError('Import failed: ' + (error.error?.message || 'Unknown error'));
+          this.currentStep = 5;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   handleImportResult(result: ImportResult): void {
@@ -197,8 +215,8 @@ export class StatementImportComponent implements OnInit {
       }
       this.showSuccess(message);
       setTimeout(() => {
-        this.router.navigate(['/investment/portfolio', this.selectedPortfolioId]);
-      }, 3000);
+        this.router.navigate(['/investment/portfolios', this.selectedPortfolioUuid]);
+      }, this.REDIRECT_DELAY_MS);
     } else if (result.status === ImportStatus.PARTIALLY_COMPLETED) {
       let message = `Imported ${result.successCount} of ${result.totalTransactions} transactions`;
       if (duplicateCount > 0) {
@@ -207,7 +225,7 @@ export class StatementImportComponent implements OnInit {
       if (result.failureCount > 0) {
         message += `, ${result.failureCount} failed`;
       }
-      this.showWarning(message);
+      this.showError(message);
       this.currentStep = 6; // Show results step
     } else {
       this.showError(`Import failed: ${result.errorMessage}`);
@@ -232,7 +250,7 @@ export class StatementImportComponent implements OnInit {
   private showSuccess(message: string): void {
     this.successMessage = message;
     this.errorMessage = '';
-    setTimeout(() => this.successMessage = '', 5000);
+    setTimeout(() => this.successMessage = '', this.SUCCESS_MESSAGE_DURATION_MS);
   }
 
   private showError(message: string): void {
@@ -240,13 +258,8 @@ export class StatementImportComponent implements OnInit {
     this.successMessage = '';
   }
 
-  private showWarning(message: string): void {
-    this.errorMessage = message;
-    this.successMessage = '';
-  }
-  
   navigateToPortfolio(): void {
-    this.router.navigate(['/investment/portfolio', this.selectedPortfolioId]);
+    this.router.navigate(['/investment/portfolios', this.selectedPortfolioUuid]);
   }
   
   resetImport(): void {

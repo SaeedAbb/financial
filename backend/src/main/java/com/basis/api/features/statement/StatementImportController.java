@@ -36,16 +36,16 @@ public class StatementImportController {
         this.parsingService = parsingService;
     }
     
-    @PostMapping("/portfolio/{portfolioId}/import")
+    @PostMapping("/portfolio/{portfolioUuid}/import")
     @Operation(summary = "Import transactions from parsed statement")
     public ResponseEntity<ImportResultDTO> importTransactions(
-            @PathVariable Long portfolioId,
+            @PathVariable UUID portfolioUuid,
             @Valid @RequestBody ImportRequestDTO importRequest,
             Authentication authentication) {
-        
+
         String userId = authentication.getName();
-        importRequest.setPortfolioId(portfolioId);
-        
+        importRequest.setPortfolioId(portfolioUuid);
+
         ImportResultDTO result = importService.importTransactions(userId, importRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -84,14 +84,14 @@ public class StatementImportController {
         return ResponseEntity.ok(history);
     }
     
-    @GetMapping("/portfolio/{portfolioId}/history")
+    @GetMapping("/portfolio/{portfolioUuid}/history")
     @Operation(summary = "Get import history for specific portfolio")
     public ResponseEntity<List<ImportBatch>> getPortfolioImportHistory(
-            @PathVariable Long portfolioId,
+            @PathVariable UUID portfolioUuid,
             Authentication authentication) {
-        
+
         String userId = authentication.getName();
-        List<ImportBatch> history = importService.getPortfolioImportHistory(userId, portfolioId);
+        List<ImportBatch> history = importService.getPortfolioImportHistory(userId, portfolioUuid);
         return ResponseEntity.ok(history);
     }
     

@@ -51,11 +51,11 @@
       <!-- Step 2: Select Portfolio -->
       <div class="step-section" *ngIf="currentStep === 2">
         <h3>Step 2: Select Target Portfolio</h3>
-        <p-select 
-          [(ngModel)]="selectedPortfolioId"
+        <p-select
+          [(ngModel)]="selectedPortfolioUuid"
           [options]="portfolios"
           optionLabel="name"
-          optionValue="id"
+          optionValue="uuid"
           placeholder="Select a portfolio"
           [style]="{ width: '100%' }">
         </p-select>

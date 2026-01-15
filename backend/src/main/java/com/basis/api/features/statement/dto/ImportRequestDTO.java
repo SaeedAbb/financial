@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -21,8 +22,8 @@ public class ImportRequestDTO {
     @NotNull(message = "Provider is required")
     private StatementProvider provider;
 
-    @NotNull(message = "Portfolio ID is required")
-    private Long portfolioId;
+    @NotNull(message = "Portfolio UUID is required")
+    private UUID portfolioId;
 
     @NotNull(message = "Transactions cannot be null")
     @NotEmpty(message = "At least one transaction is required")
