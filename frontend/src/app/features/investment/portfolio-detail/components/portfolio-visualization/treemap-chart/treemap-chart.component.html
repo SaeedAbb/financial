@@ -1,0 +1,119 @@
+<div class="treemap-container" #container>
+  @if (nodes().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-th-large text-4xl text-400"></i>
+      <p>No data to display</p>
+    </div>
+  } @else {
+    <svg
+      [attr.width]="width()"
+      [attr.height]="height()"
+      class="treemap-svg">
+      @for (node of nodes(); track node.data.symbol) {
+        <g
+          class="treemap-node"
+          [attr.transform]="'translate(' + node.x + ',' + node.y + ')'"
+          (mouseenter)="onNodeHover(node)"
+          (mouseleave)="hoveredNode.set(null)"
+          (click)="onNodeClick(node)">
+          <!-- Background rectangle -->
+          <rect
+            [attr.width]="node.width"
+            [attr.height]="node.height"
+            [attr.fill]="node.color"
+            [attr.stroke]="'var(--surface-border)'"
+            stroke-width="2"
+            class="node-rect"
+            [class.hovered]="hoveredNode()?.data?.symbol === node.data.symbol" />
+
+          <!-- Stock logo (if space allows) -->
+          @if (node.width > 60 && node.height > 70) {
+            <image
+              [attr.href]="node.data.logoUrl"
+              [attr.x]="(node.width - 32) / 2"
+              [attr.y]="12"
+              width="32"
+              height="32"
+              class="stock-logo"
+              (error)="onLogoError($event, node)" />
+          }
+
+          <!-- Symbol text -->
+          @if (node.width > 45 && node.height > 45) {
+            <text
+              [attr.x]="node.width / 2"
+              [attr.y]="node.height > 80 ? 58 : node.height / 2 + 5"
+              text-anchor="middle"
+              class="node-symbol">
+              {{ node.data.symbol }}
+            </text>
+          }
+
+          <!-- Value (if space allows) -->
+          @if (node.width > 70 && node.height > 90) {
+            <text
+              [attr.x]="node.width / 2"
+              [attr.y]="76"
+              text-anchor="middle"
+              class="node-value">
+              {{ formatValue(node.data.currentValue) }}
+            </text>
+          }
+
+          <!-- Percentage with gain/loss indicator -->
+          @if (node.width > 60 && node.height > 105) {
+            <text
+              [attr.x]="node.width / 2"
+              [attr.y]="92"
+              text-anchor="middle"
+              class="node-percentage"
+              [class.gain]="node.data.gainLoss > 0"
+              [class.loss]="node.data.gainLoss < 0">
+              {{ node.data.gainLoss >= 0 ? '+' : '' }}{{ node.data.gainLossPercentage | number:'1.1-1' }}%
+            </text>
+          }
+        </g>
+      }
+    </svg>
+
+    <!-- Floating tooltip -->
+    @if (hoveredNode(); as node) {
+      <div
+        class="treemap-tooltip"
+        [style.left.px]="tooltipPos().x"
+        [style.top.px]="tooltipPos().y">
+        <div class="tooltip-header">
+          <img
+            [src]="node.data.logoUrl"
+            [alt]="node.data.symbol"
+            class="tooltip-logo"
+            (error)="onTooltipLogoError($event)" />
+          <div class="tooltip-title">
+            <strong>{{ node.data.symbol }}</strong>
+            <span>{{ node.data.companyName }}</span>
+          </div>
+        </div>
+        <div class="tooltip-body">
+          <div class="tooltip-row">
+            <span>Value:</span>
+            <span>{{ node.data.currentValue | currency:'EUR':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="tooltip-row">
+            <span>Allocation:</span>
+            <span>{{ node.data.percentage | number:'1.2-2' }}%</span>
+          </div>
+          <div
+            class="tooltip-row"
+            [class.gain]="node.data.gainLoss > 0"
+            [class.loss]="node.data.gainLoss < 0">
+            <span>Gain/Loss:</span>
+            <span>
+              {{ node.data.gainLoss >= 0 ? '+' : '' }}{{ node.data.gainLoss | currency:'EUR':'symbol':'1.2-2' }}
+              ({{ node.data.gainLossPercentage | number:'1.2-2' }}%)
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

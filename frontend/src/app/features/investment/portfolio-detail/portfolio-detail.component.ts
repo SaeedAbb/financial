@@ -23,6 +23,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { PortfolioPosition } from '../../../core/models/portfolio-position.model';
 import { TransactionSidebarComponent } from '../components/transaction-sidebar/transaction-sidebar.component';
+import { PortfolioVisualizationComponent } from './components/portfolio-visualization/portfolio-visualization.component';
 import { PortfolioDetailStateService } from './state/portfolio-detail.state';
 import { PortfolioDetailFacade } from './state/portfolio-detail.facade';
 import { PositionFormService } from './services/position-form.service';
@@ -65,7 +66,8 @@ import { StockSearchService } from './services/stock-search.service';
     TextareaModule,
     AutoCompleteModule,
     PaginatorModule,
-    TransactionSidebarComponent
+    TransactionSidebarComponent,
+    PortfolioVisualizationComponent
   ],
   providers: [
     MessageService,
@@ -137,5 +139,14 @@ export class PortfolioDetailComponent implements OnInit {
     if (wrapper) {
       wrapper.innerHTML = `<div class="stock-logo-fallback">${symbol.charAt(0)}</div>`;
     }
+  }
+
+  /**
+   * Handle stock selection from visualization
+   * Can be used to scroll to or highlight the stock in the table
+   */
+  onVisualizationStockSelected(symbol: string): void {
+    // Future enhancement: scroll to or highlight the stock in the positions table
+    console.log('Stock selected from visualization:', symbol);
   }
 }

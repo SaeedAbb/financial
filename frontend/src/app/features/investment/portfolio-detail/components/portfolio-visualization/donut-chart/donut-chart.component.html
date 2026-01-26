@@ -1,0 +1,64 @@
+<div class="donut-container">
+  @if (stocks().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-chart-pie text-4xl text-400"></i>
+      <p>No data to display</p>
+    </div>
+  } @else {
+    <div class="donut-layout">
+      <div class="chart-wrapper">
+        <p-chart
+          type="doughnut"
+          [data]="chartData()"
+          [options]="chartOptions"
+          [height]="'350px'" />
+        <div class="donut-center">
+          <span class="total-value">{{ totalValue() | currency:'EUR':'symbol':'1.0-0' }}</span>
+          <span class="total-label">Total Value</span>
+        </div>
+      </div>
+
+      <div class="legend-container">
+        @for (stock of stocks(); track stock.symbol) {
+          <div
+            class="legend-item"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="stock.symbol + ' - ' + stock.companyName"
+            (click)="selectStock(stock)"
+            (keydown.enter)="selectStock(stock)"
+            (keydown.space)="selectStock(stock)"
+            (mouseenter)="hoveredSymbol.set(stock.symbol)"
+            (mouseleave)="hoveredSymbol.set(null)">
+            <div class="legend-color" [style.background]="stock.color"></div>
+            <div class="legend-logo-wrapper">
+              <img
+                [src]="stock.logoUrl"
+                [alt]="stock.symbol"
+                class="legend-logo"
+                (error)="onLogoError($event, stock)" />
+              @if (stock.logoFailed) {
+                <div class="logo-fallback" [style.background]="stock.color">
+                  {{ stock.symbol.charAt(0) }}
+                </div>
+              }
+            </div>
+            <div class="legend-info">
+              <span class="legend-symbol">{{ stock.symbol }}</span>
+              <span class="legend-company">{{ stock.companyName }}</span>
+            </div>
+            <div class="legend-values">
+              <span class="legend-percentage">{{ stock.percentage | number:'1.1-1' }}%</span>
+              <span
+                class="legend-gain-loss"
+                [class.gain]="stock.gainLoss > 0"
+                [class.loss]="stock.gainLoss < 0">
+                {{ stock.gainLoss >= 0 ? '+' : '' }}{{ stock.gainLossPercentage | number:'1.2-2' }}%
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

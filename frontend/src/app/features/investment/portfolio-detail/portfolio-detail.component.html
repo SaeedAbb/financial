@@ -57,6 +57,15 @@
     </div>
   </div>
 
+  <!-- Portfolio Visualization -->
+  <div class="visualization-section mb-4">
+    <app-portfolio-visualization
+      [positions]="(positions$ | async) || []"
+      [loading]="(loadingPositions$ | async) || false"
+      (stockSelected)="onVisualizationStockSelected($event)">
+    </app-portfolio-visualization>
+  </div>
+
   <!-- Positions Table -->
   <div class="positions-section">
     <p-card>
