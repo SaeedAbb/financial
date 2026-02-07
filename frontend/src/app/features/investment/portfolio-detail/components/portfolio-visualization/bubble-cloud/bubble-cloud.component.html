@@ -1,0 +1,130 @@
+<div class="bubble-container" #container>
+  @if (bubbles().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-circle text-4xl text-400"></i>
+      <p>No data to display</p>
+    </div>
+  } @else {
+    <svg
+      [attr.width]="width()"
+      [attr.height]="height()"
+      class="bubble-svg">
+      <defs>
+        <!-- Gradient definitions for each bubble -->
+        @for (bubble of bubbles(); track bubble.stock.symbol) {
+          <radialGradient
+            [attr.id]="'gradient-' + bubble.stock.symbol"
+            cx="30%"
+            cy="30%"
+            r="70%">
+            <stop offset="0%" [attr.stop-color]="lightenColor(bubble.stock.color)" />
+            <stop offset="100%" [attr.stop-color]="bubble.stock.color" />
+          </radialGradient>
+        }
+      </defs>
+
+      @for (bubble of bubbles(); track bubble.stock.symbol) {
+        <g
+          class="bubble-group"
+          [attr.transform]="'translate(' + bubble.x + ',' + bubble.y + ')'"
+          (mouseenter)="onBubbleHover(bubble)"
+          (mouseleave)="hoveredBubble.set(null)"
+          (click)="onBubbleClick(bubble)">
+          <!-- Outer glow effect -->
+          <circle
+            [attr.r]="bubble.r + 3"
+            fill="none"
+            [attr.stroke]="bubble.stock.color"
+            stroke-opacity="0.25"
+            stroke-width="6"
+            class="bubble-glow" />
+
+          <!-- Main bubble with gradient -->
+          <circle
+            [attr.r]="bubble.r"
+            [attr.fill]="'url(#gradient-' + bubble.stock.symbol + ')'"
+            [attr.stroke]="bubble.stock.gainLoss >= 0 ? '#10B981' : '#EF4444'"
+            stroke-width="3"
+            class="bubble-circle"
+            [class.hovered]="hoveredBubble()?.stock?.symbol === bubble.stock.symbol" />
+
+          <!-- Stock logo -->
+          @if (bubble.r > 25) {
+            <image
+              [attr.href]="bubble.stock.logoUrl"
+              [attr.x]="-bubble.r * 0.35"
+              [attr.y]="-bubble.r * 0.55"
+              [attr.width]="bubble.r * 0.7"
+              [attr.height]="bubble.r * 0.7"
+              class="bubble-logo"
+              (error)="onLogoError($event, bubble)" />
+          }
+
+          <!-- Symbol text -->
+          @if (bubble.r > 35) {
+            <text
+              x="0"
+              [attr.y]="bubble.r * 0.3"
+              text-anchor="middle"
+              class="bubble-symbol">
+              {{ bubble.stock.symbol }}
+            </text>
+          }
+
+          <!-- Percentage with gain/loss indicator -->
+          @if (bubble.r > 50) {
+            <text
+              x="0"
+              [attr.y]="bubble.r * 0.55"
+              text-anchor="middle"
+              class="bubble-percentage"
+              [class.gain]="bubble.stock.gainLoss > 0"
+              [class.loss]="bubble.stock.gainLoss < 0">
+              {{ bubble.stock.gainLossPercentage >= 0 ? '+' : '' }}{{ bubble.stock.gainLossPercentage | number:'1.1-1' }}%
+            </text>
+          }
+        </g>
+      }
+    </svg>
+
+    <!-- Floating tooltip -->
+    @if (hoveredBubble(); as bubble) {
+      <div
+        class="bubble-tooltip"
+        [style.left.px]="tooltipPos().x"
+        [style.top.px]="tooltipPos().y">
+        <div class="tooltip-header">
+          <img
+            [src]="bubble.stock.logoUrl"
+            [alt]="bubble.stock.symbol"
+            class="tooltip-logo"
+            (error)="onTooltipLogoError($event)" />
+          <div class="tooltip-title">
+            <strong>{{ bubble.stock.symbol }}</strong>
+            <span>{{ bubble.stock.companyName }}</span>
+          </div>
+        </div>
+        <div class="tooltip-body">
+          <div class="tooltip-row">
+            <span>Value:</span>
+            <span>{{ bubble.stock.currentValue | currency:'EUR':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="tooltip-row">
+            <span>Allocation:</span>
+            <span>{{ bubble.stock.percentage | number:'1.2-2' }}%</span>
+          </div>
+          <div
+            class="tooltip-row"
+            [class.gain]="bubble.stock.gainLoss > 0"
+            [class.loss]="bubble.stock.gainLoss < 0">
+            <span>Gain/Loss:</span>
+            <span>
+              {{ bubble.stock.gainLoss >= 0 ? '+' : '' }}{{ bubble.stock.gainLoss | currency:'EUR':'symbol':'1.2-2' }}
+              ({{ bubble.stock.gainLossPercentage | number:'1.2-2' }}%)
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

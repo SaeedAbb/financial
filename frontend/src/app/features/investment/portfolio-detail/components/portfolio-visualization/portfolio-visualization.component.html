@@ -1,0 +1,47 @@
+<p-card class="visualization-card">
+  <ng-template pTemplate="header">
+    <div class="visualization-header">
+      <div class="header-title">
+        <h3>Portfolio Overview</h3>
+        @if (stockCount() > 0) {
+          <span class="subtitle">{{ stockCount() }} {{ stockCount() === 1 ? 'stock' : 'stocks' }}</span>
+        }
+      </div>
+      <app-view-selector
+        [selectedView]="currentView()"
+        (viewChange)="currentView.set($event)" />
+    </div>
+  </ng-template>
+
+  <div class="visualization-content">
+    @if (loading()) {
+      <div class="visualization-skeleton">
+        <p-skeleton height="400px" styleClass="mb-2" />
+      </div>
+    } @else if (visualizationStocks().length === 0) {
+      <div class="visualization-empty">
+        <i class="pi pi-chart-bar text-4xl text-400 mb-3"></i>
+        <h4>No Active Positions</h4>
+        <p>Add positions to your portfolio to see visualizations</p>
+      </div>
+    } @else {
+      @switch (currentView()) {
+        @case ('treemap') {
+          <app-treemap-chart
+            [stocks]="visualizationStocks()"
+            (stockSelected)="onStockSelected($event)" />
+        }
+        @case ('donut') {
+          <app-donut-chart
+            [stocks]="visualizationStocks()"
+            (stockSelected)="onStockSelected($event)" />
+        }
+        @case ('bubble') {
+          <app-bubble-cloud
+            [stocks]="visualizationStocks()"
+            (stockSelected)="onStockSelected($event)" />
+        }
+      }
+    }
+  </div>
+</p-card>

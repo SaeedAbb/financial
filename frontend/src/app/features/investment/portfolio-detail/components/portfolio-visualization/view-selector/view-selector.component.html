@@ -1,0 +1,16 @@
+<div class="view-selector">
+  <div class="selector-container">
+    @for (option of options; track option.type) {
+      <button
+        type="button"
+        class="view-button"
+        [class.active]="selectedView() === option.type"
+        [pTooltip]="option.description"
+        tooltipPosition="bottom"
+        (click)="onViewChange(option.type)">
+        <i [class]="option.icon"></i>
+        <span class="view-label">{{ option.label }}</span>
+      </button>
+    }
+  </div>
+</div>
