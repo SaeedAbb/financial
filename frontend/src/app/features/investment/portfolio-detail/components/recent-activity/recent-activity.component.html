@@ -1,0 +1,63 @@
+<p-card class="recent-activity-card">
+  <ng-template pTemplate="header">
+    <div class="card-header">
+      <div class="header-content">
+        <i class="pi pi-history"></i>
+        <span class="header-title">Recent Activity</span>
+      </div>
+      @if (totalElements() > 0) {
+        <span class="transaction-count">{{ totalElements() }} transactions</span>
+      }
+    </div>
+  </ng-template>
+
+  @if (loading()) {
+    <!-- Skeleton Loading State -->
+    <div class="activity-list">
+      @for (item of [1, 2, 3, 4, 5]; track item) {
+        <div class="skeleton-card">
+          <p-skeleton shape="square" size="48px" styleClass="skeleton-logo"></p-skeleton>
+          <div class="skeleton-content">
+            <div class="skeleton-header">
+              <p-skeleton width="150px" height="16px"></p-skeleton>
+              <p-skeleton width="80px" height="14px"></p-skeleton>
+            </div>
+            <p-skeleton width="100%" height="14px" styleClass="mt-2"></p-skeleton>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (transactions().length === 0) {
+    <!-- Empty State -->
+    <div class="empty-state">
+      <i class="pi pi-info-circle"></i>
+      <p>No transactions yet</p>
+      <span class="empty-hint">Your portfolio activity will appear here</span>
+    </div>
+  } @else {
+    <!-- Transaction List -->
+    <div class="activity-list">
+      @for (transaction of transactions(); track trackByTransactionId($index, transaction)) {
+        <app-activity-card
+          [transaction]="transaction"
+          [portfolioPercentage]="getPortfolioPercentage(transaction.symbol)"
+          [companyName]="getCompanyName(transaction.symbol)">
+        </app-activity-card>
+      }
+    </div>
+
+    <!-- Load More Button -->
+    @if (hasMore()) {
+      <div class="load-more-container">
+        <p-button
+          label="Load More"
+          icon="pi pi-chevron-down"
+          severity="secondary"
+          [text]="true"
+          [loading]="loadingMore()"
+          (onClick)="loadMore()">
+        </p-button>
+      </div>
+    }
+  }
+</p-card>

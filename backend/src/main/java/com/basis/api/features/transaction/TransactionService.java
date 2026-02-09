@@ -93,14 +93,20 @@ public class TransactionService {
     public List<TransactionDTO> getPositionTransactions(Long positionId, String userId) {
         // First, verify the position belongs to the user by checking a transaction
         List<Transaction> transactions = transactionRepository.findByReferenceIdAndReferenceType(positionId, "PORTFOLIO_POSITION");
-        
+
         if (!transactions.isEmpty() && !transactions.get(0).getUserId().equals(userId)) {
             throw new IllegalArgumentException("Position does not belong to user");
         }
-        
+
         return transactions.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TransactionDTO> getPortfolioTransactionsPaged(Long portfolioId, String userId, Pageable pageable) {
+        return transactionRepository.findByUserIdAndPortfolioIdOrderByTransactionDateDescCreatedAtDesc(userId, portfolioId, pageable)
+                .map(this::toDTO);
     }
 
     @Transactional(readOnly = true)

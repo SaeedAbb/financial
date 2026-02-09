@@ -40,6 +40,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByUserIdAndPortfolioId(String userId, Long portfolioId);
 
+    Page<Transaction> findByUserIdAndPortfolioIdOrderByTransactionDateDescCreatedAtDesc(String userId, Long portfolioId, Pageable pageable);
+
     @Query("SELECT SUM(t.totalAmount) FROM Transaction t WHERE t.userId = :userId AND t.transactionType = :type")
     BigDecimal calculateTotalAmountByUserAndType(@Param("userId") String userId, @Param("type") TransactionType type);
 

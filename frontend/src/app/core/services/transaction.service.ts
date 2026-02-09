@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Transaction, TransactionCategory, TransactionType, TransactionSummary } from '../models/transaction.model';
+import { Transaction, TransactionCategory, TransactionType, TransactionSummary, PagedResponse } from '../models/transaction.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -16,6 +16,20 @@ export class TransactionService {
    */
   getPositionTransactions(positionId: number): Observable<Transaction[]> {
     return this.http.get<Transaction[]>(`${this.apiUrl}/position/${positionId}`);
+  }
+
+  /**
+   * Get transactions for a portfolio with pagination
+   * @param portfolioId - The portfolio ID
+   * @param page - Page number (0-indexed)
+   * @param size - Page size (default 10)
+   */
+  getPortfolioTransactionsPaged(portfolioId: number, page = 0, size = 10): Observable<PagedResponse<Transaction>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<PagedResponse<Transaction>>(`${this.apiUrl}/portfolio/${portfolioId}`, { params });
   }
 
   /**

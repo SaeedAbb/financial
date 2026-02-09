@@ -1,0 +1,120 @@
+.activity-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface-card);
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+}
+
+.logo-container {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+}
+
+.stock-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--surface-ground);
+}
+
+.logo-fallback {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+}
+
+.stock-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.symbol {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.company-name {
+  font-size: 0.9rem;
+  color: var(--text-color-secondary);
+}
+
+.date {
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+  white-space: nowrap;
+}
+
+.description {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-color-secondary);
+
+  &.buy {
+    color: #86efac;
+  }
+
+  &.sell {
+    color: #93c5fd;
+  }
+}
+
+// Responsive
+@media (max-width: 576px) {
+  .activity-card {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .logo-container {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stock-logo,
+  .logo-fallback {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .date {
+    font-size: 0.8rem;
+  }
+}

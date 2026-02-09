@@ -120,6 +120,17 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
+    @GetMapping("/portfolio/{portfolioId}")
+    @Operation(summary = "Get portfolio transactions paged", description = "Get transactions for a specific portfolio with pagination")
+    public ResponseEntity<Page<TransactionDTO>> getPortfolioTransactionsPaged(
+            @PathVariable @Parameter(description = "Portfolio ID") Long portfolioId,
+            @PageableDefault(size = 10, sort = "transactionDate", direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
+        Page<TransactionDTO> transactions = transactionService.getPortfolioTransactionsPaged(portfolioId, userId, pageable);
+        return ResponseEntity.ok(transactions);
+    }
+
     @GetMapping("/summary")
     @Operation(summary = "Get transaction summary", description = "Get transaction summary for date range")
     public ResponseEntity<TransactionSummaryDTO> getTransactionSummary(
