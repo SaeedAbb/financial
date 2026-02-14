@@ -29,19 +29,30 @@ export class ActivityCardComponent {
 
   description = computed(() => {
     const t = this.transaction();
-    const percentage = this.portfolioPercentage();
+    const portfolioPercent = this.portfolioPercentage();
     const quantity = this.formatQuantity(t.quantity);
     const price = this.formatCurrency(t.pricePerUnit);
     const symbol = t.symbol;
 
+    // Use position change percentage from backend (calculated at transaction time)
+    const positionChangePercent = t.positionChangePercent;
+    let changeText = '';
+    if (positionChangePercent != null && positionChangePercent > 0) {
+      if (positionChangePercent === 100 && t.transactionType === TransactionType.BUY) {
+        changeText = ' (opened position)';
+      } else {
+        changeText = ` (${positionChangePercent.toFixed(2)}% ${t.transactionType === TransactionType.BUY ? 'increase' : 'decrease'})`;
+      }
+    }
+
     if (t.transactionType === TransactionType.BUY) {
-      const portfolioText = percentage > 0 ? ` ${symbol} is now ${percentage.toFixed(2)}% of portfolio.` : '';
-      return `Purchased ${quantity} shares at ${price}.${portfolioText}`;
+      const portfolioText = portfolioPercent > 0 ? ` ${symbol} is now ${portfolioPercent.toFixed(2)}% of portfolio.` : '';
+      return `Purchased ${quantity} shares${changeText} at ${price}.${portfolioText}`;
     } else if (t.transactionType === TransactionType.SELL) {
-      const portfolioText = percentage > 0
-        ? ` ${symbol} is now ${percentage.toFixed(2)}% of portfolio.`
+      const portfolioText = portfolioPercent > 0
+        ? ` ${symbol} is now ${portfolioPercent.toFixed(2)}% of portfolio.`
         : ' Position closed.';
-      return `Sold ${quantity} shares at ${price}.${portfolioText}`;
+      return `Sold ${quantity} shares${changeText} at ${price}.${portfolioText}`;
     } else if (t.transactionType === TransactionType.DIVIDEND) {
       return `Received dividend of ${this.formatCurrency(t.totalAmount)}.`;
     }

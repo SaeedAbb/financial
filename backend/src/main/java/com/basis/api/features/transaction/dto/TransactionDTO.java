@@ -33,4 +33,5 @@ public class TransactionDTO {
     private LocalDate transactionDate;
     private String notes;
     private ZonedDateTime createdAt;
+    private BigDecimal positionChangePercent;
 }

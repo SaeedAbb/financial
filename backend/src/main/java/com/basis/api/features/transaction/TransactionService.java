@@ -9,10 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageImpl;
 
 @Service
 @Transactional
@@ -105,8 +111,98 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public Page<TransactionDTO> getPortfolioTransactionsPaged(Long portfolioId, String userId, Pageable pageable) {
-        return transactionRepository.findByUserIdAndPortfolioIdOrderByTransactionDateDescCreatedAtDesc(userId, portfolioId, pageable)
-                .map(this::toDTO);
+        // Get all transactions for the portfolio to calculate running totals
+        List<Transaction> allTransactions = transactionRepository.findByUserIdAndPortfolioId(userId, portfolioId);
+
+        // Sort by date and created_at ascending to calculate running totals correctly
+        allTransactions.sort((a, b) -> {
+            int dateCompare = a.getTransactionDate().compareTo(b.getTransactionDate());
+            if (dateCompare != 0) return dateCompare;
+            return a.getCreatedAt().compareTo(b.getCreatedAt());
+        });
+
+        // Calculate running quantity for each symbol and store quantity_before for each transaction
+        Map<String, BigDecimal> runningQuantityBySymbol = new HashMap<>();
+        Map<Long, BigDecimal> quantityBeforeByTransactionId = new HashMap<>();
+
+        for (Transaction t : allTransactions) {
+            String symbol = t.getSymbol();
+            BigDecimal currentQty = runningQuantityBySymbol.getOrDefault(symbol, BigDecimal.ZERO);
+
+            // Store the quantity BEFORE this transaction
+            quantityBeforeByTransactionId.put(t.getId(), currentQty);
+
+            // Update running quantity
+            if (t.getTransactionType() == TransactionType.BUY) {
+                runningQuantityBySymbol.put(symbol, currentQty.add(t.getQuantity()));
+            } else if (t.getTransactionType() == TransactionType.SELL) {
+                runningQuantityBySymbol.put(symbol, currentQty.subtract(t.getQuantity()));
+            }
+        }
+
+        // Sort descending for display (most recent first)
+        allTransactions.sort((a, b) -> {
+            int dateCompare = b.getTransactionDate().compareTo(a.getTransactionDate());
+            if (dateCompare != 0) return dateCompare;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
+
+        // Apply pagination
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), allTransactions.size());
+        List<Transaction> pagedTransactions = start < allTransactions.size()
+                ? allTransactions.subList(start, end)
+                : new ArrayList<>();
+
+        // Convert to DTOs with position change percentage
+        List<TransactionDTO> dtos = pagedTransactions.stream()
+                .map(t -> toDTOWithPositionChange(t, quantityBeforeByTransactionId.get(t.getId())))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, pageable, allTransactions.size());
+    }
+
+    /**
+     * Converts a Transaction to TransactionDTO and calculates the position change percentage.
+     */
+    private TransactionDTO toDTOWithPositionChange(Transaction transaction, BigDecimal quantityBefore) {
+        TransactionDTO dto = toDTO(transaction);
+        dto.setPositionChangePercent(calculatePositionChangePercent(
+                transaction.getQuantity(), quantityBefore, transaction.getTransactionType()));
+        return dto;
+    }
+
+    /**
+     * Calculate the percentage change in position at the time of the transaction.
+     * For first BUY: returns 100% (opens 100% of the position)
+     * For subsequent BUY: (quantity / quantityBefore) * 100 = how much the position increased
+     * For SELL: (quantity / quantityBefore) * 100 = how much of the position was sold
+     */
+    private BigDecimal calculatePositionChangePercent(BigDecimal quantity, BigDecimal quantityBefore, TransactionType type) {
+        if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+            return null;
+        }
+
+        if (type == TransactionType.BUY) {
+            // For first purchase, return 100% (this transaction opens 100% of the position)
+            if (quantityBefore == null || quantityBefore.compareTo(BigDecimal.ZERO) <= 0) {
+                return BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
+            }
+            // Percentage increase = (quantity / quantityBefore) * 100
+            return quantity.divide(quantityBefore, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP);
+        } else if (type == TransactionType.SELL) {
+            // For sell, calculate what percentage of the position was sold
+            if (quantityBefore == null || quantityBefore.compareTo(BigDecimal.ZERO) <= 0) {
+                return null;
+            }
+            return quantity.divide(quantityBefore, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return null;
     }
 
     @Transactional(readOnly = true)

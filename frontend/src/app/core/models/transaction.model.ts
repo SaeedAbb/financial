@@ -15,6 +15,7 @@ export interface Transaction {
   transactionDate: string;
   notes?: string;
   createdAt: string;
+  positionChangePercent?: number;
 }
 
 export enum TransactionCategory {
