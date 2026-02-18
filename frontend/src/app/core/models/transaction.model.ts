@@ -15,6 +15,7 @@ export interface Transaction {
   transactionDate: string;
   notes?: string;
   createdAt: string;
+  positionChangePercent?: number;
 }
 
 export enum TransactionCategory {
@@ -48,4 +49,15 @@ export interface TransactionSummary {
   totalDividends: number;
   netPosition: number;
   transactionCount: number;
+}
+
+export interface PagedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 }

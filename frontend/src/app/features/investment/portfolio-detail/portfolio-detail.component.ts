@@ -24,6 +24,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { PortfolioPosition } from '../../../core/models/portfolio-position.model';
 import { TransactionSidebarComponent } from '../components/transaction-sidebar/transaction-sidebar.component';
 import { PortfolioVisualizationComponent } from './components/portfolio-visualization/portfolio-visualization.component';
+import { RecentActivityComponent } from './components/recent-activity/recent-activity.component';
 import { PortfolioDetailStateService } from './state/portfolio-detail.state';
 import { PortfolioDetailFacade } from './state/portfolio-detail.facade';
 import { PositionFormService } from './services/position-form.service';
@@ -67,7 +68,8 @@ import { StockSearchService } from './services/stock-search.service';
     AutoCompleteModule,
     PaginatorModule,
     TransactionSidebarComponent,
-    PortfolioVisualizationComponent
+    PortfolioVisualizationComponent,
+    RecentActivityComponent
   ],
   providers: [
     MessageService,

@@ -1,0 +1,31 @@
+<div class="activity-card">
+  <div class="logo-container">
+    @if (!logoFailed) {
+      <img
+        [src]="logoUrl()"
+        [alt]="transaction().symbol + ' logo'"
+        class="stock-logo"
+        (error)="onLogoError()">
+    } @else {
+      <div class="logo-fallback">
+        {{ getInitial() }}
+      </div>
+    }
+  </div>
+
+  <div class="content">
+    <div class="header">
+      <div class="stock-info">
+        <span class="symbol">{{ transaction().symbol }}</span>
+        @if (companyName()) {
+          <span class="company-name">({{ companyName() }})</span>
+        }
+      </div>
+      <span class="date">{{ formattedDateTime() }}</span>
+    </div>
+
+    <div class="description" [class.buy]="transaction().transactionType === TransactionType.BUY" [class.sell]="transaction().transactionType === TransactionType.SELL">
+      {{ description() }}
+    </div>
+  </div>
+</div>

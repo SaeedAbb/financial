@@ -210,6 +210,14 @@
       </div>
     </p-card>
   </div>
+
+  <!-- Recent Activity Section -->
+  <div class="recent-activity-section mt-4">
+    <app-recent-activity
+      [portfolioId]="portfolio.id"
+      [positions]="(positions$ | async) || []">
+    </app-recent-activity>
+  </div>
 </div>
 
 <!-- Buy Position Dialog -->
