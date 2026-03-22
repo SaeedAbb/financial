@@ -13,17 +13,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  // Check if user is authenticated
-  if (!keycloakAuthService.isAuthenticated()) {
-    // Check if this is a request to a protected API endpoint
-    if (req.url.includes('/api/v1/') && !req.url.includes('/api/v1/auth/')) {
-      router.navigate(['/auth/login']);
-      return throwError(() => new Error('Authentication required'));
-    }
+  // Get token (even if expired - let 401 response trigger refresh)
+  const token = keycloakAuthService.getToken();
+
+  // If no token at all, redirect to login for protected endpoints
+  if (!token && req.url.includes('/api/v1/') && !req.url.includes('/api/v1/auth/')) {
+    router.navigate(['/auth/login']);
+    return throwError(() => new Error('Authentication required'));
+  }
+
+  // If no token and not a protected endpoint, proceed without token
+  if (!token) {
     return next(req);
   }
-  
-  const token = keycloakAuthService.getToken();
 
   // Add token to request
   const authReq = req.clone({
