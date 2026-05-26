@@ -12,12 +12,27 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 
 import { StatementProvider, PROVIDER_INFO } from '../../models/provider.enum';
+import { ImportFormat, ImportFormatInfo, IMPORT_FORMAT_INFO } from '../../models/import-format.enum';
 import { ParsedTransaction, ImportRequest, ImportResult, ImportStatus, TransactionImportResult } from '../../models/parsed-transaction.model';
 import { StatementImportService } from '../../services/statement-import.service';
 import { PortfolioService } from '../../../../../core/services/portfolio.service';
 import { Portfolio } from '../../../../../core/models/portfolio.model';
 import { TransactionPreviewComponent } from '../transaction-preview/transaction-preview.component';
 
+/**
+ * Wizard for importing transactions into a portfolio.
+ *
+ * The wizard runs through these steps; the Format step is auto-skipped
+ * for providers that only support one upload format (e.g. PDF-only):
+ *
+ *   1. Provider     — pick a bank/broker
+ *   2. Format       — pick PDF (AI-parsed) or CSV (deterministic)
+ *   3. Portfolio    — pick the target portfolio
+ *   4. Upload       — choose the file
+ *   5. Processing   — backend parses the file
+ *   6. Preview      — review extracted transactions before commit
+ *   7. Results      — per-transaction outcome (only shown on partial success)
+ */
 @Component({
   selector: 'app-statement-import',
   standalone: true,
@@ -66,8 +81,21 @@ export class StatementImportComponent implements OnInit {
   private readonly REDIRECT_DELAY_MS = 3000;
   private readonly SUCCESS_MESSAGE_DURATION_MS = 5000;
 
-  currentStep = 1;
+  // Named step constants — keep templates and TS in sync.
+  readonly STEP_PROVIDER = 1;
+  readonly STEP_FORMAT = 2;
+  readonly STEP_PORTFOLIO = 3;
+  readonly STEP_UPLOAD = 4;
+  readonly STEP_PROCESSING = 5;
+  readonly STEP_PREVIEW = 6;
+  readonly STEP_RESULTS = 7;
+
+  // Expose enums to the template.
+  readonly ImportFormat = ImportFormat;
+
+  currentStep: number = this.STEP_PROVIDER;
   selectedProvider?: StatementProvider;
+  selectedFormat?: ImportFormat;
   selectedPortfolioUuid?: string;
   selectedFile?: File;
   parsedTransactions: ParsedTransaction[] = [];
@@ -77,7 +105,7 @@ export class StatementImportComponent implements OnInit {
   processingMessage = 'Extracting transactions from PDF...';
   importResult?: ImportResult;
   resultFilter: 'all' | 'success' | 'duplicate' | 'error' = 'all';
-  
+
   readonly providers = Object.values(PROVIDER_INFO);
 
   ngOnInit(): void {
@@ -99,10 +127,35 @@ export class StatementImportComponent implements OnInit {
       });
   }
 
+  /** Formats this provider can be imported with — drives the format picker. */
+  availableFormats(): ImportFormatInfo[] {
+    if (!this.selectedProvider) {
+      return [];
+    }
+    return PROVIDER_INFO[this.selectedProvider].supportedFormats
+      .map((f) => IMPORT_FORMAT_INFO[f]);
+  }
+
+  selectedFormatInfo(): ImportFormatInfo | undefined {
+    return this.selectedFormat ? IMPORT_FORMAT_INFO[this.selectedFormat] : undefined;
+  }
+
+  acceptedFileExtension(): string {
+    return this.selectedFormatInfo()?.fileExtension ?? '.pdf';
+  }
+
   onProviderChange(): void {
-    // Reset file selection when provider changes
+    // Reset downstream state and pre-select the format if there's only one.
     this.selectedFile = undefined;
     this.parsedTransactions = [];
+    const formats = this.availableFormats();
+    this.selectedFormat = formats.length === 1 ? formats[0].id : undefined;
+  }
+
+  selectFormat(format: ImportFormat): void {
+    this.selectedFormat = format;
+    // Switching format invalidates any previously chosen file.
+    this.selectedFile = undefined;
   }
 
   onFileSelect(event: { files: File[] }): void {
@@ -114,38 +167,64 @@ export class StatementImportComponent implements OnInit {
 
   canProceedToNextStep(): boolean {
     switch (this.currentStep) {
-      case 1:
+      case this.STEP_PROVIDER:
         return !!this.selectedProvider;
-      case 2:
+      case this.STEP_FORMAT:
+        return !!this.selectedFormat;
+      case this.STEP_PORTFOLIO:
         return !!this.selectedPortfolioUuid;
-      case 3:
+      case this.STEP_UPLOAD:
         return !!this.selectedFile;
       default:
         return false;
     }
   }
 
+  /** Whether the format step should be displayed in the indicator. */
+  showFormatStep(): boolean {
+    return this.availableFormats().length > 1;
+  }
+
   nextStep(): void {
-    if (this.currentStep === 3 && this.selectedFile) {
+    if (this.currentStep === this.STEP_UPLOAD && this.selectedFile) {
       this.processFile();
-    } else {
-      this.currentStep++;
+      return;
     }
+    // Auto-skip the Format step for providers that support only one format.
+    if (this.currentStep === this.STEP_PROVIDER && !this.showFormatStep()) {
+      this.currentStep = this.STEP_PORTFOLIO;
+      return;
+    }
+    this.currentStep++;
   }
 
   previousStep(): void {
-    if (this.currentStep > 1) {
-      this.currentStep--;
+    if (this.currentStep <= this.STEP_PROVIDER) {
+      return;
     }
+    // Symmetric auto-skip when navigating backwards past the hidden Format step.
+    if (this.currentStep === this.STEP_PORTFOLIO && !this.showFormatStep()) {
+      this.currentStep = this.STEP_PROVIDER;
+      return;
+    }
+    this.currentStep--;
   }
 
   processFile(): void {
-    if (!this.selectedFile || !this.selectedProvider) return;
+    if (!this.selectedFile || !this.selectedProvider || !this.selectedFormat) {
+      return;
+    }
 
-    this.currentStep = 4;
-    this.processingMessage = 'Extracting transactions from PDF using AI...';
+    this.currentStep = this.STEP_PROCESSING;
+    this.processingMessage = this.selectedFormat === ImportFormat.CSV
+      ? 'Parsing CSV transactions...'
+      : 'Extracting transactions from PDF using AI...';
 
-    this.importService.parsePdf(this.selectedFile, this.selectedProvider)
+    const parse$ = this.selectedFormat === ImportFormat.CSV
+      ? this.importService.parseCsv(this.selectedFile, this.selectedProvider)
+      : this.importService.parsePdf(this.selectedFile, this.selectedProvider);
+
+    parse$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
@@ -153,22 +232,22 @@ export class StatementImportComponent implements OnInit {
             this.parsedTransactions = response.transactions;
 
             if (this.parsedTransactions.length === 0) {
-              this.showError('No transactions found in the PDF');
-              this.currentStep = 3;
+              this.showError('No transactions found in the file');
+              this.currentStep = this.STEP_UPLOAD;
             } else {
               this.showSuccess(`Found ${this.parsedTransactions.length} transactions`);
-              this.currentStep = 5;
+              this.currentStep = this.STEP_PREVIEW;
             }
           } else {
-            const errorMsg = response.message || 'Failed to parse PDF';
+            const errorMsg = response.message || 'Failed to parse file';
             this.showError(errorMsg);
-            this.currentStep = 3;
+            this.currentStep = this.STEP_UPLOAD;
           }
           this.cdr.markForCheck();
         },
         error: (error) => {
-          this.showError('Failed to parse PDF: ' + (error.error?.message || 'Unknown error'));
-          this.currentStep = 3;
+          this.showError('Failed to parse file: ' + (error.error?.message || 'Unknown error'));
+          this.currentStep = this.STEP_UPLOAD;
           this.cdr.markForCheck();
         }
       });
@@ -179,7 +258,7 @@ export class StatementImportComponent implements OnInit {
       return;
     }
 
-    this.currentStep = 4;
+    this.currentStep = this.STEP_PROCESSING;
     this.processingMessage = 'Importing transactions to your portfolio...';
 
     const importRequest: ImportRequest = {
@@ -198,7 +277,7 @@ export class StatementImportComponent implements OnInit {
         },
         error: (error) => {
           this.showError('Import failed: ' + (error.error?.message || 'Unknown error'));
-          this.currentStep = 5;
+          this.currentStep = this.STEP_PREVIEW;
           this.cdr.markForCheck();
         }
       });
@@ -207,7 +286,7 @@ export class StatementImportComponent implements OnInit {
   handleImportResult(result: ImportResult): void {
     this.importResult = result;
     const duplicateCount = result.duplicateCount || 0;
-    
+
     if (result.status === ImportStatus.COMPLETED) {
       let message = `Successfully imported ${result.successCount} transactions`;
       if (duplicateCount > 0) {
@@ -226,25 +305,23 @@ export class StatementImportComponent implements OnInit {
         message += `, ${result.failureCount} failed`;
       }
       this.showError(message);
-      this.currentStep = 6; // Show results step
+      this.currentStep = this.STEP_RESULTS;
     } else {
       this.showError(`Import failed: ${result.errorMessage}`);
-      this.currentStep = 5;
+      this.currentStep = this.STEP_PREVIEW;
     }
   }
 
   cancelImport(): void {
     this.parsedTransactions = [];
-    this.currentStep = 3;
+    this.currentStep = this.STEP_UPLOAD;
   }
 
   getProviderInstructions(): string {
-    switch (this.selectedProvider) {
-      case StatementProvider.TRADE_REPUBLIC:
-        return 'Please upload your Trade Republic account statement PDF (Kontoauszug/Abrechnung)';
-      default:
-        return 'Please upload your account statement PDF';
+    if (this.selectedProvider === StatementProvider.TRADE_REPUBLIC) {
+      return 'Trade Republic supports both PDF statements (AI-parsed) and CSV transaction exports (parsed instantly).';
     }
+    return 'Please upload your account statement PDF';
   }
 
   private showSuccess(message: string): void {
@@ -261,20 +338,21 @@ export class StatementImportComponent implements OnInit {
   navigateToPortfolio(): void {
     this.router.navigate(['/investment/portfolios', this.selectedPortfolioUuid]);
   }
-  
+
   resetImport(): void {
-    this.currentStep = 1;
+    this.currentStep = this.STEP_PROVIDER;
     this.importResult = undefined;
     this.resultFilter = 'all';
     this.selectedFile = undefined;
+    this.selectedFormat = undefined;
     this.parsedTransactions = [];
     this.errorMessage = '';
     this.successMessage = '';
   }
-  
+
   getFilteredResults(): TransactionImportResult[] {
     if (!this.importResult?.results) return [];
-    
+
     switch (this.resultFilter) {
       case 'success':
         return this.importResult.results.filter(r => r.success && !r.duplicate);
@@ -286,10 +364,10 @@ export class StatementImportComponent implements OnInit {
         return this.importResult.results;
     }
   }
-  
+
   getFilteredResultsCount(type: 'success' | 'duplicate' | 'error'): number {
     if (!this.importResult?.results) return 0;
-    
+
     switch (type) {
       case 'success':
         return this.importResult.results.filter(r => r.success && !r.duplicate).length;

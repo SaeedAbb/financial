@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { ImportRequest, ImportResult, ImportBatch, ParsePdfResponse } from '../models/parsed-transaction.model';
+import { ImportRequest, ImportResult, ImportBatch, ParseStatementResponse } from '../models/parsed-transaction.model';
 import { StatementProvider } from '../models/provider.enum';
 
 @Injectable({
@@ -75,13 +75,30 @@ export class StatementImportService {
    * @param provider The statement provider
    * @returns Observable with parse response containing transactions
    */
-  parsePdf(file: File, provider: StatementProvider): Observable<ParsePdfResponse> {
+  parsePdf(file: File, provider: StatementProvider): Observable<ParseStatementResponse> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('provider', provider);
-    
-    return this.http.post<ParsePdfResponse>(
+
+    return this.http.post<ParseStatementResponse>(
       `${this.apiUrl}/parse-pdf`,
+      formData
+    );
+  }
+
+  /**
+   * Parse a Trade Republic CSV transaction export (deterministic, no AI).
+   * @param file The CSV file
+   * @param provider The statement provider (currently must be TRADE_REPUBLIC)
+   * @returns Observable with parse response containing transactions
+   */
+  parseCsv(file: File, provider: StatementProvider): Observable<ParseStatementResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('provider', provider);
+
+    return this.http.post<ParseStatementResponse>(
+      `${this.apiUrl}/parse-csv`,
       formData
     );
   }

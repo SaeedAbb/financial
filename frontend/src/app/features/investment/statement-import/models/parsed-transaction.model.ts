@@ -68,7 +68,11 @@ export interface ImportBatch {
   completedAt?: string;
 }
 
-export interface ParsePdfResponse {
+/**
+ * Generic parse-statement response shared by both the PDF (AI) and CSV
+ * (deterministic) endpoints — their backend payloads are structurally identical.
+ */
+export interface ParseStatementResponse {
   success: boolean;
   provider?: StatementProvider;
   transactions?: ParsedTransaction[];
@@ -76,3 +80,6 @@ export interface ParsePdfResponse {
   metadata?: Record<string, unknown>;
   message?: string;
 }
+
+/** @deprecated Use {@link ParseStatementResponse} — same shape, format-agnostic name. */
+export type ParsePdfResponse = ParseStatementResponse;

@@ -79,6 +79,82 @@
   border-radius: 4px;
 }
 
+// ============================
+// Format-choice cards (Step 2)
+// ============================
+.format-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.format-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 2px solid var(--surface-border);
+  border-radius: 8px;
+  background: var(--surface-card, #ffffff);
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary-color, #3b82f6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color, #3b82f6);
+    outline-offset: 2px;
+  }
+
+  &.selected {
+    border-color: var(--primary-color, #3b82f6);
+    background: var(--primary-50, rgba(59, 130, 246, 0.06));
+  }
+}
+
+.format-card-icon {
+  flex-shrink: 0;
+  font-size: 2rem;
+  color: var(--primary-color, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+}
+
+.format-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.format-card-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.format-card-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-color-secondary, #6b7280);
+  line-height: 1.4;
+}
+
+.format-card-check {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 1.25rem;
+  color: var(--primary-color, #3b82f6);
+}
+
 // Step Indicator
 .step-indicator {
   display: flex;

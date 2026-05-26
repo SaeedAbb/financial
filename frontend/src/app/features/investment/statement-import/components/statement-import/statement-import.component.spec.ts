@@ -7,7 +7,8 @@ import { StatementImportComponent } from './statement-import.component';
 import { StatementImportService } from '../../services/statement-import.service';
 import { PortfolioService } from '../../../../../core/services/portfolio.service';
 import { StatementProvider } from '../../models/provider.enum';
-import { ImportResult, ImportStatus, ParsedTransaction, ParsePdfResponse } from '../../models/parsed-transaction.model';
+import { ImportFormat } from '../../models/import-format.enum';
+import { ImportResult, ImportStatus, ParsedTransaction, ParseStatementResponse } from '../../models/parsed-transaction.model';
 import { Portfolio } from '../../../../../core/models/portfolio.model';
 
 describe('StatementImportComponent', () => {
@@ -17,12 +18,23 @@ describe('StatementImportComponent', () => {
   let mockPortfolioService: jasmine.SpyObj<PortfolioService>;
   let mockRouter: jasmine.SpyObj<Router>;
 
+  const sampleTransaction: ParsedTransaction = {
+    rawSymbol: 'TEST',
+    description: 'Test',
+    quantity: 1,
+    pricePerUnit: 100,
+    totalAmount: 100,
+    fees: 0,
+    date: '2024-01-01',
+    type: 'BUY',
+    currency: 'EUR'
+  };
+
   beforeEach(async () => {
-    mockImportService = jasmine.createSpyObj('StatementImportService', ['importTransactions', 'parsePdf']);
+    mockImportService = jasmine.createSpyObj('StatementImportService', ['importTransactions', 'parsePdf', 'parseCsv']);
     mockPortfolioService = jasmine.createSpyObj('PortfolioService', ['getAllPortfolios']);
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
-    // Default mock implementations
     mockPortfolioService.getAllPortfolios.and.returnValue(of([
       { id: 1, uuid: 'uuid-1', userId: 'user-1', name: 'Test Portfolio 1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
       { id: 2, uuid: 'uuid-2', userId: 'user-1', name: 'Test Portfolio 2', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
@@ -61,70 +73,138 @@ describe('StatementImportComponent', () => {
 
   it('should reset file selection when provider changes', () => {
     component.selectedFile = new File([''], 'test.pdf');
-    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY' as const, currency: 'EUR' }] as ParsedTransaction[];
-    
+    component.parsedTransactions = [sampleTransaction];
+
+    component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
     component.onProviderChange();
-    
+
     expect(component.selectedFile).toBeUndefined();
     expect(component.parsedTransactions.length).toBe(0);
+  });
+
+  it('should pre-select format when provider supports only one', () => {
+    component.selectedProvider = StatementProvider.DEUTSCHE_BANK;
+    component.onProviderChange();
+
+    expect(component.selectedFormat).toBe(ImportFormat.PDF);
+  });
+
+  it('should clear format when provider supports multiple', () => {
+    component.selectedFormat = ImportFormat.PDF;
+    component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
+    component.onProviderChange();
+
+    expect(component.selectedFormat).toBeUndefined();
   });
 
   it('should handle file selection', () => {
     const file = new File([''], 'test.pdf');
     const event = { files: [file] };
-    
+
     component.onFileSelect(event);
-    
+
     expect(component.selectedFile).toBe(file);
   });
 
   it('should determine if can proceed to next step', () => {
     expect(component.canProceedToNextStep()).toBe(false);
-    
-    component.currentStep = 1;
+
+    component.currentStep = component.STEP_PROVIDER;
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
     expect(component.canProceedToNextStep()).toBe(true);
-    
-    component.currentStep = 2;
+
+    component.currentStep = component.STEP_FORMAT;
+    expect(component.canProceedToNextStep()).toBe(false);
+    component.selectedFormat = ImportFormat.CSV;
+    expect(component.canProceedToNextStep()).toBe(true);
+
+    component.currentStep = component.STEP_PORTFOLIO;
+    component.selectedPortfolioUuid = undefined;
     expect(component.canProceedToNextStep()).toBe(false);
     component.selectedPortfolioUuid = 'uuid-1';
     expect(component.canProceedToNextStep()).toBe(true);
-    
-    component.currentStep = 3;
+
+    component.currentStep = component.STEP_UPLOAD;
+    component.selectedFile = undefined;
     expect(component.canProceedToNextStep()).toBe(false);
-    component.selectedFile = new File([''], 'test.pdf');
+    component.selectedFile = new File([''], 'test.csv');
     expect(component.canProceedToNextStep()).toBe(true);
   });
 
-  it('should navigate between steps', () => {
-    component.currentStep = 2;
-    component.previousStep();
-    expect(component.currentStep).toBe(1);
-    
-    component.previousStep();
-    expect(component.currentStep).toBe(1); // Should not go below 1
+  it('should auto-skip format step for PDF-only providers when going forward', () => {
+    component.selectedProvider = StatementProvider.DEUTSCHE_BANK;
+    component.onProviderChange();
+    component.currentStep = component.STEP_PROVIDER;
+
+    component.nextStep();
+
+    expect(component.currentStep).toBe(component.STEP_PORTFOLIO);
   });
 
-  it('should process file and show preview on success', () => {
-    const mockTransactions: ParsedTransaction[] = [{ rawSymbol: 'AAPL', description: 'Apple Inc.', quantity: 10, pricePerUnit: 150, totalAmount: 1500, fees: 5, date: '2024-01-01', type: 'BUY', currency: 'USD' }];
-    const mockResponse: ParsePdfResponse = {
+  it('should show format step for providers that support multiple formats', () => {
+    component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
+    component.onProviderChange();
+    component.currentStep = component.STEP_PROVIDER;
+
+    component.nextStep();
+
+    expect(component.currentStep).toBe(component.STEP_FORMAT);
+  });
+
+  it('should auto-skip format step backwards for PDF-only providers', () => {
+    component.selectedProvider = StatementProvider.DEUTSCHE_BANK;
+    component.onProviderChange();
+    component.currentStep = component.STEP_PORTFOLIO;
+
+    component.previousStep();
+
+    expect(component.currentStep).toBe(component.STEP_PROVIDER);
+  });
+
+  it('should not navigate below the first step', () => {
+    component.currentStep = component.STEP_PROVIDER;
+    component.previousStep();
+    expect(component.currentStep).toBe(component.STEP_PROVIDER);
+  });
+
+  it('should call parsePdf when format is PDF', () => {
+    const mockResponse: ParseStatementResponse = {
       success: true,
-      transactions: mockTransactions,
+      transactions: [sampleTransaction],
       provider: StatementProvider.TRADE_REPUBLIC
     };
-
     mockImportService.parsePdf.and.returnValue(of(mockResponse));
 
     component.selectedFile = new File([''], 'test.pdf');
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
-    component.currentStep = 3;
+    component.selectedFormat = ImportFormat.PDF;
+    component.currentStep = component.STEP_UPLOAD;
 
     component.processFile();
 
     expect(mockImportService.parsePdf).toHaveBeenCalledWith(component.selectedFile, StatementProvider.TRADE_REPUBLIC);
-    expect(component.currentStep).toBe(5);
-    expect(component.parsedTransactions).toEqual(mockTransactions);
-    expect(component.successMessage).toContain('Found 1 transactions');
+    expect(mockImportService.parseCsv).not.toHaveBeenCalled();
+    expect(component.currentStep).toBe(component.STEP_PREVIEW);
+  });
+
+  it('should call parseCsv when format is CSV', () => {
+    const mockResponse: ParseStatementResponse = {
+      success: true,
+      transactions: [sampleTransaction],
+      provider: StatementProvider.TRADE_REPUBLIC
+    };
+    mockImportService.parseCsv.and.returnValue(of(mockResponse));
+
+    component.selectedFile = new File([''], 'transactions.csv');
+    component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
+    component.selectedFormat = ImportFormat.CSV;
+    component.currentStep = component.STEP_UPLOAD;
+
+    component.processFile();
+
+    expect(mockImportService.parseCsv).toHaveBeenCalledWith(component.selectedFile, StatementProvider.TRADE_REPUBLIC);
+    expect(mockImportService.parsePdf).not.toHaveBeenCalled();
+    expect(component.currentStep).toBe(component.STEP_PREVIEW);
   });
 
   it('should handle file processing error', () => {
@@ -132,48 +212,49 @@ describe('StatementImportComponent', () => {
 
     component.selectedFile = new File([''], 'test.pdf');
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
-    component.currentStep = 3;
+    component.selectedFormat = ImportFormat.PDF;
+    component.currentStep = component.STEP_UPLOAD;
 
     component.processFile();
 
-    expect(component.currentStep).toBe(3);
-    expect(component.errorMessage).toContain('Failed to parse PDF: Parse error');
+    expect(component.currentStep).toBe(component.STEP_UPLOAD);
+    expect(component.errorMessage).toContain('Failed to parse file: Parse error');
   });
 
   it('should handle empty transactions', () => {
-    const mockResponse: ParsePdfResponse = {
+    const mockResponse: ParseStatementResponse = {
       success: true,
       transactions: [],
       provider: StatementProvider.TRADE_REPUBLIC
     };
-
     mockImportService.parsePdf.and.returnValue(of(mockResponse));
 
     component.selectedFile = new File([''], 'test.pdf');
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
-    component.currentStep = 3;
+    component.selectedFormat = ImportFormat.PDF;
+    component.currentStep = component.STEP_UPLOAD;
 
     component.processFile();
 
-    expect(component.currentStep).toBe(3);
-    expect(component.errorMessage).toContain('No transactions found in the PDF');
+    expect(component.currentStep).toBe(component.STEP_UPLOAD);
+    expect(component.errorMessage).toContain('No transactions found');
   });
 
   it('should handle backend parsing failure response', () => {
-    const mockResponse: ParsePdfResponse = {
+    const mockResponse: ParseStatementResponse = {
       success: false,
       message: 'Could not parse PDF'
     };
-
     mockImportService.parsePdf.and.returnValue(of(mockResponse));
 
     component.selectedFile = new File([''], 'test.pdf');
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
-    component.currentStep = 3;
+    component.selectedFormat = ImportFormat.PDF;
+    component.currentStep = component.STEP_UPLOAD;
 
     component.processFile();
 
-    expect(component.currentStep).toBe(3);
+    expect(component.currentStep).toBe(component.STEP_UPLOAD);
     expect(component.errorMessage).toContain('Could not parse PDF');
   });
 
@@ -186,12 +267,11 @@ describe('StatementImportComponent', () => {
       totalTransactions: 10,
       createdAt: new Date().toISOString()
     };
-
     mockImportService.importTransactions.and.returnValue(of(result));
 
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
     component.selectedPortfolioUuid = 'uuid-1';
-    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY' as const, currency: 'EUR' }] as ParsedTransaction[];
+    component.parsedTransactions = [sampleTransaction];
     component.selectedFile = new File([''], 'test.pdf');
 
     component.confirmImport();
@@ -213,7 +293,7 @@ describe('StatementImportComponent', () => {
 
     expect(component.successMessage).toBe('');
     expect(component.errorMessage).toContain('Imported 8 of 10 transactions');
-    expect(component.currentStep).toBe(6);
+    expect(component.currentStep).toBe(component.STEP_RESULTS);
   });
 
   it('should handle failed import', () => {
@@ -230,24 +310,49 @@ describe('StatementImportComponent', () => {
     component.handleImportResult(result);
 
     expect(component.errorMessage).toContain('Import failed: Import failed');
-    expect(component.currentStep).toBe(5);
+    expect(component.currentStep).toBe(component.STEP_PREVIEW);
   });
 
   it('should cancel import', () => {
-    component.parsedTransactions = [{ rawSymbol: 'TEST', description: 'Test', quantity: 1, pricePerUnit: 100, totalAmount: 100, fees: 0, date: '2024-01-01', type: 'BUY' as const, currency: 'EUR' }] as ParsedTransaction[];
-    component.currentStep = 5;
-    
+    component.parsedTransactions = [sampleTransaction];
+    component.currentStep = component.STEP_PREVIEW;
+
     component.cancelImport();
-    
+
     expect(component.parsedTransactions.length).toBe(0);
-    expect(component.currentStep).toBe(3);
+    expect(component.currentStep).toBe(component.STEP_UPLOAD);
   });
 
   it('should get provider instructions', () => {
     component.selectedProvider = StatementProvider.TRADE_REPUBLIC;
-    expect(component.getProviderInstructions()).toContain('Trade Republic account statement PDF');
-    
+    expect(component.getProviderInstructions()).toContain('PDF');
+    expect(component.getProviderInstructions()).toContain('CSV');
+
     component.selectedProvider = 'OTHER' as StatementProvider;
     expect(component.getProviderInstructions()).toContain('Please upload your account statement PDF');
+  });
+
+  it('should reset all state on resetImport', () => {
+    component.currentStep = component.STEP_RESULTS;
+    component.selectedFormat = ImportFormat.CSV;
+    component.selectedFile = new File([''], 'test.csv');
+    component.parsedTransactions = [sampleTransaction];
+    component.errorMessage = 'oops';
+
+    component.resetImport();
+
+    expect(component.currentStep).toBe(component.STEP_PROVIDER);
+    expect(component.selectedFormat).toBeUndefined();
+    expect(component.selectedFile).toBeUndefined();
+    expect(component.parsedTransactions.length).toBe(0);
+    expect(component.errorMessage).toBe('');
+  });
+
+  it('should expose the right accepted file extension per format', () => {
+    component.selectedFormat = ImportFormat.CSV;
+    expect(component.acceptedFileExtension()).toBe('.csv');
+
+    component.selectedFormat = ImportFormat.PDF;
+    expect(component.acceptedFileExtension()).toBe('.pdf');
   });
 });

@@ -4,9 +4,11 @@ import com.basis.api.features.statement.dto.ImportRequestDTO;
 import com.basis.api.features.statement.dto.ImportResultDTO;
 import com.basis.api.features.statement.dto.ParsePdfRequestDTO;
 import com.basis.api.features.statement.dto.ParsePdfResponseDTO;
+import com.basis.api.features.statement.dto.ParseStatementResponseDTO;
 import com.basis.api.features.statement.providers.StatementProvider;
 import com.basis.api.features.statement.services.StatementImportService;
 import com.basis.api.features.statement.services.StatementParsingService;
+import com.basis.api.features.statement.services.TradeRepublicCsvParsingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,11 +31,14 @@ public class StatementImportController {
     
     private final StatementImportService importService;
     private final StatementParsingService parsingService;
-    
-    public StatementImportController(StatementImportService importService, 
-                                     StatementParsingService parsingService) {
+    private final TradeRepublicCsvParsingService csvParsingService;
+
+    public StatementImportController(StatementImportService importService,
+                                     StatementParsingService parsingService,
+                                     TradeRepublicCsvParsingService csvParsingService) {
         this.importService = importService;
         this.parsingService = parsingService;
+        this.csvParsingService = csvParsingService;
     }
     
     @PostMapping("/portfolio/{portfolioUuid}/import")
@@ -68,14 +73,50 @@ public class StatementImportController {
         }
         
         ParsePdfResponseDTO result = parsingService.parsePdfStatement(file, provider);
-        
+
         if (result.isSuccess()) {
             return ResponseEntity.ok(result);
         } else {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(result);
         }
     }
-    
+
+    @PostMapping(value = "/parse-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Parse a Trade Republic CSV transaction export to extract trades")
+    public ResponseEntity<ParseStatementResponseDTO> parseCsvStatement(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("provider") StatementProvider provider,
+            Authentication authentication) {
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(ParseStatementResponseDTO.failure("File is empty"));
+        }
+
+        if (!isCsvFile(file)) {
+            return ResponseEntity.badRequest()
+                    .body(ParseStatementResponseDTO.failure("File must be a CSV"));
+        }
+
+        ParseStatementResponseDTO result = csvParsingService.parseCsvStatement(file, provider);
+
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(result);
+        }
+    }
+
+    /**
+     * Browsers report inconsistent MIME types for CSV files (text/csv,
+     * application/csv, application/vnd.ms-excel, sometimes empty), so we
+     * accept any MIME type as long as the filename ends in .csv.
+     */
+    private boolean isCsvFile(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        return filename != null && filename.toLowerCase().endsWith(".csv");
+    }
+
     @GetMapping("/history")
     @Operation(summary = "Get import history for current user")
     public ResponseEntity<List<ImportBatch>> getImportHistory(Authentication authentication) {
